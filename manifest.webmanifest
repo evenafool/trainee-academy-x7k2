@@ -1,0 +1,13 @@
+{
+  "name": "練習生學院｜國英韓家教",
+  "short_name": "練習生學院",
+  "description": "結合 K-POP 與台灣網路梗的國文、英文、韓文家教 App",
+  "lang": "zh-Hant-TW",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fff7fb",
+  "theme_color": "#ff5fa2",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,117 @@
+/* ───────── 大廳／收藏室：統一成粉嫩偶像養成風（跟敏雅老師教室同一套） ─────────
+   刻意只用一套明亮粉彩外觀，不跟著系統深色模式變暗 */
+body.is-lobby {
+  --lobby-ink: #4a3728;
+  --glass: rgba(255, 255, 255, .82);
+  --glass-line: #fff;
+  --veil: linear-gradient(90deg, rgba(250, 243, 235, .78) 0%, rgba(250, 243, 235, .4) 48%, rgba(250, 243, 235, .05) 72%);
+  --pk: #c97b84;
+  --pk-dark: #a35f69;
+  --lav: #b08968;
+  --muted-ink: #8a7563;
+  background: #f3ebe2;
+  color: #4a3728;
+  color-scheme: light;
+}
+body.is-lobby .lobby { color: var(--lobby-ink); }
+body.is-lobby .muted, body.is-lobby .small.muted { color: var(--muted-ink); }
+
+/* 白框粉彩卡片 */
+body.is-lobby .glass {
+  background: linear-gradient(170deg, rgba(255, 255, 255, .92), rgba(251, 245, 238, .88));
+  border: 3px solid #fff;
+  border-radius: 26px;
+  box-shadow: 0 12px 28px rgba(120, 85, 55, .18);
+  backdrop-filter: blur(10px);
+}
+
+/* 上方：Logo、狀態膠囊、藝名 */
+body.is-lobby .brand { color: var(--pk); font-weight: 900; }
+body.is-lobby .brand small { color: var(--lav); }
+body.is-lobby .stat-pill { background: linear-gradient(180deg, #fff, #f8eee4); border: 2px solid #fff; color: #4a3728; font-weight: 700; box-shadow: 0 3px 0 #e3cbb5; }
+body.is-lobby .me-chip { background: linear-gradient(180deg, #fff, #f3e8dc); border: 2px solid #fff; box-shadow: 0 3px 0 #e3d2bf; color: #4a3728; }
+body.is-lobby .me-av { background: linear-gradient(135deg, var(--lav), var(--pk)); border: 2px solid #fff; }
+body.is-lobby .back-btn { color: var(--pk); background: #fff; border-radius: 999px; padding: 6px 14px; font-weight: 900; box-shadow: 0 3px 0 #e3cbb5; }
+
+/* 等級與星星進度條 */
+body.is-lobby .rank-name { color: var(--pk); }
+body.is-lobby .rank-ko { color: var(--lav); opacity: 1; font-weight: 700; }
+body.is-lobby .rank .xpbar { height: 14px; background: #efe1d3; border: 2px solid #fff; box-shadow: inset 0 1px 3px rgba(163, 95, 105, .2); }
+body.is-lobby .rank .xpbar i { background: linear-gradient(90deg, #e6b8b6, var(--pk)); position: relative; }
+body.is-lobby .rank .xpbar i::after { content: "★"; position: absolute; right: -2px; top: 50%; transform: translateY(-52%); color: #f7b733; font-size: 14px; text-shadow: 0 0 4px #fff; }
+body.is-lobby .rank small { color: var(--muted-ink); opacity: 1; }
+
+/* 今日課程：點點留言板＋緞帶 */
+body.is-lobby .today {
+  background-color: #f6ece1;
+  background-image: radial-gradient(rgba(201, 123, 132, .13) 1.5px, transparent 1.5px);
+  background-size: 18px 18px;
+  border: 5px solid #fff;
+  border-radius: 30px;
+}
+body.is-lobby .eyebrow { justify-self: start; background: var(--pk); color: #fff; letter-spacing: .06em; padding: 4px 16px; border-radius: 6px; box-shadow: 0 3px 0 var(--pk-dark); font-size: 13px; }
+body.is-lobby .today h1 { color: #4a3728; }
+body.is-lobby .kind { background: var(--lav); }
+body.is-lobby .today-words li { background: linear-gradient(160deg, #fff 60%, #f5ece2); border: 3px solid #fff; box-shadow: 0 6px 14px rgba(120, 85, 55, .14); }
+body.is-lobby .w-ko { color: #8b5e3c; }
+body.is-lobby .w-en { color: var(--muted-ink); opacity: 1; }
+body.is-lobby .prize-line { background: #fff; border-color: #e3cbb5; }
+
+/* 糖果按鈕 */
+body.is-lobby .cta { background: linear-gradient(180deg, #e0a3a9, var(--pk)); border: 3px solid #fff; border-radius: 999px; box-shadow: 0 6px 0 var(--pk-dark), 0 12px 22px rgba(201, 123, 132, .35); }
+body.is-lobby .cta:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--pk-dark); }
+body.is-lobby .cta-2 { background: #fff; border: 2px solid #fff; border-radius: 999px; padding: 8px 10px; color: var(--pk); opacity: 1; box-shadow: 0 3px 0 #e3cbb5; }
+
+/* 功能磚 */
+body.is-lobby .tile { background: linear-gradient(170deg, #fff, #fbf4ec); border: 3px solid #fff; border-radius: 20px; box-shadow: 0 5px 0 #eadbcb, 0 10px 18px rgba(120, 85, 55, .14); color: #4a3728; }
+body.is-lobby .tile:hover { border-color: #fff; transform: translateY(-3px); }
+body.is-lobby .tile small { color: var(--muted-ink); opacity: 1; }
+
+/* 老師名牌與對話框 */
+body.is-lobby .teacher-name { background: linear-gradient(180deg, #e0a3a9, var(--pk)); color: #fff; border: 3px solid #fff; box-shadow: 0 6px 14px rgba(201, 123, 132, .35); }
+body.is-lobby .speech { border: 3px solid #fff; background: #fffaf3; }
+body.is-lobby .speech::before { content: ""; position: absolute; top: -9px; left: 24px; width: 60px; height: 16px; background: rgba(176, 137, 104, .45); transform: rotate(-3deg); }
+body.is-lobby .speech::after { border-top-color: #fffaf3; }
+
+/* 收藏室 */
+body.is-lobby .col-binder h2, body.is-lobby .col-history h2, body.is-lobby .col-old h2 { display: inline-block; background: var(--pk); color: #fff; padding: 2px 16px; border-radius: 6px; box-shadow: 0 3px 0 var(--pk-dark); font-size: 17px; }
+body.is-lobby .slot-day { color: var(--lav); }
+
+/* 底部導覽列 */
+body.is-lobby .nav { background: rgba(255, 255, 255, .9); border-top: 3px solid #fff; box-shadow: 0 -6px 18px rgba(120, 85, 55, .12); }
+body.is-lobby .nav a { color: var(--muted-ink); }
+body.is-lobby .nav a.on { color: var(--pk); }
+
+/* 出道倒數 */
+body.is-lobby .debut { margin-top: 6px; font-size: 14px; font-weight: 800; color: #8b5e3c; background: #f3e9de; border-radius: 999px; padding: 4px 12px; justify-self: start; }
+body.is-lobby .debut b { color: var(--pk); font-size: 18px; }
+
+/* ───────── 簡化版大廳：一張今天的課卡＋一個大按鈕 ───────── */
+body.is-lobby .lobby-top { gap: 10px; }
+body.is-lobby .streak-chip { margin-left: auto; }
+body.is-lobby .lobby-main { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); }
+body.is-lobby .today { padding: 14px 14px 18px; gap: 10px; }
+.today-art { position: relative; margin: 0; }
+.today-art img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 18px; box-shadow: 0 6px 16px rgba(120, 85, 55, .18); }
+.today-art figcaption { position: absolute; top: 10px; left: 10px; background: #c97b84; color: #fff; font-weight: 900; font-size: 14px; padding: 3px 14px; border-radius: 999px; border: 2px solid #fff; }
+.drama-kind { margin: 2px 0 0; font-size: 13px; font-weight: 800; color: #b08968; letter-spacing: .06em; }
+body.is-lobby .today h1 { font-size: 28px; margin: 0; }
+body.is-lobby .today-words li { padding: 8px 6px; }
+body.is-lobby .today-words b { font-size: 15px; }
+body.is-lobby .cta { font-size: 22px; padding: 18px; }
+.prize-mini { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 700; color: #8a7563; }
+.prize-mini .rcard { width: 34px; border-width: 2px; border-radius: 8px; box-shadow: none; }
+.prize-mini .rcard .rc-info, .prize-mini .rcard .rc-rar { display: none; }
+.prize-mini .rcard .rc-emoji { font-size: 18px; }
+.prize-mini b { color: #4a3728; }
+.debut-strip { display: flex; align-items: baseline; gap: 6px; padding: 10px 18px; font-weight: 800; color: #8a7563; flex-wrap: wrap; }
+.debut-strip b { font-size: 26px; color: #c97b84; line-height: 1; }
+.debut-strip .xpbar { flex-basis: 100%; height: 10px; margin: 6px 0 0; background: #efe1d3; border: 2px solid #fff; }
+.debut-strip .xpbar i { background: linear-gradient(90deg, #e6b8b6, #c97b84); }
+.mini-links { display: flex; gap: 8px; flex-wrap: wrap; }
+.mini-links a { flex: 1; text-align: center; background: rgba(255, 255, 255, .85); border: 2px solid #fff; border-radius: 999px; padding: 8px 10px; font-size: 14px; font-weight: 800; color: #8a7563; box-shadow: 0 3px 0 #e3cbb5; white-space: nowrap; }
+.mini-links a:hover { color: #c97b84; }
+body.is-lobby .name-prompt { padding: 10px 16px; text-align: center; }
+
+/* 自由練習頁 */
+.practice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 14px 0; }

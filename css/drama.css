@@ -1,0 +1,170 @@
+/* 短劇劇場（遊戲式 AVG）：大畫面分鏡＋立繪＋底部對話框（奶茶＋白＋乾燥玫瑰） */
+.drama { position: fixed; inset: 0; z-index: 60; background: #2b2018; animation: dramaIn .4s ease-out; }
+@keyframes dramaIn { from { opacity: 0; } }
+.vn-stage { position: absolute; inset: 0; overflow: hidden; }
+
+/* 大畫面 */
+.vn-cg { position: absolute; inset: 0; cursor: pointer; }
+.vn-cg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .7s; animation: kenburns 14s ease-in-out forwards; }
+.vn-cg img.in { opacity: 1; }
+.vn-cg img.shot { object-position: var(--pos); transform: scale(var(--zoom)); transform-origin: var(--pos); animation: none; }
+@keyframes kenburns { from { transform: scale(1.02); } to { transform: scale(1.1); } }
+.vn-cg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(43, 32, 24, .35) 0%, transparent 18%, transparent 55%, rgba(43, 32, 24, .55) 100%); pointer-events: none; }
+.vn-cg.burst::before { content: ""; position: absolute; inset: 0; z-index: 1; background: repeating-conic-gradient(from 0deg at 50% 45%, rgba(255, 255, 255, .7) 0 1.5deg, transparent 1.5deg 8deg); -webkit-mask: radial-gradient(ellipse at 50% 45%, transparent 42%, #000 80%); mask: radial-gradient(ellipse at 50% 45%, transparent 42%, #000 80%); pointer-events: none; }
+
+/* 立繪：說話的人亮起來、往前；沒說話的人變暗 */
+.vn-sprites { position: absolute; inset: 0; pointer-events: none; }
+.vn-sp { position: absolute; bottom: 120px; height: min(74vh, 720px); display: grid; align-items: end; transition: transform .35s, filter .35s, opacity .35s; }
+.vn-sp.left { left: 2%; }
+.vn-sp.right { right: 2%; }
+.vn-sp img { height: 100%; width: auto; filter: drop-shadow(0 10px 20px rgba(0, 0, 0, .35)); }
+.vn-sp.right img { transform: scaleX(-1); }
+.vn-sp .vn-tag { position: absolute; left: 50%; bottom: 8px; translate: -50% 0; background: rgba(255, 255, 255, .9); color: #4a3728; font-weight: 800; padding: 2px 12px; border-radius: 999px; font-size: 14px; opacity: 0; }
+.vn-sp:not(:has(img)) .vn-tag { opacity: 1; }
+.vn-sp.speaking { transform: translateY(-10px) scale(1.04); z-index: 2; }
+.vn-sp.dim { filter: brightness(.55) saturate(.7); transform: scale(.96); }
+
+/* 上方：標題、分鏡進度、按鈕 */
+.vn-top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 10px; padding: 12px 16px; z-index: 3; }
+.vn-top .dt-title { display: grid; margin-right: auto; color: #fff; text-shadow: 0 2px 6px rgba(0, 0, 0, .5); }
+.vn-top .dt-title small { font-weight: 800; color: #f4d9c6; }
+.vn-top .dt-title b { font-size: 20px; }
+.vn-dots { display: flex; gap: 6px; }
+.vn-dots i { width: 28px; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, .4); cursor: pointer; }
+.vn-dots i.on { background: #f4b8be; }
+.vn-btn { font: inherit; font-weight: 800; border: 2px solid rgba(255, 255, 255, .9); background: rgba(255, 255, 255, .88); color: #4a3728; border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.vn-btn.strong { background: linear-gradient(180deg, #e0a3a9, #c97b84); color: #fff; border-color: #fff; }
+.vn-btn:disabled { opacity: .45; }
+
+/* 底部對話框 */
+.vn-box { position: absolute; left: 50%; bottom: 18px; translate: -50% 0; width: min(920px, 94vw); min-height: 150px; z-index: 3; background: linear-gradient(180deg, rgba(255, 252, 248, .97), rgba(251, 243, 234, .97)); border: 4px solid #fff; border-radius: 26px; box-shadow: 0 0 0 3px #e3cbb5, 0 14px 34px rgba(0, 0, 0, .35); padding: 22px 26px 14px; }
+.vn-box.pop { animation: boxPop .3s ease-out; }
+@keyframes boxPop { from { transform: translateY(8px); opacity: .6; } }
+.vn-name { position: absolute; top: -18px; left: 24px; background: linear-gradient(180deg, #e0a3a9, #c97b84); color: #fff; font-weight: 900; font-size: 18px; padding: 4px 22px; border-radius: 999px; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(120, 85, 55, .25); }
+.vn-box.narr .vn-name { background: #8a7563; }
+.vn-box.narr .vn-line { color: #6b5a4c; font-style: italic; font-size: 20px; }
+.vn-line { margin: 0; color: #2d2118; font-size: 26px; font-weight: 800; line-height: 1.35; }
+.vn-line.ko { color: #7a3f4a; font-size: 30px; }
+.vn-line.en { color: #4c3f86; }
+.vn-sub { margin: 6px 0 0; color: #8a7563; font-size: 17px; font-weight: 600; }
+.vn-box.shout { animation: shake .4s; }
+.vn-box.shout .vn-line { font-size: 32px; }
+.vn-box.think { border-style: dashed; }
+@keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+.vn-ctrl { display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+/* 結尾卡 */
+.vn-end { position: absolute; inset: 0; z-index: 4; display: grid; place-items: center; background: rgba(43, 32, 24, .55); }
+.vn-endcard { width: min(520px, 90vw); background: #fffaf3; border: 4px solid #fff; border-radius: 28px; padding: 24px; text-align: center; box-shadow: 0 0 0 3px #e3cbb5, 0 18px 40px rgba(0, 0, 0, .35); display: grid; gap: 8px; }
+.vn-endcard > span { color: #c97b84; font-weight: 900; letter-spacing: 6px; }
+.vn-endcard > b { font-size: 26px; color: #4a3728; }
+.vn-endcard p { margin: 4px 0; text-align: left; color: #4a3728; line-height: 1.6; background: #fff; border-radius: 16px; padding: 10px 14px; border-left: 5px solid #f0b429; }
+.vn-endcard p b { display: block; color: #b08968; }
+.vn-endcard .vn-ctrl { justify-content: center; }
+
+/* 精彩分鏡（畫面裡已經有角色）：立繪縮小，只有正在說話的人出現在角落 */
+.drama.cg .vn-sp { height: min(46vh, 430px); bottom: 150px; opacity: 0; }
+.drama.cg .vn-sp.speaking { opacity: 1; transform: translateY(-6px); }
+.drama.cg .vn-sp.dim { opacity: 0; }
+
+@media (max-width: 760px) {
+  .vn-sp { height: 52vh; bottom: 170px; }
+  .vn-line { font-size: 21px; }
+  .vn-line.ko { font-size: 24px; }
+}
+
+/* 大廳與地圖上的「看短劇」入口 */
+.watch-drama { cursor: pointer; }
+.today-art .play-badge { position: absolute; right: 10px; bottom: 10px; z-index: 1; background: rgba(74, 55, 40, .78); color: #fff; font-weight: 800; padding: 4px 12px; border-radius: 999px; font-size: 14px; }
+
+/* ───────── 看劇抓單字 ───────── */
+.vn-pouch { display: flex; gap: 6px; background: rgba(255, 255, 255, .75); border: 2px solid #fff; border-radius: 999px; padding: 3px 8px; }
+.vn-pouch .pw { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: rgba(176, 137, 104, .18); filter: grayscale(1); opacity: .45; transition: .4s; }
+.vn-pouch .pw .wic { width: 32px; height: 32px; }
+.vn-pouch .pw.got { filter: none; opacity: 1; background: #fff; animation: pouchIn .5s cubic-bezier(.3, 1.6, .5, 1); }
+.vn-pouch .pw.tapped { box-shadow: 0 0 0 3px #f0b429, 0 0 14px rgba(240, 180, 41, .8); }
+@keyframes pouchIn { from { transform: scale(.2) rotate(-30deg); } }
+.hlw { color: #fff; background: linear-gradient(180deg, #e0a3a9, #c97b84); padding: 0 6px; border-radius: 8px; box-shadow: 0 0 12px rgba(240, 180, 41, .9); animation: hlGlow 1.2s ease-in-out infinite; }
+@keyframes hlGlow { 50% { box-shadow: 0 0 22px rgba(240, 180, 41, 1); } }
+.vn-catch { position: absolute; right: max(4vw, 20px); bottom: 190px; z-index: 5; }
+.catch-btn { display: flex; align-items: center; gap: 10px; font: inherit; cursor: pointer; background: #fffaf3; border: 4px solid #fff; border-radius: 22px; padding: 8px 16px 8px 8px; box-shadow: 0 0 0 3px #f0b429, 0 10px 24px rgba(0, 0, 0, .3); animation: catchBob 1s ease-in-out infinite; }
+.catch-btn .wic { width: 64px; height: 64px; }
+.catch-btn span { display: grid; text-align: left; }
+.catch-btn small { color: #c97b84; font-weight: 900; }
+.catch-btn b { font-size: 22px; color: #4a3728; }
+.catch-btn em { font-style: normal; color: #8a7563; font-weight: 700; }
+@keyframes catchBob { 50% { transform: translateY(-8px) rotate(-1.5deg); } }
+
+/* ───────── 上台演出 ───────── */
+.vn-coach { position: absolute; left: 16px; top: 76px; z-index: 5; display: flex; align-items: flex-start; gap: 8px; max-width: min(460px, 80vw); }
+.vn-coach img { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 4px 12px rgba(0, 0, 0, .3); background: #fff; }
+.vn-coach p { margin: 6px 0 0; background: #fff; color: #4a3728; font-weight: 700; padding: 10px 14px; border-radius: 4px 18px 18px 18px; box-shadow: 0 6px 16px rgba(0, 0, 0, .25); line-height: 1.5; white-space: pre-line; }
+.vn-coach.pop { animation: boxPop .3s ease-out; }
+.vn-box.mine { box-shadow: 0 0 0 4px #c97b84, 0 14px 34px rgba(0, 0, 0, .35); }
+.vn-box.mine .vn-name { background: linear-gradient(180deg, #f0c27b, #d9a14a); }
+.vn-heard { margin: 8px 0 0; padding: 6px 12px; border-radius: 12px; background: #f6ece1; color: #4a3728; font-weight: 700; }
+.vn-heard::before { content: "你說：「"; color: #c97b84; }
+.vn-heard::after { content: "」"; color: #c97b84; }
+.vn-heard.live { font-style: italic; color: #8a7563; }
+.vn-mic { width: 66px; height: 66px; border-radius: 50%; border: 4px solid #fff; cursor: pointer; background: linear-gradient(180deg, #e0a3a9, #c97b84); box-shadow: 0 6px 0 #a5606a, 0 10px 20px rgba(201, 123, 132, .45); display: grid; place-items: center; }
+.vn-mic .ic { width: 40px; height: 40px; vertical-align: 0; }
+.vn-mic[data-state="listening"] { animation: micPulse 1s ease-in-out infinite; background: linear-gradient(180deg, #f0c27b, #d9a14a); box-shadow: 0 6px 0 #b07f2f, 0 0 0 8px rgba(240, 194, 123, .35); }
+@keyframes micPulse { 50% { box-shadow: 0 6px 0 #b07f2f, 0 0 0 16px rgba(240, 194, 123, .15); } }
+.vn-miclabel { align-self: center; margin-right: auto; font-weight: 800; color: #8a7563; }
+.vn-ctrl:has(.vn-mic) { justify-content: flex-start; align-items: center; }
+
+/* 結尾卡：收集到的字、演出星星 */
+.end-words { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.end-words span { display: grid; justify-items: center; background: #fff; border-radius: 16px; padding: 8px 12px; min-width: 86px; opacity: .8; }
+.end-words span.tapped { opacity: 1; box-shadow: 0 0 0 3px #f0b429; }
+.end-words .wic { width: 56px; height: 56px; }
+.end-words b { color: #4a3728; }
+.end-words small { color: #c97b84; font-weight: 800; }
+.end-tip { text-align: center !important; border: 0 !important; background: none !important; font-weight: 800; color: #c97b84 !important; }
+.end-stars { font-size: 44px !important; color: #f0b429 !important; letter-spacing: 6px; text-shadow: 0 3px 0 #fff; }
+.vn-cg.applause::before { content: ""; position: absolute; inset: 0; z-index: 2; background: radial-gradient(circle at 20% 30%, rgba(255, 230, 160, .7) 0 3px, transparent 4px) 0 0 / 60px 60px, radial-gradient(circle at 70% 60%, rgba(255, 200, 210, .8) 0 3px, transparent 4px) 0 0 / 80px 80px; animation: sparkleFall 2.5s linear infinite; pointer-events: none; }
+@keyframes sparkleFall { to { background-position: 0 300px, 0 400px; } }
+
+/* ───────── 收集感：更明顯的發光字＋點擊特效 ───────── */
+.hlw[data-w] { cursor: pointer; position: relative; display: inline-block; transform-origin: center bottom; animation: hlGlow 1.2s ease-in-out infinite, hlBob 1.2s ease-in-out infinite; }
+.hlw[data-w]::after { content: "點我！"; position: absolute; left: 50%; top: -26px; translate: -50% 0; background: #f0b429; color: #fff; font-size: 12px; font-weight: 900; padding: 1px 8px; border-radius: 999px; white-space: nowrap; box-shadow: 0 2px 6px rgba(0, 0, 0, .2); }
+.hlw.caught { animation: none; background: linear-gradient(180deg, #8fd9bd, #5fb898); box-shadow: 0 0 10px rgba(143, 217, 189, .8); }
+.hlw.caught::after { content: "✓ 收集"; background: #5fb898; }
+@keyframes hlBob { 50% { transform: translateY(-3px) scale(1.06); } }
+.catch-btn { position: relative; padding: 10px 22px 10px 10px; }
+.catch-btn .wic { width: 76px; height: 76px; }
+.catch-ring { position: absolute; inset: -8px; border-radius: 28px; border: 4px solid #f0b429; animation: ringPulse 1.1s ease-out infinite; pointer-events: none; }
+@keyframes ringPulse { from { opacity: 1; transform: scale(.96); } to { opacity: 0; transform: scale(1.12); } }
+.catch-hand { position: absolute; right: -18px; bottom: -22px; width: 48px; height: 48px; animation: handTap .9s ease-in-out infinite; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .3)); }
+@keyframes handTap { 50% { transform: translate(-6px, -8px) rotate(-10deg); } }
+.fx-particle { position: fixed; z-index: 90; pointer-events: none; font-size: 22px; font-weight: 900; text-shadow: 0 0 6px #fff, 0 2px 4px rgba(0, 0, 0, .2); transform: translate(-50%, -50%); animation: particleFly .85s cubic-bezier(.2, .8, .3, 1) forwards; }
+@keyframes particleFly { to { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(var(--s)) rotate(200deg); opacity: 0; } }
+.fx-fly { position: fixed; z-index: 91; width: 80px; height: 80px; display: grid; place-items: center; pointer-events: none; background: #fff; border-radius: 50%; box-shadow: 0 0 0 4px #f0b429, 0 8px 22px rgba(0, 0, 0, .3); transition: transform .65s cubic-bezier(.5, -0.3, .4, 1.2), opacity .65s; }
+.fx-fly .wic { width: 64px; height: 64px; }
+.vn-pouch { position: relative; align-items: center; }
+.pouch-label { font-size: 12px; font-weight: 900; color: #c97b84; padding: 0 4px; white-space: nowrap; }
+.vn-pouch .pw { position: relative; }
+.vn-pouch .pw.bounce { animation: pouchBounce .6s cubic-bezier(.3, 1.8, .5, 1); }
+@keyframes pouchBounce { 0% { transform: scale(.6); } 60% { transform: scale(1.35); } 100% { transform: scale(1); } }
+.pw-plus { position: absolute; left: 50%; top: -6px; translate: -50% 0; color: #f0b429; font-size: 18px; text-shadow: 0 0 4px #fff, 0 2px 0 #c97b84; animation: plusUp .9s ease-out forwards; pointer-events: none; }
+@keyframes plusUp { to { top: -34px; opacity: 0; } }
+.vn-pouch.complete { box-shadow: 0 0 0 3px #f0b429, 0 0 22px rgba(240, 180, 41, .9); animation: pouchBounce .6s; }
+
+/* 窄螢幕（小筆電、視窗縮小、手機）：標題一行、單字口袋自己一行、按鈕不被擠出去 */
+@media (max-width: 700px) {
+  .vn-top { flex-wrap: wrap; gap: 6px 8px; padding: 8px 10px; }
+  .vn-top .dt-title { flex: 1 1 50%; min-width: 0; }
+  .vn-top .dt-title b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vn-top .dt-title small { white-space: nowrap; }
+  .vn-pouch { order: 5; flex: 1 1 100%; justify-content: center; }
+  .vn-dots { display: none; }
+  .vn-btn { padding: 5px 10px; }
+  .vn-box { padding: 20px 14px 10px; min-height: 0; }
+  .vn-catch { right: 10px; left: 10px; bottom: auto; top: 120px; display: flex; justify-content: center; }
+  .catch-btn .wic { width: 56px; height: 56px; }
+  .catch-btn b { font-size: 18px; }
+  .vn-coach { top: 110px; }
+}
+
+/* 延伸字：舞台台詞裡的金色標記（考試常考字） */
+.hlx { color: #7a4b00; background: linear-gradient(180deg, #fff3c4, #ffd56b); padding: 0 5px; border-radius: 7px; box-shadow: 0 0 0 2px rgba(240, 180, 41, .55), 0 0 10px rgba(240, 180, 41, .6); font-weight: 900; }
