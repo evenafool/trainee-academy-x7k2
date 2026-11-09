@@ -387,7 +387,7 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
 .hg-feature-bg i:nth-child(4) { left: 50%; top: 4%; width: 40px; height: 40px; font-size: 22px; animation-delay: 1.2s; }
 .hg-feature-bg i:nth-child(n+5) { display: none; }
 @keyframes hgFloat { to { translate: 0 -8px; } }
-.hg-feature-mina { position: absolute; right: 0; top: 7%; height: 200%; max-height: none; object-fit: contain; object-position: top; filter: drop-shadow(0 6px 14px rgba(120, 60, 80, .3)); pointer-events: none; }
+.hg-feature-mina { position: absolute; right: 7%; top: 7%; height: 200%; max-height: none; object-fit: contain; object-position: top; filter: drop-shadow(0 6px 14px rgba(120, 60, 80, .3)); pointer-events: none; }
 .hg-feature-body { position: relative; display: grid; gap: 4px; justify-items: start; text-align: left; padding: 84px 18px 20px; max-width: 64%; }
 .hg-feature-body em { font-style: normal; font-size: 12px; font-weight: 900; color: #fff; background: #c2410c; padding: 3px 10px; border-radius: 999px; }
 .hg-feature-body b { font-size: 34px; font-weight: 900; color: #7a2e3f; line-height: 1.1; text-shadow: 0 2px 0 #fff, 0 0 12px rgba(255, 255, 255, .9); }
@@ -397,7 +397,7 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
 .hg-feature-go { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; padding: 12px 20px; border-radius: 999px; background: linear-gradient(135deg, #e09aa3, #c97b84); color: #fff; font-weight: 900; font-size: 17px; box-shadow: 0 5px 0 #a35f69, 0 8px 18px rgba(163, 95, 105, .35); }
 .hg-feature-go .ic { width: 24px; height: 24px; }
 .hg-feature .pz-tap { right: auto; left: 150px; bottom: 6px; }
-@media (max-width: 520px) { .hg-feature { min-height: 250px; } .hg-feature-body b { font-size: 28px; } .hg-feature-mina { right: -10%; top: 12%; height: 190%; } .hg-feature-bg i { width: 42px; height: 42px; font-size: 22px; } }
+@media (max-width: 520px) { .hg-feature { min-height: 250px; } .hg-feature-body b { font-size: 28px; } .hg-feature-mina { right: 0; top: 12%; height: 190%; } .hg-feature-bg i { width: 42px; height: 42px; font-size: 22px; } }
 
 /* 版權 */
 .copyright { margin: 18px auto 6px; text-align: center; font-size: 12px; font-weight: 700; color: #a08c7a; line-height: 1.7; }
