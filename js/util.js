@@ -40,13 +40,31 @@ function utter(text, lang, rate) {
   u.pitch = nat ? 1.05 : 1.25;
   return u;
 }
+// 中文句子裡夾的韓文（例如小撇步「몰라요」）要換成韓文聲音念，不然中文聲音會直接跳過
+const HANGUL = /[ᄀ-ᇿ㄰-㆏가-힯]/;
+const KO_RUN = /([ᄀ-ᇿ㄰-㆏가-힯][ᄀ-ᇿ㄰-㆏가-힯\s!?.~,…]*)/;
+export function splitKo(text, lang) {
+  const s = String(text ?? '');
+  if (lang === 'ko-KR' && /[一-鿿]/.test(s)) lang = 'zh-TW'; // 標成韓文但夾中文：中文部分用中文聲音
+  if (lang === 'ko-KR' || !HANGUL.test(s)) return [[s, lang]];
+  return s.split(KO_RUN).filter((p) => /[\p{L}\p{N}]/u.test(p)).map((p) => (HANGUL.test(p) ? [p, 'ko-KR'] : [p, lang]));
+}
+const koRate = (lang, rate) => (lang === 'ko-KR' && rate == null ? 0.8 : rate);
 export function speak(text, lang, rate) {
   if (!ttsOK || !text) return;
   speechSynthesis.cancel();
-  speechSynthesis.speak(utter(text, lang, rate));
+  for (const [p, l] of splitKo(text, lang)) speechSynthesis.speak(utter(p, l, l === lang ? rate : koRate(l)));
 }
 // 念完才 resolve；沒有語音時依字數估算時間
-export function speakAsync(text, lang, rate) {
+export async function speakAsync(text, lang, rate) {
+  const parts = splitKo(text, lang);
+  if (parts.length > 1) {
+    for (const [p, l] of parts) await speakOne(p, l, l === lang ? rate : koRate(l));
+    return;
+  }
+  return speakOne(text, lang, rate);
+}
+function speakOne(text, lang, rate) {
   return new Promise((resolve) => {
     const fallback = setTimeout(resolve, (900 + String(text).length * 160) / Math.min(rate || 1, 1));
     if (!ttsOK || !voiceFor(lang)) return;

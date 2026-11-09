@@ -506,10 +506,12 @@ async function runExtras(my, tally, lv, stepIdx) {
     const sc = w.scenes[0];
     markExtra(w.id);
     setSceneSrc([`assets/art/story-${lv.id}.webp`, `assets/art/bg-${lv.bg}.webp`], `延伸字 ${i + 1}／${extras.length}：${w.zh}`, w);
-    await say(my, [[`延伸字：${w.zh}！`, 'zh-TW'], [w.en, 'en-US'], [w.ko, 'ko-KR']],
-      `延伸字 ${i + 1}：${w.zh}\n英　${w.en}\n韓　${w.ko}（${w.kr}）${w.note ? `\n小撇步：${w.note}` : ''}`);
-    await say(my, [[sc.en, 'en-US']], `劇情裡的句子：\n${sc.en}\n${sc.ko}\n${sc.zh}`);
-    await practice(my, tally, w.en, 'en-US', '跟我念英文：', `跟我念英文：${w.en}`, 0.6);
+    // 跟主字一樣：先韓文、再英文
+    await say(my, [[`延伸字：${w.zh}！`, 'zh-TW'], [w.ko, 'ko-KR'], [w.en, 'en-US']],
+      `延伸字 ${i + 1}：${w.zh}\n韓　${w.ko}（${w.kr}）\n英　${w.en}${w.note ? `\n小撇步：${w.note}` : ''}`);
+    await say(my, [[sc.ko, 'ko-KR'], [sc.en, 'en-US']], `劇情裡的句子：\n${sc.ko}\n${sc.en}\n${sc.zh}`);
+    await practice(my, tally, w.ko, 'ko-KR', '跟我念韓文：', `跟我念韓文：${w.ko}（${w.kr}）`, 0.6);
+    await practice(my, tally, w.en, 'en-US', '換你說英文：', `換你說英文：${w.en}`, 0.6);
   }
   markExtra('');
 }
@@ -719,7 +721,7 @@ export function renderTalk($app, arg = '') {
         <aside class="talk-words" id="drillWords">
           ${mode === 'lesson' ? `<div class="tprize"><small>${ic('gift')} 今天上完可以拿到</small>${rewardHTML(rewardForDay(n))}</div>` : ''}
           ${mode === 'drill' ? '' : words.map((w) => `<div class="tword${mode === 'boss' ? ' mini' : ''}"><span class="tw-emoji">${wic(w)}</span><div><b>${esc(w.zh)}</b><div class="tw-ko">${esc(w.ko)}</div><small>${esc(w.en)}</small></div></div>`).join('')}
-          ${(mode === 'lesson' || mode === 'replay') && lv.extra?.length ? `<div class="tx-head">${ic('star')} 延伸字</div>${lv.extra.map((id) => WORDS[id]).map((w) => `<div class="tword mini ext" data-x="${w.id}"><span class="tw-emoji">${wic(w)}</span><div><b>${esc(w.zh)}</b><small>${esc(w.en)}・${esc(w.ko)}</small></div></div>`).join('')}` : ''}
+          ${(mode === 'lesson' || mode === 'replay') && lv.extra?.length ? `<div class="tx-head">${ic('star')} 延伸字</div>${lv.extra.map((id) => WORDS[id]).map((w) => `<div class="tword mini ext" data-x="${w.id}"><span class="tw-emoji">${wic(w)}</span><div><b>${esc(w.zh)}</b><small>${esc(w.ko)}・${esc(w.en)}</small></div></div>`).join('')}` : ''}
         </aside>
       </div>
     </section>`;

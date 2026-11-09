@@ -1,7 +1,7 @@
 import { STAGES, SUBJECTS, DECKS, RANKS, ACCENTS, CHEERS_RIGHT, CHEERS_WRONG } from './data.js';
 import { LEVELS, WORDS, STORIES, TEASERS, CHAPTERS, KEEPSAKES } from './course.js';
 import { applyNames, DEFAULT_NAMES } from './names.js';
-import { dayStr, VOICE_PICKS, ic, wic, listenOnce, speechMatches } from './util.js';
+import { dayStr, VOICE_PICKS, ic, wic, listenOnce, speechMatches, splitKo } from './util.js';
 import { sfx, armAudio, setMusic, setSfx } from './sound.js';
 import { openDrama } from './drama.js';
 import { renderMatch, renderSpeed } from './games.js';
@@ -69,12 +69,15 @@ function voiceFor(lang) {
 function speak(text, lang) {
   if (!ttsOK || !text) return;
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text.replace(/[💀☕✨]/g, ''));
-  u.lang = lang;
-  u.rate = lang === 'ko-KR' ? 0.7 : lang === 'en-US' ? 0.8 : 1.05; // 外語放慢，韓文最慢
-  const v = voiceFor(lang);
-  if (v) u.voice = v;
-  speechSynthesis.speak(u);
+  // 中文裡夾的韓文換韓文聲音念（splitKo）
+  for (const [p, l] of splitKo(text.replace(/[💀☕✨]/g, ''), lang)) {
+    const u = new SpeechSynthesisUtterance(p);
+    u.lang = l;
+    u.rate = l === 'ko-KR' ? 0.7 : l === 'en-US' ? 0.8 : 1.05; // 外語放慢，韓文最慢
+    const v = voiceFor(l);
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  }
 }
 if (ttsOK) speechSynthesis.getVoices();
 
@@ -335,7 +338,7 @@ views.home = () => {
     sp.classList.remove('pop');
     void sp.offsetWidth;
     sp.classList.add('pop');
-    speak(line.replace(/[가-힯]+[가-힯\s!?~]*/g, ' '), 'zh-TW');
+    speak(line, 'zh-TW'); // 韓文部分會自動換韓文聲音念
   };
 };
 

@@ -99,3 +99,11 @@
   .talk-main { margin-top: 8px; }
   .talk-controls { position: sticky; bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 6; box-shadow: 0 -2px 0 rgba(255, 255, 255, .8), 0 10px 24px rgba(120, 85, 55, .28); }
 }
+
+/* 手機上課頁：敏雅老師用半身小圖放在上面（電腦版維持全身） */
+@media (max-width: 760px) {
+  .talk-hero { display: flex; align-items: flex-end; justify-content: center; gap: 10px; height: 190px; overflow: hidden; position: relative;
+    -webkit-mask-image: linear-gradient(180deg, #000 85%, transparent); mask-image: linear-gradient(180deg, #000 85%, transparent); }
+  .talk-hero img { position: absolute; top: 0; left: 50%; translate: -50% 0; width: 210px; max-width: none; height: auto; animation: none; }
+  .talk-hero .plate { position: absolute; bottom: 10px; left: 50%; translate: -50% 0; margin: 0; font-size: 16px; }
+}

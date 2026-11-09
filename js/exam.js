@@ -6,7 +6,7 @@ import { WORDS, LEVELS } from './course.js';
 import { BANK } from './bank.js';
 import { TAGS, EXAM_TOTAL } from './examdata.js';
 import * as store from './store.js';
-import { esc, ic, wic, shuffle, speak, stopSpeaking, dayStr, toast, confetti } from './util.js';
+import { esc, ic, wic, shuffle, speak, speakAsync, stopSpeaking, dayStr, toast, confetti } from './util.js';
 import { sfx } from './sound.js';
 
 const MOE_URL = encodeURI('https://www.naer.edu.tw/upload/1/16/doc/812/(發布版)國民中小學暨普通型高級中等學校-語文領域-英語文課程綱要.pdf');
@@ -169,6 +169,13 @@ function learn(id) {
   return false;
 }
 function sayWord(w, lang = 'en-US') { speak(lang === 'ko-KR' ? w.ko : w.en, lang); }
+// 韓文、英文都念（先韓文再英文）；字庫裡沒有韓文的字（例如冠詞）就只念英文
+const hasKo = (w) => w.ko && w.ko !== '-';
+async function sayBoth(w) {
+  stopSpeaking();
+  if (hasKo(w)) await speakAsync(w.ko, 'ko-KR', 0.8);
+  await speakAsync(w.en, 'en-US', 0.9);
+}
 
 function drawRun() {
   if (run.phase === 'intro') return drawIntro();
@@ -306,7 +313,7 @@ function answer(q, ok, picked) {
   store.save();
   if (q.type === 'zh2ko' || q.type === 'kolisten' || q.type === 'ko2zh') sayWord(q.w, 'ko-KR');
   else if (q.type === 'cloze' && ok) speak(q.full, 'en-US');
-  else sayWord(q.w);
+  else sayBoth(q.w);
   autoCerts();
   drawRun();
 }
@@ -524,7 +531,7 @@ function drawIntro() {
     </section>`;
   $app.querySelector('#exExit').onclick = () => { run = null; stopSpeaking(); };
   $app.querySelectorAll('[data-say]').forEach((b) => b.onclick = () => sayWord(w, b.dataset.say === 'ko' ? 'ko-KR' : 'en-US'));
-  setTimeout(() => sayWord(w), 250);
+  setTimeout(() => sayBoth(w), 250);
   $app.querySelector('#bkNext').onclick = () => {
     if (run.k < run.words.length - 1) run.k++;
     else { run.phase = 'quiz'; run.qs = shuffle(run.qs); }
