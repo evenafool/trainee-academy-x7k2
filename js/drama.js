@@ -2,6 +2,7 @@
 //  看劇模式 openDrama()：一句一句演出、配音；台詞裡出現新單字會發光，點一下就「收集」進單字口袋
 //  上台模式 openStage()：對話練習搬到同一個舞台上，輪到孩子時對話框出現麥克風，敏雅老師在角落當導演
 // 圖片：分鏡 drama/<day>-<格> → 劇照 story-<day> → 場景 bg-<場景> → 練習室（一路往下找，缺圖也不會破）
+import { FACES } from './facemap.js';
 import { STORIES, WORDS } from './course.js';
 import * as store from './store.js';
 import { esc, speakAsync, stopSpeaking, ttsOK, sleep, wic } from './util.js';
@@ -150,9 +151,21 @@ function buildStage({ title, sub, dots = 0, pouch = [] }) {
       }
     },
     focus(who) {
-      // 直立手機的鏡頭：往講話角色那一側移（左邊的角色→畫面左側，右邊→右側，旁白→中間）
-      const side = !who ? 'mid' : $('#spL').dataset.who === who ? 'left' : $('#spR').dataset.who === who ? 'right' : 'mid';
-      $('#vnCg').style.setProperty('--px', side === 'left' ? '22%' : side === 'right' ? '78%' : '50%');
+      // 直立手機的鏡頭：把講話的角色放在畫面正中間（劇照裡每個角色的位置記在 facemap.js）
+      //   旁白時鏡頭不動；換人講話時平順地從一個角色移到另一個
+      const cg = $('#vnCg');
+      const face = FACES[api.panelId] || {};
+      const L = $('#spL').dataset.who, R = $('#spR').dataset.who;
+      let fx = who && face[who] !== undefined ? face[who]
+        : who === L && L ? .3 : who === R && R ? .7 : null;
+      if (fx === null && !cg.style.getPropertyValue('--px')) { const xs = Object.values(face); fx = xs.length ? xs[0] : .5; }
+      if (fx !== null) {
+        const img = cg.querySelector('img:last-child');
+        const ir = img && img.naturalWidth ? img.naturalWidth / img.naturalHeight : 900 / 462;
+        const vis = Math.min(1, (cg.clientWidth / Math.max(1, cg.clientHeight)) / ir); // 畫面看得到劇照寬度的幾成
+        const pct = vis >= 1 ? 50 : Math.max(0, Math.min(100, ((fx - vis / 2) / (1 - vis)) * 100));
+        cg.style.setProperty('--px', `${pct.toFixed(1)}%`);
+      }
       for (const el of [$('#spL'), $('#spR')]) {
         el.classList.toggle('speaking', !!who && el.dataset.who === who);
         el.classList.toggle('dim', !!who && !!el.dataset.who && el.dataset.who !== who);
@@ -229,6 +242,7 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
 
   function setPanel(i) {
     const p = st.panels[i];
+    stage.panelId = `${lv.id}-${i + 1}`;
     stage.setImage(`p${i}`, panelSrcs(lv, i, p.bg), { burst: p.bg === 'burst', shot: SHOTS[i % SHOTS.length] });
     box.querySelectorAll('.vn-dots i').forEach((d, k) => d.classList.toggle('on', k <= i));
     const cast = p.cast.map((c) => c.c).filter((c) => NAMES[c]);

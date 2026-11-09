@@ -171,9 +171,9 @@
 
 /* 直立手機：劇照滿版大圖，鏡頭跟著講話的人移動（--px 由 drama.js 依講話角色設定），停下來後再輕輕晃動 */
 @media (orientation: portrait) and (max-width: 820px) {
-  .drama.cg .vn-cg img, .drama.cg .vn-cg img.shot { object-fit: cover; object-position: var(--px, 50%) 40%; transform: none; transition: opacity .7s, object-position 1.8s ease-in-out; animation: portraitDrift 7s ease-in-out infinite alternate; }
+  .drama.cg .vn-cg img, .drama.cg .vn-cg img.shot { object-fit: cover; object-position: var(--px, 50%) 40%; transform: none; transition: opacity .7s, object-position 1.6s ease-in-out; animation: portraitDrift 8s ease-in-out infinite alternate; }
 }
-@keyframes portraitDrift { from { transform: scale(1.02) translateX(-1.5%); } to { transform: scale(1.06) translateX(1.5%); } }
+@keyframes portraitDrift { from { transform: scale(1.0); } to { transform: scale(1.05); } }
 @media (orientation: portrait) and (max-width: 820px) and (prefers-reduced-motion: reduce) {
   .drama.cg .vn-cg img, .drama.cg .vn-cg img.shot { animation: none; object-fit: contain; }
 }
