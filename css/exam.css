@@ -340,8 +340,8 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
 
 /* Logo */
 .brand-logo { margin: 0; line-height: 0; }
-.brand-logo img { height: 80px; width: auto; display: block; filter: drop-shadow(0 4px 8px rgba(160, 95, 105, .18)); }
+.brand-logo img { height: 92px; width: auto; display: block; filter: drop-shadow(0 4px 8px rgba(160, 95, 105, .18)); }
 .welcome-logo { display: grid; justify-items: center; gap: 6px; margin: 0 0 8px; }
 .welcome-logo small { font-size: 18px; color: #8a7563; font-weight: 800; }
 .welcome-logo img { width: min(420px, 86vw); height: auto; filter: drop-shadow(0 6px 12px rgba(160, 95, 105, .2)); }
-@media (max-width: 520px) { .brand-logo img { height: 54px; } }
+@media (max-width: 520px) { .brand-logo img { height: 62px; } }
