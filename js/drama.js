@@ -150,6 +150,9 @@ function buildStage({ title, sub, dots = 0, pouch = [] }) {
       }
     },
     focus(who) {
+      // 直立手機的鏡頭：往講話角色那一側移（左邊的角色→畫面左側，右邊→右側，旁白→中間）
+      const side = !who ? 'mid' : $('#spL').dataset.who === who ? 'left' : $('#spR').dataset.who === who ? 'right' : 'mid';
+      $('#vnCg').style.setProperty('--px', side === 'left' ? '22%' : side === 'right' ? '78%' : '50%');
       for (const el of [$('#spL'), $('#spR')]) {
         el.classList.toggle('speaking', !!who && el.dataset.who === who);
         el.classList.toggle('dim', !!who && !!el.dataset.who && el.dataset.who !== who);
