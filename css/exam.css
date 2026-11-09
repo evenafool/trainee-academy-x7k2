@@ -402,3 +402,14 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
 /* 版權 */
 .copyright { margin: 18px auto 6px; text-align: center; font-size: 12px; font-weight: 700; color: #a08c7a; line-height: 1.7; }
 .copyright a { color: #c97b84; font-weight: 900; text-decoration: none; }
+
+/* 直立手機：陪玩角色縮成右下小頭像＋一條對話列，頁面底部留空間，不擋練習內容 */
+@media (max-width: 700px) {
+  .npc-host { left: 10px; right: 10px; bottom: calc(68px + env(safe-area-inset-bottom, 0px)); grid-template-columns: minmax(0, 1fr) 54px; align-items: end; justify-items: stretch; gap: 6px; }
+  .npc-bubble { grid-column: 1; grid-row: 1; max-width: none; justify-self: end; font-size: 13px; padding: 7px 12px; border-radius: 16px 16px 4px 16px; max-height: 4.6em; overflow: hidden; }
+  .npc-host:not(.talk) .npc-bubble { visibility: hidden; }
+  .npc-body { grid-column: 2; grid-row: 1; width: 54px; height: 54px; border-radius: 50%; border: 3px solid #fff; background: linear-gradient(180deg, #fff3f6, #f7d9e0); box-shadow: 0 4px 12px rgba(120, 85, 55, .25); }
+  .npc-sprite { width: 120px; top: -4px; }
+  .npc-mascot, .npc-name { display: none; }
+  body:has(.npc-host) #app { padding-bottom: 90px; }
+}
