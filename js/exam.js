@@ -8,6 +8,7 @@ import { TAGS, EXAM_TOTAL } from './examdata.js';
 import * as store from './store.js';
 import { esc, ic, wic, shuffle, speak, speakAsync, stopSpeaking, dayStr, toast, confetti } from './util.js';
 import { sfx } from './sound.js';
+import { mountHost } from './npc.js';
 
 const MOE_URL = encodeURI('https://www.naer.edu.tw/upload/1/16/doc/812/(發布版)國民中小學暨普通型高級中等學校-語文領域-英語文課程綱要.pdf');
 const NIKL_URL = 'https://www.korean.go.kr/front_eng/down/down_02V.do?etc_seq=70';
@@ -162,6 +163,7 @@ const KO_PLAN = (n) => shuffle([...rep('zh2ko', Math.round(n * 0.4)), ...rep('ko
 // ───────── 進行中的測驗／學習 ─────────
 let run = null;
 let $app = null;
+let host = null; // 陪玩角色
 
 function learn(id) {
   const L = store.get().course.learned;
@@ -299,8 +301,8 @@ function answer(q, ok, picked) {
   q.ok = ok;
   q.picked = picked;
   const ex = examState();
-  if (ok) { run.correct++; run.combo++; run.maxCombo = Math.max(run.maxCombo, run.combo); sfx('right'); }
-  else { run.combo = 0; sfx('soft'); }
+  if (ok) { run.correct++; run.combo++; run.maxCombo = Math.max(run.maxCombo, run.combo); sfx('right'); host?.right(); }
+  else { run.combo = 0; sfx('soft'); host?.wrong(); }
   navigator.vibrate?.(ok ? 15 : [30, 40, 30]);
   if (q.type === 'spell' && ok) ex.spelled[q.w.id] = (ex.spelled[q.w.id] || 0) + 1;
   if (run.mode === 'bank') {
@@ -320,6 +322,7 @@ function answer(q, ok, picked) {
 
 function finishRun() {
   const r = run;
+  host?.end();
   const total = r.qs.length;
   const firstTry = r.qs.filter((q) => !q.retry);
   const score = firstTry.length ? firstTry.filter((q) => q.ok).length / firstTry.length : 0;
@@ -600,6 +603,7 @@ export function renderExam($root, arg = '') {
   $app = $root;
   stopSpeaking();
   const [page, sub] = String(arg || '').split('/');
+  host = mountHost(page === 'test' ? 'test' : page === 'quiz' ? 'quiz' : page === 'bank' ? 'bank' : 'test');
   if (page !== 'bank' || sub) run = null;
   autoCerts();
   if (page === 'bank') return sub ? startBank(sub) : renderBankList();

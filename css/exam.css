@@ -187,3 +187,17 @@
 /* 手指放在按鈕下緣正中間，不要蓋住小字 */
 .pz-tile.tap-hint { padding-bottom: 30px; }
 .pz-tile .pz-tap { right: auto; left: 50%; bottom: -16px; translate: -50% 0; }
+
+/* ───────── 小遊戲陪玩角色（右下角）＋吉祥物波波 ───────── */
+.npc-host { position: fixed; right: max(8px, env(safe-area-inset-right, 0px)); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: grid; justify-items: end; gap: 4px; pointer-events: none; }
+.npc-bubble { max-width: 190px; margin: 0; padding: 8px 12px; border-radius: 16px 16px 4px 16px; background: #fffaf3; border: 3px solid #fff; box-shadow: 0 6px 16px rgba(120, 85, 55, .22); font-weight: 800; font-size: 13.5px; color: #4a3728; line-height: 1.4; opacity: 0; transform: translateY(6px) scale(.95); transition: opacity .25s, transform .25s; }
+.npc-host.talk .npc-bubble { opacity: 1; transform: none; }
+.npc-body { position: relative; width: 104px; height: 138px; overflow: hidden; border-radius: 22px 22px 18px 18px; background: linear-gradient(180deg, rgba(255, 255, 255, .0), rgba(255, 240, 245, .9)); pointer-events: auto; cursor: pointer;
+  -webkit-mask-image: linear-gradient(180deg, #000 80%, transparent); mask-image: linear-gradient(180deg, #000 80%, transparent); }
+.npc-sprite { position: absolute; top: 0; left: 50%; translate: -50% 0; width: 150px; max-width: none; height: auto; filter: drop-shadow(0 6px 8px rgba(120, 85, 55, .25)); }
+.npc-mascot { position: absolute; left: -2px; bottom: 6px; width: 52px; height: 52px; object-fit: contain; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, .2)); }
+.npc-name { position: absolute; right: 4px; bottom: 6px; background: #c97b84; color: #fff; font-size: 11px; font-weight: 900; padding: 1px 8px; border-radius: 999px; }
+.npc-host.talk .npc-sprite { animation: npcHop .45s ease; }
+@keyframes npcHop { 40% { translate: -50% -6px; } }
+@media (min-width: 900px) { .npc-host { bottom: 24px; right: 24px; } .npc-body { width: 140px; height: 190px; } .npc-sprite { width: 200px; } .npc-bubble { max-width: 240px; font-size: 15px; } }
+@media (prefers-reduced-motion: reduce) { .npc-host.talk .npc-sprite { animation: none; } }

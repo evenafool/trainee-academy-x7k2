@@ -3,6 +3,7 @@ import { WORDS, LEVELS } from './course.js';
 import * as store from './store.js';
 import { esc, shuffle, wic, speakAsync, ttsOK } from './util.js';
 import { sfx } from './sound.js';
+import { mountHost } from './npc.js';
 
 function pool(n) {
   const learned = Object.keys(store.get().course.learned).filter((id) => WORDS[id]);
@@ -16,6 +17,7 @@ function pool(n) {
 }
 
 export function renderMatch($app, lang = 'ko') {
+  const host = mountHost('match');
   const words = pool(6);
   const L = lang === 'en' ? 'en-US' : 'ko-KR';
   const cards = shuffle(words.flatMap((w) => [
@@ -50,7 +52,7 @@ export function renderMatch($app, lang = 'ko') {
         matched++;
         els[a].classList.add('done');
         els[b].classList.add('done');
-        sfx('right');
+        sfx('right'); host.right();
         const w = WORDS[cards[a].id];
         store.reviewWord(w.id, true);
         $app.querySelector('#mLeft').textContent = `還有 ${words.length - matched} 組`;
@@ -58,12 +60,13 @@ export function renderMatch($app, lang = 'ko') {
         if (matched === words.length) finish();
       } else {
         lock = true;
-        sfx('soft');
+        sfx('soft'); host.wrong();
         setTimeout(() => { els[a].classList.remove('up'); els[b].classList.remove('up'); lock = false; }, 900);
       }
     };
   });
   function finish() {
+    host.end();
     const secs = Math.round((Date.now() - t0) / 1000);
     const stars = moves <= words.length + 2 ? 3 : moves <= words.length * 2 ? 2 : 1;
     const xp = 10 + stars * 5;
@@ -82,6 +85,7 @@ export function renderMatch($app, lang = 'ko') {
 // 小遊戲：60 秒快問快答（用說的）。看到圖和中文，說出韓文（或英文）
 import { listenOnce, speechMatches, sttOK, sleep } from './util.js';
 export function renderSpeed($app, lang = 'ko') {
+  const host = mountHost('speed');
   const L = lang === 'en' ? 'en-US' : 'ko-KR';
   const words = pool(40);
   const best = store.get().best?.[`speed-${lang}`] || 0;
@@ -119,12 +123,12 @@ export function renderSpeed($app, lang = 'ko') {
       store.logSay(target, L, alts[0], ok, '60 秒快問快答');
       if (ok) {
         score++;
-        sfx('right');
+        sfx('right'); host.right();
         $('#sScore').textContent = `答對 ${score}`;
         $('#sSaid').textContent = `✓ ${alts[0]}`;
         if (ttsOK) await speakAsync(target, L, 0.85);
       } else {
-        sfx('soft');
+        sfx('soft'); host.wrong();
         $('#sSaid').textContent = `答案是：${target}${lang === 'ko' ? `（${w.kr}）` : ''}`;
         if (ttsOK) await speakAsync(target, L, 0.7);
         await sleep(400);

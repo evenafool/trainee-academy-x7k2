@@ -8,6 +8,8 @@ import { renderMatch, renderSpeed } from './games.js';
 import { renderTalk, stopTalk } from './talk.js';
 import { rewardForDay, rewardHTML, MEMBERS, MERCH } from './rewards.js';
 import { renderExam, examNext, examStats } from './exam.js';
+import { mountHost } from './npc.js';
+import { avatarHTML, avatarState, autoOutfit, OUTFITS, newUnlocks, renderCloset } from './avatar.js';
 
 // 啟動時把課程、獎勵裡的暫定名換成孩子取的名字（改名後重新整理頁面就會重新套用）
 if (Object.keys(store.get().names || {}).length) {
@@ -173,6 +175,7 @@ function buildQuiz(kind) {
 // ───────── 畫面 ─────────
 const views = {};
 let quiz = null;
+let quizHost = null;
 let flash = null;
 
 views.talk = (arg) => renderTalk($app, arg);
@@ -318,10 +321,9 @@ views.home = () => {
 
         <div class="lobby-right">
           <p class="speech" id="speech" aria-live="polite">${esc(lines[0])}</p>
-          <button class="teacher" id="teacherBtn" type="button" aria-label="和敏雅老師說話">
-            <img src="assets/art/teacher-cut.webp" alt="敏雅老師" width="616" height="1505">
-          </button>
-          <span class="teacher-name">민아 쌤・敏雅老師</span>
+          <button class="teacher me-stage" id="teacherBtn" type="button" aria-label="我的角色（點兩下打開衣帽間）">${avatarHTML()}</button>
+          <span class="teacher-name">${esc(s.profile.name)}・${esc(OUTFITS.find((o) => o.id === (avatarState().outfit || autoOutfit()))?.name || '')}</span>
+          <a class="closet-link ${newUnlocks().length ? 'tap-hint fresh' : ''}" href="#/closet">${newUnlocks().length ? `🎁 新獲得 ${newUnlocks().length} 樣！去衣帽間` : '👗 衣帽間'}</a>
         </div>
       </div>
     </section>`;
@@ -342,8 +344,11 @@ views.home = () => {
   };
 };
 
+views.closet = () => renderCloset($app, backBar);
+
 // 自由練習：從大廳收起來的科目入口
 views.practice = () => {
+  mountHost('practice');
   const wrongN = Object.keys(store.get().wrong).length;
   const ex = examStats();
   $app.innerHTML = `
@@ -491,6 +496,7 @@ views.quiz = (kind) => {
     }
     quiz = { ...q, kind, i: 0, correct: 0, combo: 0, maxCombo: 0, picked: null, done: false };
   }
+  if (!document.querySelector('.npc-host')) quizHost = mountHost('quiz');
   if (quiz.done) return renderResult();
   const q = quiz.qs[quiz.i];
   const answered = quiz.picked != null;
@@ -533,8 +539,8 @@ views.quiz = (kind) => {
     const j = +b.dataset.j;
     const ok = j === q.answer;
     quiz.picked = j;
-    if (ok) { quiz.correct++; quiz.combo++; quiz.maxCombo = Math.max(quiz.maxCombo, quiz.combo); quiz.cheer = pick(CHEERS_RIGHT); }
-    else { quiz.combo = 0; quiz.cheer = pick(CHEERS_WRONG); }
+    if (ok) { quiz.correct++; quiz.combo++; quiz.maxCombo = Math.max(quiz.maxCombo, quiz.combo); quiz.cheer = pick(CHEERS_RIGHT); quizHost?.right(); }
+    else { quiz.combo = 0; quiz.cheer = pick(CHEERS_WRONG); quizHost?.wrong(); }
     navigator.vibrate?.(ok ? 15 : [30, 40, 30]);
     store.markAnswer(q.key, ok);
     store.log({ t: 'answer', target: q.options[q.answer], said: q.options[j], ok, where: q.deck.title });

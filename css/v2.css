@@ -141,3 +141,39 @@
   body.is-lobby .lobby-right .speech { grid-column: 2; grid-row: 1; align-self: center; font-size: 15px; margin: 0; }
   body.is-lobby .lobby-right .teacher-name { grid-column: 2; grid-row: 2; align-self: end; margin-bottom: 14px; }
 }
+
+/* ───────── 首頁主角（含配件、寵物、吉祥物露露）＋衣帽間 ───────── */
+.me-stage { position: relative; }
+.me-stage .me-outfit { display: block; height: min(calc(100vh - 250px), 700px); width: auto; max-width: 100%; }
+.me-acc { position: absolute; top: 6%; right: 2%; width: 26%; max-width: 92px; aspect-ratio: 1; display: grid; place-items: center; background: rgba(255, 255, 255, .85); border: 3px solid #fff; border-radius: 50%; box-shadow: 0 6px 14px rgba(120, 85, 55, .25); animation: meFloat 3s ease-in-out infinite; }
+.me-pet { position: absolute; bottom: 2%; left: -6%; width: 34%; max-width: 120px; aspect-ratio: 1; display: grid; place-items: center; animation: meFloat 2.6s ease-in-out infinite .4s; }
+.me-mascot { position: absolute; bottom: 2%; right: -8%; width: 32%; max-width: 110px; aspect-ratio: 1; display: grid; place-items: center; animation: meFloat 2.2s ease-in-out infinite .8s; }
+.item-ic, .mascot { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .18)); }
+.item-fb, .mascot-fb { display: grid; place-items: center; font-size: clamp(28px, 6vw, 54px); line-height: 1; }
+@keyframes meFloat { 50% { transform: translateY(-6px); } }
+@media (prefers-reduced-motion: reduce) { .me-acc, .me-pet, .me-mascot { animation: none; } }
+.closet-link { justify-self: center; margin-top: 6px; background: #fff; border: 3px solid #fff; border-radius: 999px; padding: 6px 14px; font-weight: 900; font-size: 14px; color: #a35f69; box-shadow: 0 4px 0 #e3cbb5; position: relative; }
+.closet-link.fresh { background: linear-gradient(160deg, #fffdf2, #ffe9a8); color: #6b4a00; }
+@media (max-width: 760px) {
+  body.is-lobby .lobby-right .me-stage .me-outfit { width: 100%; height: auto; max-height: none; transform: scale(1.35); transform-origin: 50% 0; }
+  body.is-lobby .lobby-right .me-acc { top: 8px; right: 8px; width: 58px; }
+  body.is-lobby .lobby-right .me-pet { bottom: 18px; left: 4px; width: 70px; }
+  body.is-lobby .lobby-right .me-mascot { bottom: 18px; right: 4px; width: 66px; }
+  body.is-lobby .lobby-right .closet-link { grid-column: 2; grid-row: 3; }
+}
+.closet { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.cl-preview { position: sticky; top: 12px; display: grid; justify-items: center; text-align: center; background: #fffdfa; border: 3px solid #fff; border-radius: 24px; padding: 14px 10px; box-shadow: 0 10px 24px rgba(120, 85, 55, .14); }
+.cl-preview .me-stage .me-outfit { height: 420px; }
+.cl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.cl-tile { position: relative; display: grid; justify-items: center; gap: 3px; padding: 10px 8px; border-radius: 18px; border: 3px solid #fff; background: #fff; color: #4a3728; box-shadow: 0 4px 0 #e3cbb5; cursor: pointer; text-align: center; }
+.cl-tile b { font-size: 14px; }
+.cl-tile small { font-size: 11.5px; color: #8a7563; font-weight: 700; line-height: 1.35; }
+.cl-tile.on { border-color: #f0b429; background: #fffaf0; box-shadow: 0 0 0 3px #ffd56b, 0 4px 0 #e3cbb5; }
+.cl-tile.locked { background: #f4ece4; cursor: default; }
+.cl-tile.locked .cl-pic { filter: grayscale(1) brightness(.6) opacity(.5); }
+.cl-pic { width: 84px; height: 110px; display: grid; place-items: center; overflow: hidden; }
+.cl-outfit { height: 110px; width: auto; object-fit: contain; object-position: top; }
+.cl-pic .item-ic.big { width: 72px; height: 72px; }
+@media (max-width: 760px) { .closet { grid-template-columns: minmax(0, 1fr); } .cl-preview { position: static; } .cl-preview .me-stage .me-outfit { height: 300px; } }
+/* 老師立繪的 .teacher img 規則不要套到配件、吉祥物小圖 */
+body .teacher.me-stage img.item-ic, body .teacher.me-stage img.mascot, body.is-lobby .lobby-right .teacher.me-stage img.item-ic, body.is-lobby .lobby-right .teacher.me-stage img.mascot { width: 100%; height: 100%; max-height: none; transform: none; animation: none; }
