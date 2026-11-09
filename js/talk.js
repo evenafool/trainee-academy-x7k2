@@ -81,13 +81,53 @@ function similarity(alts, target) {
     return lcs(n, t) / Math.max(t.length, n.length * 0.8);
   }));
 }
-// 長句切成小段（每段 1～2 個詞），用來「一段一段跟讀」
-function chunksOf(text) {
-  const words = String(text).trim().split(/\s+/);
-  if (words.length <= 2) return [text];
+// 長句照「意思」切成幾段，用來一段一段跟讀：
+// 短句整句念（英文 6 個字、韓文 3 個詞以內）；長句先在標點分段，
+// 還太長再在 and／but／because／介系詞這類自然停頓的地方切，每段 3～5 個字，不留單一個字的碎片
+const EN_BREAK = new Set(['and', 'but', 'or', 'because', 'so', 'when', 'if', 'after', 'before', 'at', 'in', 'on', 'to', 'with', 'for', 'from', 'about', 'than', 'then', 'that', 'who', 'which']);
+const EN_GLUE = new Set(['a', 'an', 'the', 'my', 'your', 'his', 'her', 'our', 'their', 'this', 'that', 'these', 'those', 'i', 'you', 'we', 'they', 'he', 'she', 'it', 'can', 'will', 'to', 'very', 'so', 'too', 'some', 'every', 'not', "don't", "can't", 'is', 'are', 'am']);
+function splitClause(words, ko) {
+  const max = ko ? 3 : 6;
+  if (words.length <= (ko ? 3 : 6)) return [words];
   const out = [];
-  for (let i = 0; i < words.length; i += 2) out.push(words.slice(i, i + 2).join(' '));
+  let cur = [];
+  for (const w of words) {
+    const bare = w.toLowerCase().replace(/[^a-z']/g, '');
+    // 英文：到了連接詞／介系詞而且這段已經有 3 個字，就從這裡斷；任何語言：滿了就斷
+    if (cur.length >= max || (!ko && cur.length >= 3 && EN_BREAK.has(bare))) {
+      // 不要停在 a／the／my／can 這種要接下一個字的詞上（例如 take a｜photo）
+      const carry = [];
+      while (!ko && cur.length > 2 && EN_GLUE.has(cur[cur.length - 1].toLowerCase().replace(/[^a-z']/g, ''))) carry.unshift(cur.pop());
+      out.push(cur);
+      cur = carry;
+    }
+    cur.push(w);
+  }
+  if (cur.length) out.push(cur);
+  // 最後一段只剩 1 個字：併回前一段
+  if (out.length > 1 && out[out.length - 1].length === 1) out[out.length - 2].push(...out.pop());
   return out;
+}
+function chunksOf(text) {
+  const s = String(text).trim();
+  const ko = /[가-힯]/.test(s);
+  const all = s.split(/\s+/);
+  if (all.length <= (ko ? 3 : 6)) return [s];
+  // 先在標點後面分段（逗號、句號、驚嘆號、問號、刪節號）
+  const clauses = [];
+  let cur = [];
+  for (const w of all) {
+    cur.push(w);
+    if (/[,.!?…，。！？]$/.test(w)) { clauses.push(cur); cur = []; }
+  }
+  if (cur.length) clauses.push(cur);
+  // 單一個字的子句（例如 "Okay!"）併到下一段
+  const merged = [];
+  for (const c of clauses) {
+    if (merged.length && merged[merged.length - 1].length === 1) merged[merged.length - 1].push(...c);
+    else merged.push([...c]);
+  }
+  return merged.flatMap((c) => splitClause(c, ko)).map((c) => c.join(' '));
 }
 
 // ───────── 畫面 ─────────
