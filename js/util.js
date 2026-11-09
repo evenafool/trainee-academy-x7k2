@@ -1,7 +1,7 @@
 // 共用小工具：文字處理、語音朗讀、語音辨識（跟讀）、提示訊息
 // 介面小圖示（GPT Image 圖示表裁切，取代 emoji）
 export const ic = (name, cls = '') => `<img class="ic ${cls}" src="assets/art/icons/ui-${name}.webp" alt="" aria-hidden="true">`;
-export const wic = (w, cls = '') => `<img class="wic ${cls}" src="assets/art/icons/w-${w.id}.webp" alt="" aria-hidden="true" onerror="this.outerHTML='<span class=&quot;wic wic-fb ${cls}&quot;>${w.emoji || '⭐'}</span>'">`;
+export const wic = (w, cls = '') => `<img class="wic ${cls}" src="assets/art/icons/w-${w.id}.webp" alt="" aria-hidden="true" onerror="this.onerror=null;this.src='assets/art/icons/ui-star.webp'">`;
 export const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 export const shuffle = (a) => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 export const pick = (a) => a[Math.floor(Math.random() * a.length)];

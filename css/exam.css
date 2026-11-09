@@ -293,3 +293,55 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
 .hg-guide { position: sticky; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); margin-top: 12px; display: grid; gap: 4px; justify-items: center; text-align: center; padding: 12px; border-radius: 18px; background: #fffaf3; border: 3px solid #fff; box-shadow: 0 8px 20px rgba(120, 85, 55, .25); z-index: 5; }
 .hg-guide b { font-size: 22px; color: #4a3728; }
 .hg-guide p { margin: 0; color: #6b5848; font-weight: 800; }
+
+/* ───────── 練習區：依語言分排 ───────── */
+.lang-row { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; align-items: stretch; padding: 10px 0; border-top: 2px dashed #ecdccb; }
+.pz-head + .lang-row { border-top: 0; padding-top: 4px; }
+.lang-tag { display: grid; justify-items: center; align-content: center; gap: 2px; border-radius: 18px; border: 3px solid #fff; box-shadow: 0 4px 0 rgba(160, 120, 90, .2); }
+.lang-tag .ic { width: 36px; height: 36px; }
+.lang-tag b { font-size: 15px; font-weight: 900; color: #4a3728; text-align: center; line-height: 1.2; }
+.lang-tag.pink { background: linear-gradient(160deg, #fff7f8, #f7cfd5); }
+.lang-tag.sky { background: linear-gradient(160deg, #f6fbff, #cfe6fb); }
+.lang-tag.peach { background: linear-gradient(160deg, #fffaf5, #fbd9bf); }
+.lang-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.lang-tiles .pz-tile { min-height: 86px; padding: 8px 4px; border-radius: 16px; animation: none; }
+.lang-tiles .pz-tile.tap-hint { animation: tapGlow 1.3s ease-in-out infinite; }
+.lang-tiles .pz-ic .ic { width: 34px; height: 34px; }
+.lang-tiles .pz-tile b { font-size: 14px; }
+.lang-tiles .pz-tile small { font-size: 10.5px; }
+.lang-tiles.big .pz-tile { min-height: 110px; }
+.lang-tiles.big .pz-ic .ic { width: 46px; height: 46px; }
+.lang-tiles.big .pz-tile b { font-size: 16px; }
+@media (max-width: 520px) {
+  .lang-row { grid-template-columns: 1fr; gap: 6px; }
+  .lang-tag { grid-auto-flow: column; justify-content: start; gap: 6px; padding: 4px 12px; border-radius: 999px; width: max-content; }
+  .lang-tag .ic { width: 26px; height: 26px; }
+  .lang-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* 章節地圖＋今日集章（大項目） */
+.map-goal { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px 16px; text-decoration: none; color: #4a3728; background: linear-gradient(135deg, #fffaf3, #fde9d6) !important; border: 3px solid #fff; }
+.mg-map { display: grid; justify-items: center; gap: 1px; padding: 6px 12px; border-radius: 16px; background: #fff; box-shadow: 0 4px 0 rgba(160, 120, 90, .2); }
+.mg-map .ic { width: 44px; height: 44px; }
+.mg-map b { font-size: 16px; font-weight: 900; }
+.mg-map small { font-size: 11px; font-weight: 800; color: #8a7563; }
+.mg-stamps { display: grid; gap: 4px; min-width: 0; }
+.mg-stamps .dg-title { display: flex; align-items: baseline; gap: 8px; }
+.mg-stamps .dg-count { margin-left: 0; }
+.mg-row { display: flex; flex-wrap: wrap; gap: 2px; }
+.map-goal .chev { font-size: 28px; color: #c97b84; font-weight: 900; }
+@media (max-width: 520px) { .map-goal { grid-template-columns: 1fr auto; } .mg-map { grid-column: 1 / -1; grid-auto-flow: column; justify-content: start; gap: 8px; align-items: center; } .mg-map .ic { width: 32px; height: 32px; } .mg-row .stamp { width: 46px; } }
+.route-head { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; }
+.route-map { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 999px; background: #fff; color: #a35f69; font-weight: 900; font-size: 14px; text-decoration: none; box-shadow: 0 3px 0 rgba(160, 120, 90, .22); }
+.route-map .ic { width: 22px; height: 22px; }
+.route-stamps { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 10px; padding: 8px 12px; border-radius: 16px; background: #fffaf3; border: 2px dashed #ecdccb; text-decoration: none; color: #4a3728; }
+.route-stamps .dg-title { display: flex; align-items: baseline; gap: 8px; }
+.route-stamps .dg-count { margin-left: 0; }
+
+/* Logo */
+.brand-logo { margin: 0; line-height: 0; }
+.brand-logo img { height: 80px; width: auto; display: block; filter: drop-shadow(0 4px 8px rgba(160, 95, 105, .18)); }
+.welcome-logo { display: grid; justify-items: center; gap: 6px; margin: 0 0 8px; }
+.welcome-logo small { font-size: 18px; color: #8a7563; font-weight: 800; }
+.welcome-logo img { width: min(420px, 86vw); height: auto; filter: drop-shadow(0 6px 12px rgba(160, 95, 105, .2)); }
+@media (max-width: 520px) { .brand-logo img { height: 54px; } }
