@@ -177,3 +177,11 @@
 @media (max-width: 760px) { .closet { grid-template-columns: minmax(0, 1fr); } .cl-preview { position: static; } .cl-preview .me-stage .me-outfit { height: 300px; } }
 /* 老師立繪的 .teacher img 規則不要套到配件、吉祥物小圖 */
 body .teacher.me-stage img.item-ic, body .teacher.me-stage img.mascot, body.is-lobby .lobby-right .teacher.me-stage img.item-ic, body.is-lobby .lobby-right .teacher.me-stage img.mascot { width: 100%; height: 100%; max-height: none; transform: none; animation: none; }
+/* 手機：角色不放大（避免糊），框只顯示腰部以上 */
+@media (max-width: 760px) {
+  body.is-lobby .lobby-right .teacher { height: 235px; }
+  body.is-lobby .lobby-right .me-stage .me-outfit, body.is-lobby .lobby-right .teacher img:not(.item-ic):not(.mascot) { transform: none; width: 100%; }
+}
+/* 露露、配件也做成跟單字圖示一樣的「白邊貼紙」感 */
+.me-stage .item-ic, .me-stage .mascot, .cl-pic .item-ic, .cl-pic .mascot, .npc-mascot { filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 4px 5px rgba(120, 85, 55, .25)); }
+.closet-link .ic, .cl-tile small .ic { width: 1.2em; height: 1.2em; vertical-align: -.25em; }

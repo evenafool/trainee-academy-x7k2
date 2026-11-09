@@ -323,7 +323,7 @@ views.home = () => {
           <p class="speech" id="speech" aria-live="polite">${esc(lines[0])}</p>
           <button class="teacher me-stage" id="teacherBtn" type="button" aria-label="我的角色（點兩下打開衣帽間）">${avatarHTML()}</button>
           <span class="teacher-name">${esc(s.profile.name)}・${esc(OUTFITS.find((o) => o.id === (avatarState().outfit || autoOutfit()))?.name || '')}</span>
-          <a class="closet-link ${newUnlocks().length ? 'tap-hint fresh' : ''}" href="#/closet">${newUnlocks().length ? `🎁 新獲得 ${newUnlocks().length} 樣！去衣帽間` : '👗 衣帽間'}</a>
+          <a class="closet-link ${newUnlocks().length ? 'tap-hint fresh' : ''}" href="#/closet">${newUnlocks().length ? `${ic('gift')} 新獲得 ${newUnlocks().length} 樣！去衣帽間` : `${ic('closet')} 衣帽間`}</a>
         </div>
       </div>
     </section>`;
@@ -466,13 +466,13 @@ views.flash = (id) => {
     sfx('ding');
     out.textContent = '請說…';
     try {
-      const alts = await listenOnce(wlang);
+      const alts = await listenOnce(wlang, { onInterim: (s) => { out.textContent = `聽到：${s}`; } });
       const ok = speechMatches(alts, word);
       sfx(ok ? 'right' : 'soft');
       out.textContent = ok ? `很棒！（${alts[0]}）` : `聽到：${alts[0] || '（沒聽清楚）'}，再試一次`;
       speak(ok ? '很棒！' : '再試一次', 'zh-TW');
       store.markAnswer(key, ok); store.logSay(word, wlang, alts[0], ok, `閃卡・${d.title}`);
-    } catch (e) { out.textContent = '麥克風沒開成功，請用 Edge 並允許麥克風'; }
+    } catch (e) { out.textContent = /not-allowed/.test(e.message) ? '麥克風被擋住了：請按網址列的鎖頭，把麥克風改成允許' : '麥克風沒開成功，請再按一次（電腦請用 Edge、手機請用 Chrome 或 Safari）'; }
   });
   const go = (delta) => {
     const n = flash.pos + delta;
@@ -483,7 +483,7 @@ views.flash = (id) => {
   };
   $app.querySelector('#fc-prev').onclick = () => go(-1);
   $app.querySelector('#fc-next').onclick = () => go(1);
-  $app.querySelector('#fc-bad').onclick = () => { store.get().wrong[key] = 2; store.save(); toast('已加入錯題本 📒'); go(1); };
+  $app.querySelector('#fc-bad').onclick = () => { store.get().wrong[key] = 2; store.save(); toast('已加入錯題本'); go(1); };
   $app.querySelector('#fc-good').onclick = () => { go(1); };
 };
 
@@ -496,7 +496,7 @@ views.quiz = (kind) => {
     }
     quiz = { ...q, kind, i: 0, correct: 0, combo: 0, maxCombo: 0, picked: null, done: false };
   }
-  if (!document.querySelector('.npc-host')) quizHost = mountHost('quiz');
+  if (!document.querySelector('.npc-host')) quizHost = mountHost(quiz.deck?.subject === 'en' || quiz.qs?.[0]?.deck?.subject === 'en' ? 'quiz' : 'deck');
   if (quiz.done) return renderResult();
   const q = quiz.qs[quiz.i];
   const answered = quiz.picked != null;
@@ -750,7 +750,7 @@ views.me = () => {
     s.names = { agency: v('#nAgency'), group: v('#nGroup'), groupKo: v('#nGroupKo'), myGroup: v('#nMyGroup') };
     for (const k of Object.keys(s.names)) if (!s.names[k]) delete s.names[k];
     store.save();
-    toast('名字已儲存！故事會換成你取的名字 ✨');
+    toast('名字已儲存！故事會換成你取的名字');
     setTimeout(() => location.reload(), 900);
   };
   $app.querySelector('#exportBtn').onclick = () => {

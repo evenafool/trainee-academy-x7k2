@@ -459,6 +459,7 @@ async function runLesson(my, lv, n) {
     await say(my, [['英文是：', 'zh-TW'], [w.en, 'en-US'], [w.en, 'en-US', true]], `英文：${w.en}`);
     await practice(my, tally, w.en, 'en-US', '換你說英文：', `換你說英文：${w.en}`, 0.65);
     await say(my, [['放進句子裡：', 'zh-TW'], [sc.ko, 'ko-KR'], [sc.en, 'en-US']], `放進句子裡：\n韓　${sc.ko}（${sc.kr}）\n英　${sc.en}\n${sc.zh}`);
+    await shadow(my, tally, sc.ko, 'ko-KR', '韓文句子：'); // 跟畫面一樣：先韓文、再英文
     await shadow(my, tally, sc.en, 'en-US', '英文句子：');
   }
 

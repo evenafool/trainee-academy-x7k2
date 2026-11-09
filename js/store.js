@@ -27,7 +27,7 @@ const DEFAULT = {
   settings: { slow: true }, // slow：外語放慢念
   history: [], // 學習歷程：{ t:'session'|'say', at, ... }
   exam: { certs: {}, spelled: {} }, // 考試準備度：自家認證、拼對過的字
-  avatar: { outfit: 'fan', acc: '', pet: '', seen: [] }, // 主角造型（衣帽間）
+  avatar: { outfit: 'fan', acc: '', mascot: 'happy', seen: [] }, // 主角造型（衣帽間）
 };
 
 let state = load();

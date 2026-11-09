@@ -302,7 +302,7 @@ function answer(q, ok, picked) {
   q.picked = picked;
   const ex = examState();
   if (ok) { run.correct++; run.combo++; run.maxCombo = Math.max(run.maxCombo, run.combo); sfx('right'); host?.right(); }
-  else { run.combo = 0; sfx('soft'); host?.wrong(); }
+  else { run.combo = 0; sfx('soft'); host?.wrong(q.type); }
   navigator.vibrate?.(ok ? 15 : [30, 40, 30]);
   if (q.type === 'spell' && ok) ex.spelled[q.w.id] = (ex.spelled[q.w.id] || 0) + 1;
   if (run.mode === 'bank') {
@@ -474,7 +474,7 @@ function renderBankList() {
     const full = have >= all;
     return `<a class="bk-theme ${full ? 'full' : ''} ${id === firstOpen ? 'hint' : ''}" href="#/exam/bank/${id}">
       ${id === firstOpen ? '<span class="tap-me">點我！</span>' : ''}
-      <span class="bk-emoji">${emoji}</span><b>${esc(zh)}</b><small>${esc(en)}</small>
+      <span class="bk-emoji">${id === 'catchup' ? ic('star') : `<img src="assets/art/icons/bank-${id}.webp" alt="" onerror="this.replaceWith(document.createTextNode('${emoji}'))">`}</span><b>${esc(zh)}</b><small>${esc(en)}</small>
       <span class="bk-prog"><i style="width:${pct}%"></i></span><em>${full ? '✓ 學完' : `${have}／${all}`}</em></a>`;
   };
   $app.innerHTML = `
@@ -603,7 +603,7 @@ export function renderExam($root, arg = '') {
   $app = $root;
   stopSpeaking();
   const [page, sub] = String(arg || '').split('/');
-  host = mountHost(page === 'test' ? 'test' : page === 'quiz' ? 'quiz' : page === 'bank' ? 'bank' : 'test');
+  host = mountHost(page === 'test' ? 'test' : page === 'quiz' ? 'quiz' : page === 'bank' ? 'bank' : page === 'cert' ? null : 'hub');
   if (page !== 'bank' || sub) run = null;
   autoCerts();
   if (page === 'bank') return sub ? startBank(sub) : renderBankList();

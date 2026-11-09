@@ -201,3 +201,6 @@
 @keyframes npcHop { 40% { translate: -50% -6px; } }
 @media (min-width: 900px) { .npc-host { bottom: 24px; right: 24px; } .npc-body { width: 140px; height: 190px; } .npc-sprite { width: 200px; } .npc-bubble { max-width: 240px; font-size: 15px; } }
 @media (prefers-reduced-motion: reduce) { .npc-host.talk .npc-sprite { animation: none; } }
+.npc-name small { display: block; font-size: 9.5px; font-weight: 700; opacity: .9; text-align: center; }
+.npc-bubble { white-space: pre-line; }
+.bk-emoji img, .bk-emoji .ic { width: 52px; height: 52px; object-fit: contain; }

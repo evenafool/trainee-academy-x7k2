@@ -17,7 +17,7 @@ function pool(n) {
 }
 
 export function renderMatch($app, lang = 'ko') {
-  const host = mountHost('match');
+  const host = mountHost(lang === 'en' ? 'match-en' : 'match-ko');
   const words = pool(6);
   const L = lang === 'en' ? 'en-US' : 'ko-KR';
   const cards = shuffle(words.flatMap((w) => [
@@ -95,7 +95,7 @@ export function renderSpeed($app, lang = 'ko') {
       <div class="speed-top"><span id="sTime">60</span><span id="sScore">答對 0</span><span>最佳 ${best}</span></div>
       <div class="speed-card" id="sCard"><p>看到圖片和中文，<br>用${lang === 'en' ? '英文' : '韓文'}說出來！</p></div>
       <p class="speed-said" id="sSaid"></p>
-      <div class="actions"><button class="btn primary big" id="sStart" type="button">開始！</button>
+      <div class="actions"><button class="btn primary big" id="sStart" type="button">開始！</button><button class="pill-btn" id="sSkip" type="button" hidden>跳過這題</button>
         <a class="pill-btn" href="#/game/speed-${lang === 'en' ? 'ko' : 'en'}">換成${lang === 'en' ? '韓文' : '英文'}</a></div>
       ${sttOK ? '' : '<p class="muted center">這個瀏覽器不能用麥克風，請用 Microsoft Edge 開。</p>'}
     </div>`;
@@ -113,10 +113,29 @@ export function renderSpeed($app, lang = 'ko') {
       const w = words[i++];
       const target = lang === 'en' ? w.en : w.ko;
       $('#sCard').innerHTML = `${wic(w)}<b>${esc(w.zh)}</b>`;
-      $('#sSaid').textContent = '叮！請說…';
+      $('#sSaid').textContent = '叮！請說…（麥克風在聽）';
       sfx('ding');
       let alts = [];
-      try { alts = await listenOnce(L); } catch (e) { alts = []; }
+      let skip = null;
+      const skipBtn = $('#sSkip');
+      skipBtn.hidden = false;
+      try {
+        alts = await Promise.race([
+          listenOnce(L, { maxMs: 7000, onInterim: (s) => { $('#sSaid').textContent = `聽到：${s}`; } }),
+          new Promise((res) => { skip = res; skipBtn.onclick = () => res([]); }),
+        ]);
+      } catch (e) {
+        // 麥克風被擋住或找不到：講清楚怎麼修，然後結束這一輪（不要每題都默默失敗）
+        $('#sSaid').textContent = /not-allowed|service-not-allowed/.test(e.message)
+          ? '麥克風被擋住了：請按網址列的鎖頭，把「麥克風」改成允許，再重新開始。'
+          : /audio-capture/.test(e.message) ? '找不到麥克風：請確認麥克風有開，再重新開始。' : `麥克風出了點問題（${e.message}），請再按一次開始。`;
+        skipBtn.hidden = true;
+        clearInterval(tick);
+        $('#sStart').hidden = false;
+        $('#sStart').textContent = '重新開始';
+        return;
+      }
+      skipBtn.hidden = true;
       if (!alive) break;
       const ok = speechMatches(alts, target);
       store.reviewWord(w.id, ok);

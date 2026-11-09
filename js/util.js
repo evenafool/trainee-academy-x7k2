@@ -92,23 +92,72 @@ if (ttsOK) speechSynthesis.getVoices();
 const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
 export const sttOK = !!Rec;
 const norm = (s) => String(s).toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
-export function listenOnce(lang) {
+// 小遊戲、閃卡用的收音（跟上課的收音一樣穩）：
+// 先停掉老師的聲音、等一下再開麥克風；連續收音直到說完停頓 1 秒；
+// 沒聽到聲音會自動重開，最多聽 maxMs；不管怎樣一定會結束（不會卡住）
+export function listenOnce(lang, { maxMs = 9000, onInterim } = {}) {
   return new Promise((resolve, reject) => {
     if (!Rec) return reject(new Error('unsupported'));
-    const r = new Rec();
-    r.lang = lang;
-    r.interimResults = false;
-    r.maxAlternatives = 5;
-    r.onresult = (e) => resolve([...e.results[0]].map((a) => a.transcript));
-    r.onerror = (e) => reject(new Error(e.error));
-    r.onnomatch = () => resolve([]);
-    r.start();
+    stopSpeaking();
+    let done = false;
+    let alts = [];
+    let interim = '';
+    let quiet = null;
+    let r = null;
+    const started = Date.now();
+    const finish = () => {
+      if (done) return;
+      done = true;
+      clearTimeout(quiet);
+      clearTimeout(hard);
+      try { r?.abort(); } catch (e) { /* 已經停了 */ }
+      resolve(alts.length ? alts : interim ? [interim] : []);
+    };
+    const hard = setTimeout(finish, maxMs + 1500); // 保險：時間到一定結束
+    const start = () => {
+      if (done) return;
+      r = new Rec();
+      r.lang = lang;
+      r.continuous = true;
+      r.interimResults = true;
+      r.maxAlternatives = 5;
+      r.onresult = (e) => {
+        interim = '';
+        for (const res of e.results) {
+          if (res.isFinal) alts = [...res].map((a) => a.transcript);
+          else interim += res[0].transcript;
+        }
+        onInterim?.(alts[0] || interim);
+        clearTimeout(quiet);
+        quiet = setTimeout(finish, alts.length ? 1000 : 1800);
+      };
+      r.onerror = (e) => {
+        if (e.error === 'no-speech' || e.error === 'aborted' || e.error === 'network') return;
+        done = true;
+        clearTimeout(hard);
+        reject(new Error(e.error));
+      };
+      r.onend = () => {
+        if (done) return;
+        if (!alts.length && !interim && Date.now() - started < maxMs) { setTimeout(start, 150); return; } // 沒聽到就再聽
+        finish();
+      };
+      try { r.start(); } catch (err) { setTimeout(start, 300); }
+    };
+    setTimeout(start, 250);
   });
+}
+// 相似度（最長共同子序列），容許發音有一點點不準
+function simRatio(a, b) {
+  if (!a || !b) return 0;
+  const m = Array.from({ length: a.length + 1 }, () => new Array(b.length + 1).fill(0));
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) m[i][j] = a[i - 1] === b[j - 1] ? m[i - 1][j - 1] + 1 : Math.max(m[i - 1][j], m[i][j - 1]);
+  return (2 * m[a.length][b.length]) / (a.length + b.length);
 }
 // 跟讀判定：任一辨識結果包含目標（忽略空白標點），或目標包含辨識結果且夠長
 export function speechMatches(alts, target) {
   const t = norm(target);
-  return alts.some((a) => { const n = norm(a); return n && (n.includes(t) || (t.includes(n) && n.length >= Math.ceil(t.length * 0.6))); });
+  return alts.some((a) => { const n = norm(a); return n && (n.includes(t) || (t.includes(n) && n.length >= Math.ceil(t.length * 0.6)) || simRatio(n, t) >= 0.7); });
 }
 
 export function toast(msg) {
