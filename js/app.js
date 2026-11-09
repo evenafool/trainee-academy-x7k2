@@ -286,6 +286,7 @@ views.home = () => {
 
       <div class="lobby-main">
         <div class="lobby-left">
+          <div class="hero-pair">
           <article class="glass today">
             <figure class="today-art watch-drama" id="watchDrama" title="看今天的短劇">
               <span class="play-badge">▶ 看短劇</span>
@@ -300,11 +301,24 @@ views.home = () => {
             <a class="cta ${nextStep?.id === 'lesson' ? 'tap-hint' : ''}" href="#/talk">${ic('mic')} ${doneToday ? '再上一次今天的課' : '開始今天的課'}${nextStep?.id === 'lesson' ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span>' : ''}</a>
             <div class="prize-mini">上完拿到 ${rewardHTML(prize)} <b>${esc(prize.name)}</b></div>
           </article>
+          ${(() => { const hp = hangulProgress(); if (hp.done) return ''; return `<a class="glass hg-feature ${nextStep?.id === 'hangul' ? 'tap-hint' : ''}" href="#/hangul" aria-label="韓文 40 音">
+            <span class="hg-feature-bg" aria-hidden="true">${['가', '나', '다', '라', '마', '바', '사', '아'].map((c, i) => `<i style="--i:${i}">${c}</i>`).join('')}</span>
+            <img class="hg-feature-mina" src="assets/art/sprite-mina.webp" alt="" onerror="this.remove()">
+            <span class="hg-feature-body">
+              <em>第 0 課・最重要的基礎</em>
+              <b>韓文 40 音</b>
+              <small>學會 40 個字母，所有韓文都念得出來！</small>
+              <span class="hg-feature-prog"><span class="hg-prog"><i style="width:${(hp.passed / hp.stages) * 100}%"></i></span><span>${hp.passed}／${hp.stages} 關</span></span>
+              <span class="hg-feature-go">${ic('speaker')} ${hp.passed ? '繼續學 40 音' : '開始學 40 音'}</span>
+            </span>
+            ${nextStep?.id === 'hangul' ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>先從這裡開始！</b></span>' : ''}
+          </a>`; })()}
+          </div>
 
           <section class="glass route" aria-label="今日學習路線">
             <div class="route-head"><b>${ic('map')} 今日學習路線</b><small>照順序做，每完成一步都能領獎勵！</small><a class="route-map" href="#/map">${ic('map')} 章節地圖 ›</a></div>
             <ol class="route-steps">
-              ${route.map((r, i) => r.id === 'hangul' && !r.done ? `<li class="hg-step ${r === nextStep ? 'now' : ''}">
+              ${route.map((r, i) => false ? `<li class="hg-step ${r === nextStep ? 'now' : ''}">
                 <a class="hg-step-link ${r === nextStep ? 'tap-hint' : ''}" href="#/hangul">
                   <span class="hg-step-ch">가</span>
                   <span class="hg-step-t"><em>第 0 課・最重要的基礎</em><b>韓文 40 音</b><small>學會 40 個字母，所有韓文都念得出來</small>
