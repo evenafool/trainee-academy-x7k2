@@ -1,7 +1,7 @@
 import { STAGES, SUBJECTS, DECKS, RANKS, ACCENTS, CHEERS_RIGHT, CHEERS_WRONG } from './data.js';
 import { LEVELS, WORDS, STORIES, TEASERS, CHAPTERS, KEEPSAKES } from './course.js';
 import { applyNames, DEFAULT_NAMES } from './names.js';
-import { dayStr, VOICE_PICKS, ic, wic, listenOnce, speechMatches, splitKo } from './util.js';
+import { dayStr, VOICE_PICKS, ic, wic, listenOnce, speechMatches, splitKo, confetti } from './util.js';
 import { sfx, armAudio, setMusic, setSfx } from './sound.js';
 import { openDrama } from './drama.js';
 import { renderMatch, renderSpeed } from './games.js';
@@ -9,6 +9,7 @@ import { renderTalk, stopTalk } from './talk.js';
 import { rewardForDay, rewardHTML, MEMBERS, MERCH } from './rewards.js';
 import { renderExam, examNext, examStats } from './exam.js';
 import { mountHost } from './npc.js';
+import { renderHangul, hangulProgress, TOTAL as HANGUL_TOTAL } from './hangul.js';
 import { avatarHTML, avatarState, autoOutfit, OUTFITS, newUnlocks, renderCloset } from './avatar.js';
 
 // 啟動時把課程、獎勵裡的暫定名換成孩子取的名字（改名後重新整理頁面就會重新套用）
@@ -180,6 +181,7 @@ let flash = null;
 
 views.talk = (arg) => renderTalk($app, arg);
 views.exam = (arg) => renderExam($app, arg);
+views.hangul = (arg) => renderHangul($app, arg);
 views.game = (arg = 'match-ko') => (arg.startsWith('speed') ? renderSpeed : renderMatch)($app, arg.endsWith('en') ? 'en' : 'ko');
 
 views.onboard = () => {
@@ -265,6 +267,17 @@ views.home = () => {
   ];
   // 今天的課上完了 → 手指移到練習區（有認證可以考就指考試，不然指單字庫）
   const tapIdx = doneToday ? (nx.href.startsWith('#/exam/test') ? 0 : 1) : -1;
+  // 今日學習路線：一步一步、每步可以領小獎勵
+  const dd = store.daily();
+  const hpDone = hangulProgress().done;
+  const route = [
+    ...(hpDone ? [] : [{ id: 'hangul', icon: 'ko', name: '韓文 40 音', sub: '過一關，打好基礎', href: '#/hangul' }]),
+    { id: 'lesson', icon: 'mic', name: '今天的課', sub: '看短劇、學 6 個字', href: '#/talk' },
+    { id: 'bank', icon: 'book', name: '單字庫', sub: '再學 8 個新字', href: '#/exam/bank' },
+    { id: 'play', icon: 'cards', name: '玩一個練習', sub: '小遊戲、小考或特訓', href: '#/practice' },
+  ].map((r) => ({ ...r, done: (dd.tasks || []).includes(r.id), claimed: (dd.claimed || []).includes(r.id) }));
+  const nextStep = route.find((r) => !r.done);
+  const allDone = route.every((r) => r.done);
   if (doneToday) lines.unshift(`今天的課上完了，好棒！下面的「練習區」有單字庫和模擬考，點發光的那個去玩吧！`);
 
   // 簡化版大廳：一張「今天的課」卡（劇照＋標題＋3 個字＋一個大按鈕），其他功能縮成一排小連結
@@ -279,6 +292,11 @@ views.home = () => {
 
       <div class="lobby-main">
         <div class="lobby-left">
+          ${(() => { const hp = hangulProgress(); return hp.done ? '' : `<a class="glass hg-lobby ${doneToday ? '' : 'tap-hint'}" href="#/hangul">
+            <span class="hg-lobby-ch">가</span>
+            <span class="hg-lobby-text"><b>第 0 課：韓文 40 音</b><small>先打好基礎！學會 40 個字母，所有韓文都念得出來</small>
+              <span class="hg-prog"><i style="width:${(hp.passed / hp.stages) * 100}%"></i></span><em>已過關 ${hp.passed}／${hp.stages} 關</em></span>
+            <span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>${hp.passed ? '繼續！' : '先從這裡開始！'}</b></span></a>`; })()}
           <article class="glass today">
             <figure class="today-art watch-drama" id="watchDrama" title="看今天的短劇">
               <span class="play-badge">▶ 看短劇</span>
@@ -290,9 +308,20 @@ views.home = () => {
             <ul class="today-words">
               ${words.map((w) => `<li><span class="w-emoji">${wic(w)}</span><b>${esc(w.zh)}</b></li>`).join('')}
             </ul>
-            <a class="cta ${doneToday ? '' : 'tap-hint'}" href="#/talk">${ic('mic')} ${doneToday ? '再上一次今天的課' : '開始今天的課'}${doneToday ? '' : '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span>'}</a>
+            <a class="cta ${doneToday || !hangulProgress().done ? '' : 'tap-hint'}" href="#/talk">${ic('mic')} ${doneToday ? '再上一次今天的課' : '開始今天的課'}${doneToday || !hangulProgress().done ? '' : '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span>'}</a>
             <div class="prize-mini">上完拿到 ${rewardHTML(prize)} <b>${esc(prize.name)}</b></div>
           </article>
+
+          <section class="glass route" aria-label="今日學習路線">
+            <div class="route-head"><b>${ic('map')} 今日學習路線</b><small>照順序做，每完成一步都能領獎勵！</small></div>
+            <ol class="route-steps">
+              ${route.map((r, i) => `<li class="${r.done ? 'done' : ''} ${r === nextStep ? 'now' : ''}">
+                <span class="route-n">${r.done ? '✓' : i + 1}</span>${ic(r.icon)}<span class="route-t"><b>${r.name}</b><small>${r.sub}</small></span>
+                ${r.done ? (r.claimed ? `<span class="route-got">${ic('gift')} 已領</span>` : `<button type="button" class="route-claim" data-claim="${r.id}">${ic('gift')} 領獎勵 +10</button>`)
+                  : `<a class="route-go ${r === nextStep ? 'tap-hint' : ''}" href="${r.href}">${r === nextStep ? '下一步 ›' : '前往 ›'}</a>`}</li>`).join('')}
+            </ol>
+            ${allDone ? ((dd.claimed || []).includes('chest') ? `<p class="route-chest done">${ic('trophy')} 今日寶箱已打開，明天見！</p>` : `<button type="button" class="route-chest tap-hint" data-claim="chest">${ic('gift')} 全部完成！打開今日寶箱 +30</button>`) : ''}
+          </section>
 
           <section class="glass play-zone ${doneToday ? 'hot' : ''}" aria-label="練習區">
             <div class="pz-head"><b>${ic('star')} 練習區</b><small>${doneToday ? '今天的課上完了！再玩一個，把章集滿！' : '上完課還想玩？點下面的大按鈕！'}</small><a class="pz-map" href="#/map">${ic('map')} 章節地圖</a></div>
@@ -302,7 +331,10 @@ views.home = () => {
                 <span class="pz-ic">${ic(t.icon)}</span><b>${t.name}</b><small>${esc(t.sub)}</small>
                 ${i === tapIdx ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span>' : ''}</a>`).join('')}
             </div>
+            <div class="pz-subjects"><span>${ic('book')} 科目題庫</span>${SUBJECTS.map((sub) => `<a href="#/subject/${sub.id}">${ic(sub.id)}<b>${sub.name}</b></a>`).join('')}</div>
           </section>
+
+
 
           <a class="glass daily-goal" href="#/map" aria-label="今日集章">
             <span class="dg-title">今日集章</span>
@@ -328,6 +360,10 @@ views.home = () => {
       </div>
     </section>`;
 
+  $app.querySelectorAll('[data-claim]').forEach((b) => b.onclick = () => {
+    const xp = store.claimTask(b.dataset.claim);
+    if (xp) { sfx('reward'); confetti(); toast(`領到 ${xp} 應援值！`); views.home(); }
+  });
   $app.querySelector('#watchDrama').onclick = async () => {
     await openDrama(lesson.lv, lesson.n, { endLabel: '去上今天的課' });
     if (location.hash === '#/home' || location.hash === '') location.hash = '#/talk';
@@ -356,11 +392,16 @@ views.practice = () => {
     <p class="pz-lead">點一個你想玩的！每完成一種都能蓋一個章 ${ic('star')}</p>
     <div class="pz-grid big">
       <a class="pz-tile gold tap-hint" href="#/exam"><span class="pz-new">NEW</span><span class="pz-ic">${ic('medal')}</span><b>考試準備度</b><small>英文 ${ex.enB}／1,200・韓文 ${ex.koA}／982</small><span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span></a>
+      <a class="pz-tile pink" href="#/hangul"><span class="pz-ic">${ic('ko')}</span><b>韓文 40 音</b><small>${hangulProgress().passed}／4 關・打基礎</small></a>
       <a class="pz-tile mint" href="#/exam/bank"><span class="pz-new">NEW</span><span class="pz-ic">${ic('book')}</span><b>單字庫</b><small>國中 1,200 字，看卡＋小測驗</small></a>
       <a class="pz-tile lilac" href="#/exam/quiz"><span class="pz-ic">${ic('star')}</span><b>模擬小考</b><small>選擇・聽力・拼字</small></a>
       <a class="pz-tile pink" href="#/talk/drill"><span class="pz-ic">${ic('mic')}</span><b>語音特訓</b><small>用說的抽考</small></a>
       <a class="pz-tile sky" href="#/game/match-ko"><span class="pz-ic">${ic('cards')}</span><b>翻牌配對</b><small>小遊戲</small></a>
       <a class="pz-tile peach" href="#/game/speed-ko"><span class="pz-ic">${ic('fire')}</span><b>60 秒快問快答</b><small>挑戰最佳紀錄</small></a>
+    </div>
+    <h2 class="sec">${ic('book')} 科目題庫：國文・英文・韓文・梗翻譯</h2>
+    <div class="pz-grid subj-row">
+      ${SUBJECTS.map((sub, i) => `<a class="pz-tile ${['peach', 'sky', 'pink', 'lilac'][i % 4]}" href="#/subject/${sub.id}"><span class="pz-ic">${ic(sub.id)}</span><b>${sub.name}</b><small>${sub.desc}</small></a>`).join('')}
     </div>
     <h2 class="sec">更多練習</h2>
     <a class="deck voice-drill" href="#/talk/drill"><div class="emoji">${ic('mic')}</div><div class="grow"><b>語音特訓</b><small>用說的！隨機抽考學過的字和句子（集章）</small></div><div class="chev">›</div></a>
@@ -368,9 +409,7 @@ views.practice = () => {
     <a class="deck" href="#/game/speed-ko"><div class="emoji">${ic('mic')}</div><div class="grow"><b>60 秒快問快答</b><small>看圖用說的回答，挑戰自己的最佳紀錄（集章）</small></div><div class="chev">›</div></a>
     <a class="deck" href="#/game/match-ko"><div class="emoji">${ic('trophy')}</div><div class="grow"><b>翻牌配對</b><small>找出圖片和韓文（或英文）的配對，配對成功會念給你聽（集章）</small></div><div class="chev">›</div></a>
     <a class="deck" href="#/quiz/daily"><div class="emoji">${ic('star')}</div><div class="grow"><b>打歌任務</b><small>每日 10 題測驗，題目會念給你聽（集章）</small></div><div class="chev">›</div></a>
-    <div class="practice-grid">
-      ${SUBJECTS.map((sub) => `<a class="subject s-${sub.id}" href="#/subject/${sub.id}"><div class="emoji">${ic(sub.id, 'subj-ic')}</div><b>${sub.name}</b><small>${sub.desc}</small></a>`).join('')}
-    </div>
+
     <a class="deck" href="#/wrong"><div class="emoji">${ic('wrong')}</div><div class="grow"><b>錯題本</b><small>${wrongN ? `${wrongN} 題等你複習` : '目前沒有錯題'}</small></div><div class="chev">›</div></a>`;
 };
 

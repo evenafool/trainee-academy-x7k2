@@ -89,7 +89,7 @@ export const STAMPS = {
 };
 export const DAILY_GOAL = 3;
 export function daily() {
-  if (state.daily?.date !== today()) state.daily = { date: today(), xp: 0, stamps: [] };
+  if (state.daily?.date !== today()) state.daily = { date: today(), xp: 0, stamps: [], tasks: [], claimed: [] };
   return state.daily;
 }
 // 任何練習完成都走這裡：加應援值、蓋章、更新連續天數；回傳這次是不是剛好達標
@@ -99,6 +99,11 @@ export function addProgress(xp, stamp, meta = {}) {
   state.xp += xp;
   d.xp += xp;
   if (stamp && !d.stamps.includes(stamp)) d.stamps.push(stamp);
+  // 今日學習路線：從這次練習推出完成了哪一步
+  d.tasks ??= [];
+  const title = String(meta.title || '');
+  const task = /40 音/.test(title) ? 'hangul' : stamp === 'lesson' ? 'lesson' : /^單字庫/.test(title) ? 'bank' : ['game', 'quiz', 'drill', 'flash', 'replay'].includes(stamp) ? 'play' : '';
+  if (task && !d.tasks.includes(task)) d.tasks.push(task);
   log({ t: 'session', stamp, xp, ...meta });
   touchStreak();
   save();
@@ -123,4 +128,17 @@ export function log(entry) {
 export function logSay(target, lang, said, ok, where = '') {
   log({ t: 'say', target, lang, said: said || '', ok: !!ok, where });
   save();
+}
+
+// 領今日路線的小獎勵：每一步 +10 應援值，全部完成再開寶箱 +30
+export function claimTask(id) {
+  const d = daily();
+  d.claimed ??= [];
+  if (d.claimed.includes(id)) return 0;
+  const xp = id === 'chest' ? 30 : 10;
+  d.claimed.push(id);
+  state.xp += xp;
+  d.xp += xp;
+  save();
+  return xp;
 }

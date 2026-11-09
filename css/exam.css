@@ -204,3 +204,87 @@
 .npc-name small { display: block; font-size: 9.5px; font-weight: 700; opacity: .9; text-align: center; }
 .npc-bubble { white-space: pre-line; }
 .bk-emoji img, .bk-emoji .ic { width: 52px; height: 52px; object-fit: contain; }
+
+/* ───────── 第 0 課：韓文 40 音 ───────── */
+.hg-lobby { position: relative; display: flex; align-items: center; gap: 14px; padding: 14px 16px; text-decoration: none; color: #4a3728; background: linear-gradient(135deg, #fff7f8, #f7d9e8) !important; border: 3px solid #fff; }
+.hg-lobby.tap-hint { box-shadow: 0 0 0 4px #f0b429, 0 0 22px rgba(240, 180, 41, .7); animation: tapGlow 1.3s ease-in-out infinite; }
+.hg-lobby-ch { flex: none; width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; font-size: 40px; font-weight: 900; color: #fff; background: linear-gradient(160deg, #e0a3a9, #c97b84); box-shadow: 0 4px 0 #a35f69; }
+.hg-lobby-text { display: grid; gap: 3px; min-width: 0; }
+.hg-lobby-text b { font-size: 18px; }
+.hg-lobby-text small { color: #8a7563; font-weight: 700; line-height: 1.4; }
+.hg-lobby-text em { font-style: normal; font-size: 12px; font-weight: 900; color: #a35f69; }
+.hg-lobby .pz-tap { right: 10px; bottom: -14px; left: auto; translate: none; }
+.hg-prog { height: 8px; border-radius: 99px; background: #f1e4d6; overflow: hidden; }
+.hg-prog i { display: block; height: 100%; background: linear-gradient(90deg, #e0a3a9, #c97b84); }
+.hg-hero { background: #fffdfa; border: 3px solid #fff; border-radius: 22px; padding: 16px; box-shadow: 0 10px 24px rgba(120, 85, 55, .14); display: grid; gap: 8px; text-align: center; margin-bottom: 14px; color: #4a3728; }
+.hg-hero p { margin: 0; line-height: 1.6; font-weight: 700; }
+.hg-hero b.c, .hg-block .c { color: #4a7fd6; }
+.hg-hero b.v, .hg-block .v { color: #d9668a; }
+.hg-block { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 34px; font-weight: 900; }
+.hg-block b { font-size: 44px; color: #4a3728; background: #fff3c4; border-radius: 14px; padding: 0 12px; }
+.hg-block.big { font-size: 46px; } .hg-block.big b { font-size: 64px; }
+.hg-block .plus, .hg-block .eq { color: #b09a87; font-size: 26px; }
+.hg-stages { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-bottom: 14px; }
+.hg-stage { position: relative; display: grid; justify-items: center; gap: 3px; text-align: center; padding: 14px 8px; border-radius: 20px; background: #fff; border: 3px solid #fff; color: #4a3728; text-decoration: none; box-shadow: 0 4px 0 #e3cbb5, 0 8px 16px rgba(120, 85, 55, .12); }
+.hg-stage.done { background: #f1faf5; }
+.hg-stage.tap-hint { box-shadow: 0 0 0 4px #f0b429, 0 4px 0 #e3cbb5, 0 0 20px rgba(240, 180, 41, .7); animation: tapGlow 1.3s ease-in-out infinite; }
+.hg-num { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #c97b84; color: #fff; font-weight: 900; }
+.hg-chars { font-size: 22px; font-weight: 900; letter-spacing: 2px; color: #6b5848; }
+.hg-stage small { font-size: 12px; color: #8a7563; font-weight: 700; }
+.hg-stage em { font-style: normal; font-size: 12px; font-weight: 900; color: #a35f69; display: inline-flex; align-items: center; gap: 3px; }
+.hg-stage em .ic { width: 18px; height: 18px; }
+.hg-builder-link { display: flex; align-items: center; gap: 10px; padding: 14px; border-radius: 20px; background: linear-gradient(160deg, #f6fbff, #cfe6fb); border: 3px solid #fff; color: #4a3728; text-decoration: none; box-shadow: 0 4px 0 #b9d3ea; }
+.hg-builder-link .ic { width: 40px; height: 40px; }
+.hg-builder-link small { display: block; color: #6b7f93; font-weight: 700; }
+.hg-tip { color: #6b5848; font-weight: 700; line-height: 1.6; margin: 4px 2px 12px; }
+.hg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-bottom: 16px; }
+.hg-card { display: grid; justify-items: center; gap: 2px; padding: 12px 6px; border-radius: 18px; border: 3px solid #fff; background: #fff; box-shadow: 0 4px 0 #e3cbb5; cursor: pointer; color: #4a3728; }
+.hg-card.heard { background: #fff7f8; }
+.hg-card.pop { animation: pop .35s; }
+.hg-ch { font-size: 46px; font-weight: 900; line-height: 1.1; color: #4a3728; }
+.hg-rom { font-weight: 900; color: #c97b84; font-size: 14px; }
+.hg-zh { font-size: 12px; color: #8a7563; font-weight: 700; }
+.hg-ex { font-size: 15px; font-weight: 900; color: #4a6aa8; }
+.hg-ex small { display: block; font-size: 11px; color: #8a7563; }
+.hg-opts .opt.huge { font-size: 34px; text-align: center; }
+.hg-build { background: #fffdfa; border-radius: 22px; padding: 16px; border: 3px solid #fff; box-shadow: 0 10px 24px rgba(120, 85, 55, .14); }
+.hg-build h3 { margin: 14px 0 6px; font-size: 15px; color: #6b5848; }
+.hg-pick { display: flex; flex-wrap: wrap; gap: 6px; }
+.hg-pick button { width: 46px; height: 46px; border-radius: 12px; border: 3px solid #fff; font-size: 24px; font-weight: 900; cursor: pointer; box-shadow: 0 3px 0 rgba(0, 0, 0, .1); }
+.hg-pick.c button { background: #e6f0fd; color: #2f5fae; }
+.hg-pick.v button { background: #fde8ef; color: #b04a6b; }
+.hg-pick button.on { outline: 3px solid #f0b429; }
+/* 科目題庫（國文、英文、韓文、梗翻譯所） */
+.pz-subjects { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; padding-top: 10px; border-top: 2px dashed #ead8c6; }
+.pz-subjects > span { font-weight: 900; color: #6b5848; display: inline-flex; align-items: center; gap: 4px; }
+.pz-subjects .ic { width: 26px; height: 26px; }
+.pz-subjects a { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px 6px 6px; border-radius: 999px; background: #fff; border: 2px solid #fff; box-shadow: 0 3px 0 #e3cbb5; color: #4a3728; text-decoration: none; font-size: 14px; }
+.pz-subjects a:active { transform: translateY(2px); box-shadow: 0 1px 0 #e3cbb5; }
+.subj-row { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 8px; }
+@media (max-width: 520px) { .subj-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ───────── 今日學習路線（一步一步＋小獎勵） ───────── */
+.route { padding: 12px 14px 14px; }
+.route-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.route-head b { font-size: 17px; display: inline-flex; align-items: center; gap: 4px; color: #4a3728; }
+.route-head .ic { width: 22px; height: 22px; }
+.route-head small { color: #8a7563; font-weight: 800; }
+.route-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.route-steps li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 16px; background: #fff; border: 2px solid #fff; box-shadow: 0 3px 0 #e3cbb5; position: relative; }
+.route-steps li.now { background: #fffaf0; box-shadow: 0 0 0 3px #ffd56b, 0 3px 0 #e3cbb5; }
+.route-steps li.done { background: #f1faf5; }
+.route-steps li > .ic { width: 34px; height: 34px; flex: none; }
+.route-n { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 900; font-size: 13px; background: #e3cbb5; color: #fff; }
+li.now .route-n { background: #f0b429; }
+li.done .route-n { background: #5fb898; }
+.route-t { flex: 1; min-width: 0; display: grid; }
+.route-t b { font-size: 15px; color: #4a3728; }
+.route-t small { font-size: 12px; color: #8a7563; font-weight: 700; }
+.route-go, .route-claim, .route-got { flex: none; border-radius: 999px; padding: 6px 12px; font-weight: 900; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; border: 0; cursor: pointer; }
+.route-go { background: #c97b84; color: #fff; box-shadow: 0 3px 0 #a35f69; }
+.route-go.tap-hint { animation: tapGlowCta 1.3s ease-in-out infinite; }
+.route-claim { background: linear-gradient(160deg, #fff3c4, #ffd56b); color: #6b4a00; box-shadow: 0 3px 0 #e9c46a; animation: pzNew 1.2s ease-in-out infinite; }
+.route-got { color: #3f9a78; background: #e3f6ec; }
+.route-claim .ic, .route-got .ic, .route-chest .ic { width: 18px; height: 18px; }
+.route-chest { margin-top: 10px; width: 100%; border: 0; border-radius: 16px; padding: 10px; font-weight: 900; font-size: 15px; background: linear-gradient(135deg, #fff3c4, #ffd56b); color: #6b4a00; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; }
+p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
