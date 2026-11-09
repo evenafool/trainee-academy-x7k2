@@ -414,3 +414,8 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
   .npc-mascot, .npc-name { display: none; }
   body:has(.npc-host) #app { padding-bottom: 104px; }
 }
+
+/* 今天這集上完了：明天解鎖下一集 */
+.next-ep { display: grid; gap: 4px; padding: 10px 14px; border-radius: 16px; background: linear-gradient(135deg, #fff8dc, #ffe9b8); border: 2px solid #fff; box-shadow: 0 0 0 2px #f0c46b; color: #6b3a1f; font-weight: 800; font-size: 14px; }
+.next-ep .ic { width: 20px; height: 20px; vertical-align: -4px; }
+.next-ep small { font-weight: 700; color: #8a6200; line-height: 1.5; }

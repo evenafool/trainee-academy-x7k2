@@ -5,7 +5,7 @@ import { dayStr, VOICE_PICKS, ic, wic, listenOnce, speechMatches, splitKo, confe
 import { sfx, armAudio, setMusic, setSfx } from './sound.js';
 import { openDrama } from './drama.js';
 import { renderMatch, renderSpeed } from './games.js';
-import { renderTalk, stopTalk } from './talk.js';
+import { renderTalk, stopTalk, todayLesson } from './talk.js';
 import { rewardForDay, rewardHTML, MEMBERS, MERCH } from './rewards.js';
 import { renderExam, examNext, examStats } from './exam.js';
 import { mountHost } from './npc.js';
@@ -222,13 +222,7 @@ views.onboard = () => {
 // ───────── 主畫面：練習室大廳 ─────────
 const AI_TEACHER_URL = 'https://claude.ai/artifact/4xmudADx2B7SvP23hLhcpE';
 
-// 今天要上的課：第一個還沒破關的一般關卡
-function todayLesson() {
-  const cleared = store.get().course?.cleared || {};
-  const days = LEVELS.filter((l) => !l.boss);
-  const i = Math.max(0, days.findIndex((l) => !cleared[l.id]));
-  return { lv: days[i], n: i + 1 };
-}
+
 
 function teacherLines(name, lesson) {
   const h = new Date().getHours();
@@ -257,7 +251,7 @@ views.home = () => {
   let lineIdx = 0;
   const prize = rewardForDay(lesson.n);
   const days = Math.max(0, 365 - Object.keys(s.course?.cleared || {}).length);
-  const doneToday = store.daily().stamps.includes('lesson');
+  const doneToday = store.daily().stamps.includes('lesson') || !!lesson.doneToday;
   const ex = examStats();
   const nx = examNext();
   // 練習區依語言分組：同一個語言的東西放在一起
@@ -302,7 +296,9 @@ views.home = () => {
               ${words.map((w) => `<li><span class="w-emoji">${wic(w)}</span><b>${esc(w.zh)}</b></li>`).join('')}
             </ul>
             <a class="cta ${nextStep?.id === 'lesson' ? 'tap-hint' : ''}" href="#/talk">${ic('mic')} ${doneToday ? '再上一次今天的課' : '開始今天的課'}${nextStep?.id === 'lesson' ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span>' : ''}</a>
-            <div class="prize-mini">上完拿到 ${rewardHTML(prize)} <b>${esc(prize.name)}</b></div>
+            ${lesson.doneToday && lesson.next ? `<div class="next-ep">${ic('star')} 今天這集完成了！明天解鎖第 ${lesson.next.n} 集：<b>${esc(STORIES[lesson.next.lv.id]?.title || lesson.next.lv.title)}</b>${TEASERS[lesson.lv.id] ? `<small>下集預告：${esc(TEASERS[lesson.lv.id])}</small>` : ''}</div>`
+              : lesson.allDone ? `<div class="next-ep">${ic('trophy')} 全部的集數都上完了！可以從章節地圖回放喜歡的集數。</div>`
+              : `<div class="prize-mini">上完拿到 ${rewardHTML(prize)} <b>${esc(prize.name)}</b></div>`}
           </article>
           ${(() => { const hp = hangulProgress(); if (hp.done) return ''; return `<a class="glass hg-feature ${nextStep?.id === 'hangul' ? 'tap-hint' : ''}" href="#/hangul" aria-label="韓文 40 音">
             <span class="hg-feature-bg" aria-hidden="true">${['가', '나', '다', '라', '마', '바', '사', '아'].map((c, i) => `<i style="--i:${i}">${c}</i>`).join('')}</span>

@@ -32,6 +32,14 @@ const DEFAULT = {
 
 let state = load();
 
+// 請瀏覽器把這個網站的資料設成「持久保存」，避免手機空間不足時被自動清掉進度（iOS／Android／電腦都適用，不支援就略過）
+try { navigator.storage?.persist?.(); } catch (e) { /* 略過 */ }
+// 關掉分頁、切到背景時再存一次，確保最後的進度有寫進去
+try {
+  addEventListener('pagehide', () => save());
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') save(); });
+} catch (e) { /* 略過 */ }
+
 function load() {
   const base = structuredClone(DEFAULT);
   try {

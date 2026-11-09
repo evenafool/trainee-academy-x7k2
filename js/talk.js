@@ -39,11 +39,19 @@ export function stopTalk() {
   rec = null;
 }
 
-// 今天要上的課：第一個還沒破關的一般關卡
+// 今天要上的課：一天推進一集
+//   ・第一個還沒破關的一般關卡就是新的一集
+//   ・今天已經破了一集新關 → 今天仍顯示剛上完的那集（可以再上一次），隔天（日期改變）才自動推到下一集
+//   ・全部上完 → 停在最後一集
 export function todayLesson() {
-  const cleared = store.get().course?.cleared || {};
+  const c = store.get().course || {};
+  const cleared = c.cleared || {};
   const days = DAYS();
-  const i = Math.max(0, days.findIndex((l) => !cleared[l.id]));
+  let i = days.findIndex((l) => !cleared[l.id]);
+  if (i < 0) return { lv: days[days.length - 1], n: days.length, doneToday: true, allDone: true };
+  if (i > 0 && !c.unlockAll && c.lastNewDay === store.today()) {
+    return { lv: days[i - 1], n: i, doneToday: true, next: { lv: days[i], n: i + 1 } };
+  }
   return { lv: days[i], n: i + 1 };
 }
 

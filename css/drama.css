@@ -63,12 +63,15 @@
 .vn-endcard .vn-ctrl { justify-content: center; }
 
 /* 精彩分鏡（畫面裡已經有角色）：立繪縮小，只有正在說話的人出現在角落 */
-.drama.cg .vn-sp { height: min(46vh, 430px); bottom: 150px; opacity: 0; }
+.drama.cg .vn-sp { height: min(34vh, 320px); bottom: 150px; opacity: 0; }
 .drama.cg .vn-sp.speaking { opacity: 1; transform: translateY(-6px); }
 .drama.cg .vn-sp.dim { opacity: 0; }
 
 @media (max-width: 760px) {
   .vn-sp { height: 52vh; bottom: 170px; }
+  .drama.cg .vn-sp { height: 28vh; bottom: 168px; }
+  .drama.cg .vn-sp.left { left: -2%; }
+  .drama.cg .vn-sp.right { right: -2%; }
   .vn-line { font-size: 21px; }
   .vn-line.ko { font-size: 24px; }
 }
