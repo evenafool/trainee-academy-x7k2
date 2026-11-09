@@ -259,8 +259,8 @@ views.home = () => {
   const nx = examNext();
   // 練習區依語言分組：同一個語言的東西放在一起
   const groups = langGroups(ex, lesson.n);
-  // 今天的課上完了 → 手指移到考試準備度
-  const tapHref = doneToday ? '#/exam' : '';
+  // 今天的課上完了 → 手指移到單字庫（考試準備度在下方「考試」分頁）
+  const tapHref = doneToday ? '#/exam/bank' : '';
   // 今日學習路線：一步一步、每步可以領小獎勵
   const dd = store.daily();
   const hpDone = hangulProgress().done;
@@ -383,7 +383,6 @@ function langGroups(ex, dayN) {
     { id: 'mix', name: '國文・綜合', cls: 'peach', tiles: [
       { href: sub('zh'), icon: 'zh', name: '國文題庫', sub: '成語・錯字・文言' },
       { href: sub('meme'), icon: 'meme', name: '梗翻譯所', sub: '梗用英韓怎麼說' },
-      { href: '#/exam', icon: 'medal', name: '考試準備度', sub: `英 ${ex.enB}・韓 ${ex.koA}` },
       { href: '#/talk/drill', icon: 'mic', name: '語音特訓', sub: '英韓用說的' },
       { href: `${AI_TEACHER_URL}#day-${dayN}`, icon: 'chat', name: '打字聊天', sub: 'AI 老師', ext: true },
     ] },
@@ -406,7 +405,7 @@ views.practice = () => {
   $app.innerHTML = `
     ${backBar('#/home', '練習區')}
     <p class="pz-lead">依語言分好了，點一個你想玩的！每完成一種都能蓋一個章 ${ic('star')}</p>
-    ${langGroups(ex, store.get().course?.day || 1).map((g) => langRowHTML(g, '#/exam', true)).join('')}
+    ${langGroups(ex, store.get().course?.day || 1).map((g) => langRowHTML(g, '', true)).join('')}
     <h2 class="sec">${ic('map')} 複習</h2>
     <a class="deck" href="#/map"><div class="emoji">${ic('map')}</div><div class="grow"><b>章節地圖・回放</b><small>重看以前的短劇、重演對話（集章）</small></div><div class="chev">›</div></a>
     <a class="deck" href="#/quiz/daily"><div class="emoji">${ic('star')}</div><div class="grow"><b>打歌任務</b><small>每日 10 題測驗，題目會念給你聽（集章）</small></div><div class="chev">›</div></a>
