@@ -266,7 +266,7 @@ views.home = () => {
   const hpDone = hangulProgress().done;
   const route = [
     ...(hpDone ? [] : [{ id: 'hangul', icon: 'ko', name: '韓文 40 音', sub: `打好基礎・已過 ${hangulProgress().passed}／${hangulProgress().stages} 關`, href: '#/hangul', prog: hangulProgress().passed / hangulProgress().stages }]),
-    { id: 'lesson', icon: 'mic', name: '今天的課', sub: '看短劇、學 6 個字', href: '#/talk', scroll: '.today' },
+    { id: 'lesson', icon: 'mic', name: '今天的課', sub: '看短劇、學 6 個字', href: '#/talk', scroll: '.today', up: true },
     { id: 'bank', icon: 'book', name: '單字庫', sub: '再學 8 個新字', href: '#/exam/bank' },
     { id: 'play', icon: 'cards', name: '玩一個練習', sub: '從下面的練習區挑一個', href: '#/practice', scroll: '.play-zone' },
   ].map((r) => ({ ...r, done: (dd.tasks || []).includes(r.id), claimed: (dd.claimed || []).includes(r.id) }));
@@ -286,22 +286,6 @@ views.home = () => {
 
       <div class="lobby-main">
         <div class="lobby-left">
-          <section class="glass route" aria-label="今日學習路線">
-            <div class="route-head"><b>${ic('map')} 今日學習路線</b><small>照順序做，每完成一步都能領獎勵！</small><a class="route-map" href="#/map">${ic('map')} 章節地圖 ›</a></div>
-            <ol class="route-steps">
-              ${route.map((r, i) => `<li class="${r.done ? 'done' : ''} ${r === nextStep ? 'now' : ''}">
-                <span class="route-n">${r.done ? '✓' : i + 1}</span>${ic(r.icon)}<span class="route-t"><b>${r.name}</b><small>${r.sub}</small>${r.prog !== undefined ? `<span class="hg-prog"><i style="width:${r.prog * 100}%"></i></span>` : ''}</span>
-                ${r.done ? (r.claimed ? `<span class="route-got">${ic('gift')} 已領</span>` : `<button type="button" class="route-claim" data-claim="${r.id}">${ic('gift')} 領獎勵 +10</button>`)
-                  : r.scroll ? `<button type="button" class="route-go ${r === nextStep ? 'tap-hint' : ''}" data-scroll="${r.scroll}">${r === nextStep ? '下一步 ↓' : '在下面 ↓'}</button>`
-                  : `<a class="route-go ${r === nextStep ? 'tap-hint' : ''}" href="${r.href}">${r === nextStep ? '下一步 ›' : '前往 ›'}</a>`}</li>`).join('')}
-            </ol>
-            <a class="route-stamps" href="#/map" aria-label="今日集章">
-              <span class="dg-title">今日集章 <b class="dg-count">${Math.min(store.daily().stamps.length, store.DAILY_GOAL)}/${store.DAILY_GOAL}</b></span>
-              <span class="mg-row">${Object.keys(store.STAMPS).map((k) => `<span class="stamp ${store.daily().stamps.includes(k) ? 'on' : ''}" title="${store.STAMPS[k].name}">${ic(store.STAMPS[k].icon)}<small>${store.STAMPS[k].name}</small></span>`).join('')}</span>
-            </a>
-            ${allDone ? ((dd.claimed || []).includes('chest') ? `<p class="route-chest done">${ic('trophy')} 今日寶箱已打開，明天見！</p>` : `<button type="button" class="route-chest tap-hint" data-claim="chest">${ic('gift')} 全部完成！打開今日寶箱 +30</button>`) : ''}
-          </section>
-
           <article class="glass today">
             <figure class="today-art watch-drama" id="watchDrama" title="看今天的短劇">
               <span class="play-badge">▶ 看短劇</span>
@@ -316,6 +300,30 @@ views.home = () => {
             <a class="cta ${nextStep?.id === 'lesson' ? 'tap-hint' : ''}" href="#/talk">${ic('mic')} ${doneToday ? '再上一次今天的課' : '開始今天的課'}${nextStep?.id === 'lesson' ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span>' : ''}</a>
             <div class="prize-mini">上完拿到 ${rewardHTML(prize)} <b>${esc(prize.name)}</b></div>
           </article>
+
+          <section class="glass route" aria-label="今日學習路線">
+            <div class="route-head"><b>${ic('map')} 今日學習路線</b><small>照順序做，每完成一步都能領獎勵！</small><a class="route-map" href="#/map">${ic('map')} 章節地圖 ›</a></div>
+            <ol class="route-steps">
+              ${route.map((r, i) => r.id === 'hangul' && !r.done ? `<li class="hg-step ${r === nextStep ? 'now' : ''}">
+                <a class="hg-step-link ${r === nextStep ? 'tap-hint' : ''}" href="#/hangul">
+                  <span class="hg-step-ch">가</span>
+                  <span class="hg-step-t"><em>第 0 課・最重要的基礎</em><b>韓文 40 音</b><small>學會 40 個字母，所有韓文都念得出來</small>
+                    <span class="hg-prog"><i style="width:${r.prog * 100}%"></i></span><span class="hg-step-n">已過關 ${hangulProgress().passed}／${hangulProgress().stages} 關</span></span>
+                  <span class="hg-step-go">${hangulProgress().passed ? '繼續學 ›' : '開始學 ›'}</span>
+                  ${r === nextStep ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>先從這裡開始！</b></span>' : ''}
+                </a></li>` : `<li class="${r.done ? 'done' : ''} ${r === nextStep ? 'now' : ''}">
+                <span class="route-n">${r.done ? '✓' : i + 1}</span>${ic(r.icon)}<span class="route-t"><b>${r.name}</b><small>${r.sub}</small></span>
+                ${r.done ? (r.claimed ? `<span class="route-got">${ic('gift')} 已領</span>` : `<button type="button" class="route-claim" data-claim="${r.id}">${ic('gift')} 領獎勵 +10</button>`)
+                  : r.scroll ? `<button type="button" class="route-go ${r === nextStep ? 'tap-hint' : ''}" data-scroll="${r.scroll}">${r.up ? (r === nextStep ? '下一步 ↑' : '在上面 ↑') : (r === nextStep ? '下一步 ↓' : '在下面 ↓')}</button>`
+                  : `<a class="route-go ${r === nextStep ? 'tap-hint' : ''}" href="${r.href}">${r === nextStep ? '下一步 ›' : '前往 ›'}</a>`}</li>`).join('')}
+            </ol>
+            <a class="route-stamps" href="#/map" aria-label="今日集章">
+              <span class="dg-title">今日集章 <b class="dg-count">${Math.min(store.daily().stamps.length, store.DAILY_GOAL)}/${store.DAILY_GOAL}</b></span>
+              <span class="mg-row">${Object.keys(store.STAMPS).map((k) => `<span class="stamp ${store.daily().stamps.includes(k) ? 'on' : ''}" title="${store.STAMPS[k].name}">${ic(store.STAMPS[k].icon)}<small>${store.STAMPS[k].name}</small></span>`).join('')}</span>
+            </a>
+            ${allDone ? ((dd.claimed || []).includes('chest') ? `<p class="route-chest done">${ic('trophy')} 今日寶箱已打開，明天見！</p>` : `<button type="button" class="route-chest tap-hint" data-claim="chest">${ic('gift')} 全部完成！打開今日寶箱 +30</button>`) : ''}
+          </section>
+
 
           <section class="glass play-zone ${doneToday ? 'hot' : ''}" aria-label="練習區">
             <div class="pz-head"><b>${ic('star')} 練習區</b><small>${doneToday ? '今天的課上完了！再玩一個，把章集滿！' : '依語言分好了，挑一個玩！'}</small></div>
@@ -370,7 +378,7 @@ function langGroups(ex, dayN) {
   const sub = (id) => `#/subject/${id}`;
   return [
     { id: 'ko', name: '韓文', cls: 'pink', tiles: [
-      { href: '#/hangul', icon: 'ko', name: '40 音', sub: `${hangulProgress().passed}／4 關` },
+      { href: '#/hangul', icon: 'ko', name: '40 音', sub: `${hangulProgress().passed}／4 關`, badge: hangulProgress().done ? '' : '必學' },
       { href: '#/game/match-ko', icon: 'cards', name: '翻牌配對', sub: '圖＋韓文' },
       { href: '#/game/speed-ko', icon: 'fire', name: '快問快答', sub: '60 秒用說的' },
       { href: sub('ko'), icon: 'book', name: '韓文題庫', sub: '追星韓語・TOPIK' },
@@ -393,7 +401,7 @@ function langRowHTML(g, tapHref = '', big = false) {
   return `<div class="lang-row lang-${g.id}">
     <span class="lang-tag ${g.cls}">${ic(g.id === 'mix' ? 'zh' : g.id)}<b>${g.name}</b></span>
     <div class="lang-tiles ${big ? 'big' : ''}">${g.tiles.map((t) => `<a class="pz-tile ${g.cls}${t.href === tapHref ? ' tap-hint' : ''}" href="${t.href}"${t.ext ? ' target="_blank" rel="noopener"' : ''}>
-      <span class="pz-ic">${ic(t.icon)}</span><b>${t.name}</b><small>${esc(t.sub)}</small>
+      ${t.badge ? `<span class="pz-new must">${t.badge}</span>` : ''}<span class="pz-ic">${ic(t.icon)}</span><b>${t.name}</b><small>${esc(t.sub)}</small>
       ${t.href === tapHref ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span>' : ''}</a>`).join('')}</div>
   </div>`;
 }
