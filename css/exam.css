@@ -345,3 +345,7 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
 .welcome-logo small { font-size: 18px; color: #8a7563; font-weight: 800; }
 .welcome-logo img { width: min(420px, 86vw); height: auto; filter: drop-shadow(0 6px 12px rgba(160, 95, 105, .2)); }
 @media (max-width: 520px) { .brand-logo img { height: 62px; } }
+.route-go { border: 0; cursor: pointer; font: inherit; }
+.route-t .hg-prog { display: block; width: 100%; max-width: 180px; margin-top: 4px; }
+.flash { animation: flashCard 1.6s ease; }
+@keyframes flashCard { 0%, 100% { box-shadow: none; } 30% { box-shadow: 0 0 0 5px #ffd56b, 0 0 28px rgba(240, 180, 41, .7); } }
