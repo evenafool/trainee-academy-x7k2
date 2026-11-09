@@ -18,6 +18,9 @@ function rate(lang) {
 const SHOTS = [{ pos: '35% 40%', zoom: 1.18 }, { pos: '65% 40%', zoom: 1.18 }, { pos: '50% 40%', zoom: 1.02 }];
 
 let token = 0;
+// 主角立繪跟著章節換裝：粉絲（1～4 章）→ 練習生（5～10）→ 出道（11～15）→ 頒獎典禮（16～）
+let meCh = 1;
+const spriteOf = (c) => (c !== 'me' ? `sprite-${c}` : meCh <= 4 ? 'sprite-me' : meCh <= 10 ? 'me-trainee' : meCh <= 15 ? 'me-debut' : 'me-award');
 export function closeDrama() {
   token++;
   stopSpeaking();
@@ -143,7 +146,7 @@ function buildStage({ title, sub, dots = 0, pouch = [] }) {
         if (!c || !NAMES[c]) { el.innerHTML = ''; el.dataset.who = ''; continue; }
         if (el.dataset.who === c) continue;
         el.dataset.who = c;
-        el.innerHTML = `<img src="assets/art/sprite-${c}.webp" alt="" onerror="this.remove()"><span class="vn-tag">${esc(NAMES[c])}</span>`;
+        el.innerHTML = `<img src="assets/art/${spriteOf(c)}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/sprite-${c}.webp'"><span class="vn-tag">${esc(NAMES[c])}</span>`;
       }
     },
     focus(who) {
@@ -203,6 +206,7 @@ function stepsOf(st) {
 }
 
 export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
+  meCh = lv?.ch || 1;
   const my = ++token + 1; // buildStage 會再 +1
   const st = STORIES[lv.id];
   const steps = stepsOf(st);
@@ -357,6 +361,7 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
 
 // ───────── 上台模式：對話練習在舞台上演出（由語音教室驅動） ─────────
 export function openStage(lv, n, { title = '上台演出', partner } = {}) {
+  meCh = lv?.ch || 1;
   const stage = buildStage({ title: `${title}：${lv.title}`, sub: `第 ${n} 天・情境對話` });
   const { $ } = stage;
   stage.setImage('talk', [`assets/art/talk-${lv.id}.webp`, `assets/art/bg-${lv.bg}.webp`, `assets/art/story-${lv.id}.webp`, 'assets/art/bg-practice.webp']);

@@ -184,12 +184,14 @@ views.exam = (arg) => renderExam($app, arg);
 views.hangul = (arg) => renderHangul($app, arg);
 views.game = (arg = 'match-ko') => (arg.startsWith('speed') ? renderSpeed : renderMatch)($app, arg.endsWith('en') ? 'en' : 'ko');
 
+// 版權標示（我的、歡迎頁、首頁底部）
+const COPYRIGHT = `<p class="copyright">© ${new Date().getFullYear()} 蟻葷婦人 版權所有<br>IG／Threads：<a href="https://www.instagram.com/evenafool/" target="_blank" rel="noopener">@evenafool</a>・<a href="https://www.threads.net/@evenafool" target="_blank" rel="noopener">Threads</a></p>`;
+
 views.onboard = () => {
   const p = store.get().profile || {};
   const draft = { name: p.name || '', stage: p.stage || 'jh', accent: p.accent || 'pink' };
   $app.innerHTML = `
     <section class="onboard">
-      <div class="logo-big">✨</div>
       <h1 class="welcome-logo"><small>歡迎來到</small><img src="assets/art/logo.webp" alt="練習生學院"></h1>
       <p class="muted">國文・英文・韓文，用追星的熱情來讀書</p>
       <label class="field"><span>你的藝名</span>
@@ -199,6 +201,7 @@ views.onboard = () => {
       <div class="field"><span>選你的應援色</span>
         <div class="swatches" id="ob-accent">${ACCENTS.map((a) => `<button class="swatch ${a.id === draft.accent ? 'on' : ''}" data-v="${a.id}" style="--c:${a.color}" title="${a.name}"></button>`).join('')}</div></div>
       <button class="btn primary big" id="ob-go">${p.name ? '儲存設定' : '開始我的出道之路 ' + ic('star')}</button>
+      ${COPYRIGHT}
     </section>`;
   const bindPills = (id, k) => $app.querySelectorAll(`#${id} button`).forEach((b) => b.onclick = () => {
     draft[k] = b.dataset.v;
@@ -348,6 +351,7 @@ views.home = () => {
             <span>出道倒數</span><b>${days}</b><span>天</span>
             <div class="xpbar"><i style="width:${pct}%"></i></div>
           </div>
+          ${COPYRIGHT}
 
         </div>
 
@@ -804,7 +808,8 @@ views.me = () => {
       <a class="btn big" href="#/onboard">${ic('me')} 修改藝名／學程／應援色</a>
       <button class="btn ghost danger" id="me-reset">清除所有進度</button>
     </div>
-    <p class="muted small center">${ttsOK ? '' : '這個瀏覽器不支援語音朗讀，聽力題會自動略過。'}進度只存在這台裝置上。</p>`;
+    <p class="muted small center">${ttsOK ? '' : '這個瀏覽器不支援語音朗讀，聽力題會自動略過。'}進度只存在這台裝置上。</p>
+    ${COPYRIGHT}`;
   $app.querySelector('#namesForm').onsubmit = (e) => {
     e.preventDefault();
     const v = (id) => $app.querySelector(id).value.trim();

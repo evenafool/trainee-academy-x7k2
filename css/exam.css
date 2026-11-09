@@ -398,3 +398,7 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
 .hg-feature-go .ic { width: 24px; height: 24px; }
 .hg-feature .pz-tap { right: auto; left: 150px; bottom: 6px; }
 @media (max-width: 520px) { .hg-feature { min-height: 250px; } .hg-feature-body b { font-size: 28px; } .hg-feature-mina { right: -10%; top: 12%; height: 190%; } .hg-feature-bg i { width: 42px; height: 42px; font-size: 22px; } }
+
+/* 版權 */
+.copyright { margin: 18px auto 6px; text-align: center; font-size: 12px; font-weight: 700; color: #a08c7a; line-height: 1.7; }
+.copyright a { color: #c97b84; font-weight: 900; text-decoration: none; }
