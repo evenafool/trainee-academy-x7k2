@@ -288,3 +288,8 @@ li.done .route-n { background: #5fb898; }
 .route-claim .ic, .route-got .ic, .route-chest .ic { width: 18px; height: 18px; }
 .route-chest { margin-top: 10px; width: 100%; border: 0; border-radius: 16px; padding: 10px; font-weight: 900; font-size: 15px; background: linear-gradient(135deg, #fff3c4, #ffd56b); color: #6b4a00; display: flex; justify-content: center; align-items: center; gap: 6px; cursor: pointer; }
 p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
+.hg-actions { display: grid; gap: 10px; }
+.hg-card.now { box-shadow: 0 0 0 4px #f0b429, 0 4px 0 #e3cbb5; transform: scale(1.04); background: #fffaf0; }
+.hg-guide { position: sticky; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); margin-top: 12px; display: grid; gap: 4px; justify-items: center; text-align: center; padding: 12px; border-radius: 18px; background: #fffaf3; border: 3px solid #fff; box-shadow: 0 8px 20px rgba(120, 85, 55, .25); z-index: 5; }
+.hg-guide b { font-size: 22px; color: #4a3728; }
+.hg-guide p { margin: 0; color: #6b5848; font-weight: 800; }

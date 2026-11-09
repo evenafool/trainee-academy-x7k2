@@ -2,7 +2,7 @@
 // 四關：基本母音 10 → 基本子音 14 → 雙子音 5 → 複合母音 11；每個字母點了會念（念成音節，例如 ㄱ→가）
 // 每關有小測驗（聽音選字母、看字母選讀音），80 分過關；還有「拼字積木」：子音＋母音拼成一個字
 import * as store from './store.js';
-import { esc, ic, shuffle, speakAsync, stopSpeaking, toast, confetti } from './util.js';
+import { esc, ic, shuffle, speakAsync, stopSpeaking, toast, confetti, sleep } from './util.js';
 import { sfx } from './sound.js';
 import { mountHost } from './npc.js';
 
@@ -103,7 +103,11 @@ function renderStage(id) {
           <span class="hg-ex">${esc(x.word)}<small>${esc(x.mean)}</small></span>
         </button>`).join('')}
     </div>
-    <button type="button" class="btn primary big" id="hgQuiz">${ic('star')} 小測驗（8 題，80 分過關）</button>`;
+    <div class="hg-actions">
+      <button type="button" class="btn primary big" id="hgGuide">${ic('speaker')} 敏雅老師全部念一遍（語音教學）</button>
+      <button type="button" class="btn big" id="hgQuiz">${ic('star')} 小測驗（8 題，80 分過關）</button>
+    </div>
+    <div class="hg-guide" id="hgGuideBox" hidden><b id="hgNow"></b><p id="hgSaid">老師念的時候可以小聲跟著念</p><button type="button" class="pill-btn" id="hgStop">停止</button></div>`;
   $app.querySelectorAll('.hg-card').forEach((b) => b.onclick = async () => {
     const x = ALL.find((y) => y.ch === b.dataset.ch);
     h.heard[x.ch] = true;
@@ -112,10 +116,52 @@ function renderStage(id) {
     setTimeout(() => b.classList.remove('pop'), 400);
     host?.say(`「${x.ch}」念 ${x.rom}，像注音的 ${x.zh}。例如「${x.word}」是${x.mean}。`, 'cheer', 4200);
     stopSpeaking();
-    await say(x.syl, 0.6);
-    await say(x.word, 0.7);
+    await speakAsync(`這個字母念 ${x.rom}，像注音的 ${x.zh}。`, 'zh-TW');
+    await say(x.syl, 0.55);
+    await sleep(250);
+    await say(x.syl, 0.55);
+    await speakAsync(`例如，${x.mean}，`, 'zh-TW');
+    await say(x.word, 0.65);
   });
   $app.querySelector('#hgQuiz').onclick = () => startQuiz(st, items);
+  $app.querySelector('#hgGuide').onclick = () => guide(st, items);
+}
+
+// 語音教學：老師一個一個帶念（中文講解 → 韓文示範兩次＋例字 → 孩子跟念 → 稱讚或再示範）
+let guideRun = 0;
+async function guide(st, items) {
+  const my = ++guideRun;
+  const h = hState();
+  const box = $app.querySelector('#hgGuideBox');
+  const $now = $app.querySelector('#hgNow');
+  const $said = $app.querySelector('#hgSaid');
+  box.hidden = false;
+  $app.querySelector('#hgStop').onclick = () => { guideRun++; stopSpeaking(); box.hidden = true; };
+  window.addEventListener('hashchange', () => { guideRun++; }, { once: true });
+  const alive = () => my === guideRun;
+  const zh = (s) => speakAsync(s, 'zh-TW');
+  await zh(`我們來學${st.title.split('：')[1]}。我一個一個念給你聽，你可以小聲跟著念！`);
+  for (const x of items) {
+    if (!alive()) return;
+    $app.querySelectorAll('.hg-card').forEach((b) => b.classList.toggle('now', b.dataset.ch === x.ch));
+    $app.querySelector(`.hg-card[data-ch="${x.ch}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    $now.textContent = `${x.ch}　${x.rom}　像 ${x.zh}`;
+    host?.say(`「${x.ch}」念 ${x.rom}，像注音的 ${x.zh}`, 'happy', 4000);
+    await zh(`這個字母念 ${x.rom}，像注音的 ${x.zh}。`);
+    if (!alive()) return;
+    await say(x.syl, 0.55); await sleep(300); await say(x.syl, 0.55); await sleep(200);
+    await zh(`例如，${x.mean}，`); await say(x.word, 0.65);
+    h.heard[x.ch] = true; store.save();
+    $app.querySelector(`.hg-card[data-ch="${x.ch}"]`)?.classList.add('heard');
+    await sleep(300);
+  }
+  if (!alive()) return;
+  $app.querySelectorAll('.hg-card').forEach((b) => b.classList.remove('now'));
+  $now.textContent = '這一關念完了！';
+  $said.textContent = '想再聽哪一個，就點那張卡片';
+  host?.end();
+  await zh('這一關念完了！接下來去做小測驗，80 分就過關！');
+  $app.querySelector('#hgQuiz')?.classList.add('tap-hint');
 }
 
 // 測驗：聽音節選字母、看字母選讀音
