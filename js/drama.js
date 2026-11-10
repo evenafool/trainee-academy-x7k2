@@ -255,7 +255,7 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
     const w = WORDS[id];
     if (!w || caught.has(id)) return;
     const c = $('#vnCatch');
-    c.innerHTML = `<button type="button" class="catch-btn"><span class="catch-ring"></span>${wic(w)}<span><small>✨ 新單字！點我收集</small><b>${esc(w.zh)}</b><em>${esc(w.ko)}・${esc(w.en)}</em></span><img class="catch-hand" src="assets/art/icons/w-this.webp" alt=""></button>`;
+    c.innerHTML = `<button type="button" class="catch-btn"><span class="catch-ring"></span>${wic(w)}<span><small>新單字！點我收集</small><b>${esc(w.zh)}</b><em>${esc(w.ko)}・${esc(w.en)}</em></span><img class="catch-hand" src="assets/art/icons/w-this.webp" alt=""></button>`;
     c.hidden = false;
     sfx('ding');
     c.querySelector('button').onclick = (e) => { e.stopPropagation(); catchWord(id, e.currentTarget); };

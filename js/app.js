@@ -1,7 +1,7 @@
 import { STAGES, SUBJECTS, DECKS, RANKS, ACCENTS, CHEERS_RIGHT, CHEERS_WRONG } from './data.js';
 import { LEVELS, WORDS, STORIES, TEASERS, CHAPTERS, KEEPSAKES } from './course.js';
 import { applyNames, DEFAULT_NAMES } from './names.js';
-import { dayStr, VOICE_PICKS, ic, wic, listenOnce, speechMatches, splitKo, confetti } from './util.js';
+import { dayStr, VOICE_PICKS, ic, wic, listenOnce, speechMatches, splitKo, confetti, initFx, sparkleAt, flyText } from './util.js';
 import { sfx, armAudio, setMusic, setSfx } from './sound.js';
 import { openDrama } from './drama.js';
 import { renderMatch, renderSpeed } from './games.js';
@@ -360,14 +360,26 @@ views.home = () => {
       </div>
     </section>`;
 
+  // 剛上完課回到首頁：捲到學習路線，提醒領獎勵
+  let arrived = false;
+  try { arrived = sessionStorage.getItem('ta.arrive') === '1'; sessionStorage.removeItem('ta.arrive'); } catch (e) { /* 略過 */ }
+  if (arrived) setTimeout(() => { const el = $app.querySelector('.route'); el?.scrollIntoView({ behavior: 'smooth', block: 'center' }); el?.classList.add('arrive'); setTimeout(() => el?.classList.remove('arrive'), 3800); }, 350);
   $app.querySelectorAll('[data-scroll]').forEach((b) => b.onclick = () => {
     const el = $app.querySelector(b.dataset.scroll);
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     el?.classList.add('flash'); setTimeout(() => el?.classList.remove('flash'), 1600);
   });
   $app.querySelectorAll('[data-claim]').forEach((b) => b.onclick = () => {
+    const r = b.getBoundingClientRect();
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const chest = b.dataset.claim === 'chest';
     const xp = store.claimTask(b.dataset.claim);
-    if (xp) { sfx('reward'); confetti(); toast(`領到 ${xp} 應援值！`); views.home(); }
+    if (!xp) return;
+    sfx('reward');
+    views.home(); // 重畫（不換頁，捲動位置不變）
+    sparkleAt(x, y, chest ? 14 : 9);
+    flyText(x, y, `+${xp} 應援值`);
+    if (chest) { confetti(); toast('今日寶箱打開了！明天再來挑戰！'); }
   });
   $app.querySelector('#watchDrama').onclick = async () => {
     await openDrama(lesson.lv, lesson.n, { endLabel: '去上今天的課' });
@@ -884,11 +896,15 @@ function route() {
   $nav.querySelectorAll('a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === `#/${name}`));
   view(arg);
   window.scrollTo(0, 0);
+  // 換頁動畫：只在剛換頁的短時間內掛著，之後頁面自己重畫（例如領獎）不會再播一次
+  $app.classList.remove('view-in'); void $app.offsetWidth; $app.classList.add('view-in');
+  clearTimeout(route.t); route.t = setTimeout(() => $app.classList.remove('view-in'), 900);
 }
 
 window.addEventListener('hashchange', route);
 applyAccent();
 armAudio();
+initFx();
 route();
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {

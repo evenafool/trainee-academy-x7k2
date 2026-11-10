@@ -373,7 +373,7 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
 }
 
 /* 首頁主視覺：短劇卡＋40 音卡並排 */
-.hero-pair { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; align-items: stretch; }
+.hero-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 14px; align-items: stretch; } /* 左欄不夠寬就自動上下排，不會擠成細條 */
 .hero-pair:has(> :only-child) { grid-template-columns: 1fr; }
 @media (max-width: 860px) { .hero-pair { grid-template-columns: 1fr; } }
 .hg-feature { position: relative; overflow: hidden; display: grid; align-items: end; min-height: 300px; padding: 0; border-radius: 26px; text-decoration: none; color: #5c3d00;

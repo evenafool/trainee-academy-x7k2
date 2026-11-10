@@ -5,7 +5,7 @@
 //   #/talk/drill           語音特訓（舊字隨機抽考、舊句子再練一次）
 import { LEVELS, WORDS, STORIES, TEASERS, BADGES, INTROS } from './course.js';
 import * as store from './store.js';
-import { esc, ic, wic, pick, shuffle, sleep, speakAsync, stopSpeaking, ttsOK, dayStr } from './util.js';
+import { esc, ic, wic, pick, shuffle, sleep, speakAsync, stopSpeaking, ttsOK, dayStr, confetti } from './util.js';
 import { rewardForDay, rewardHTML } from './rewards.js';
 import { sfx, duck } from './sound.js';
 import { openDrama, closeDrama, openStage, panelSrcs } from './drama.js';
@@ -539,6 +539,7 @@ async function runLesson(my, lv, n) {
   if (res.reward) await revealReward(my, res.reward);
   if (TEASERS[lv.id]) await say(my, [[TEASERS[lv.id], 'zh-TW']], `下集預告\n${TEASERS[lv.id]}`);
   await say(my, [['明天見！', 'zh-TW'], ['오늘도 수고했어요!', 'ko-KR'], ['Great job today!', 'en-US']], '今天就練到這裡，明天記得回來喔！\n韓　오늘도 수고했어요!（辛苦了！）\n英　Great job today!');
+  return res;
 }
 
 // ───────── 延伸字快閃：剛剛劇情裡出現的考試常考字，聽一次、看例句、跟念英文 ─────────
@@ -639,6 +640,45 @@ function complete(lv, tally, words, n) {
   s.badges.push(...earned.map((b) => b.id));
   const p = store.addProgress(xp, first ? 'lesson' : 'replay', { title: `第 ${n} 天・${lv.title}`, good: tally.good, tries: tally.tries, stars });
   return { stars, xp, earned, reward, ...p };
+}
+
+// ───────── 成績單：上完課的總結＋下一步（星星一顆一顆亮、今天學的字、明天的預告） ─────────
+export function showResult(lv, n, res) {
+  document.querySelector('.result')?.remove();
+  const words = [...lv.words, ...(lv.extra || [])].map((id) => WORDS[id]).filter(Boolean);
+  const next = DAYS()[n]; // n 是從 1 開始的第幾天，所以 DAYS()[n] 就是下一集
+  const d = res.daily;
+  const box = document.createElement('div');
+  box.className = 'result';
+  box.setAttribute('role', 'dialog');
+  box.setAttribute('aria-label', '今天的成績單');
+  box.innerHTML = `<div class="result-box">
+      <p class="result-kicker">第 ${n} 天・完成</p>
+      <h2 class="result-title">${esc(STORIES[lv.id]?.title || lv.title)}</h2>
+      <div class="result-stars" aria-label="${res.stars} 顆星">${[0, 1, 2].map(() => ic('star')).join('')}</div>
+      <div class="result-xp">應援值 <b id="resXp">+0</b></div>
+      <div class="result-sec"><small>今天學會的字</small><div class="result-words">${words.map((w) => `<span>${wic(w)}${esc(w.zh)}</span>`).join('')}</div></div>
+      <div class="result-sec"><small>今日集章 ${Math.min(d.stamps.length, store.DAILY_GOAL)}／${store.DAILY_GOAL}${res.goalJustMet ? '　目標達成！' : ''}</small></div>
+      ${next ? `<div class="result-next"><b>明天・第 ${n + 1} 集</b>${esc(STORIES[next.id]?.title || next.title)}${TEASERS[lv.id] ? `<br>${esc(TEASERS[lv.id])}` : ''}</div>` : ''}
+      <div class="result-actions">
+        <button type="button" class="result-go" id="resHome">${ic('gift')} 回首頁領獎勵</button>
+        <a class="result-go alt" href="#/practice">再玩一個練習</a>
+      </div>
+    </div>`;
+  document.body.append(box);
+  const off = () => { box.remove(); window.removeEventListener('hashchange', off); };
+  window.addEventListener('hashchange', off);
+  box.querySelector('#resHome').onclick = () => { try { sessionStorage.setItem('ta.arrive', '1'); } catch (e) { /* 略過 */ } off(); location.hash = '#/home'; };
+  confetti();
+  // 星星一顆一顆亮起來
+  const stars = [...box.querySelectorAll('.result-stars .ic')];
+  stars.slice(0, res.stars).forEach((el, i) => setTimeout(() => { el.classList.add('on'); sfx('ding'); }, 450 + i * 380));
+  // 應援值跳數字
+  const $xp = box.querySelector('#resXp');
+  let t0 = 0;
+  const tick = (t) => { t0 ||= t; const k = Math.min(1, (t - t0) / 900); $xp.textContent = `+${Math.round(res.xp * k)}`; if (k < 1 && box.isConnected) requestAnimationFrame(tick); };
+  setTimeout(() => requestAnimationFrame(tick), 500);
+  setTimeout(() => { $xp.textContent = `+${res.xp}`; }, 1800);
 }
 
 // ───────── 回放舊篇章 ─────────
@@ -796,7 +836,7 @@ export function renderTalk($app, arg = '') {
       if (mode === 'drill') await runDrill(my);
       else if (mode === 'boss') await runBoss(my, lv);
       else if (mode === 'replay') await runReplay(my, lv, n);
-      else await runLesson(my, lv, n);
+      else { const res = await runLesson(my, lv, n); if (res) showResult(lv, n, res); }
       setStep(steps.length);
       setOrb('idle', '完成了！');
       q('#doneBar').hidden = false;

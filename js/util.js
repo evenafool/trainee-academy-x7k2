@@ -161,17 +161,67 @@ export function speechMatches(alts, target) {
 }
 
 export function toast(msg) {
+  document.querySelectorAll('.toast').forEach((x) => x.remove());
   const t = document.createElement('div');
   t.className = 'toast';
   t.textContent = msg;
   document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2200);
+  setTimeout(() => t.classList.add('out'), 1900);
+  setTimeout(() => t.remove(), 2300);
 }
 
-export function confetti() {
+// ───────── 特效（配色跟產品一致：玫瑰粉、奶茶金、薰衣草、奶油白） ─────────
+const FX_COLORS = ['#f0b429', '#ffd56b', '#e0a3a9', '#c97b84', '#cdb4f0', '#fff3c4', '#f7cfd5'];
+const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// 彩帶雨：過關、拿到證書、開寶箱時用
+export function confetti(n = 46) {
+  if (calm()) return;
+  document.querySelector('.confetti')?.remove();
   const box = document.createElement('div');
   box.className = 'confetti';
-  box.innerHTML = Array.from({ length: 40 }, (_, i) => `<i style="left:${Math.random() * 100}%;animation-delay:${Math.random() * 0.6}s;background:hsl(${(i * 47) % 360} 90% 60%)"></i>`).join('');
+  box.setAttribute('aria-hidden', 'true');
+  box.innerHTML = Array.from({ length: n }, (_, i) => {
+    const kind = ['rib', 'dot', 'star'][i % 3];
+    const size = kind === 'star' ? 14 + Math.random() * 10 : 8 + Math.random() * 8;
+    return `<span style="left:${Math.random() * 100}%;--d:${(Math.random() * 0.7).toFixed(2)}s;--t:${(2 + Math.random() * 1.2).toFixed(2)}s;--sway:${(Math.random() * 80 - 40).toFixed(0)}px"><i class="${kind}" style="--c:${FX_COLORS[i % FX_COLORS.length]};--s:${size.toFixed(0)}px;--r:${(Math.random() * 720 - 360).toFixed(0)}deg"></i></span>`;
+  }).join('');
   document.body.appendChild(box);
-  setTimeout(() => box.remove(), 2600);
+  setTimeout(() => box.remove(), 4200);
+}
+
+// 小星星噴出：按到重要按鈕、領獎勵時用（x、y 是畫面座標）
+export function sparkleAt(x, y, n = 7) {
+  if (calm()) return;
+  const box = document.createElement('div');
+  box.className = 'sparkle-burst';
+  box.setAttribute('aria-hidden', 'true');
+  box.style.left = `${x}px`; box.style.top = `${y}px`;
+  box.innerHTML = Array.from({ length: n }, (_, i) => {
+    const ang = (Math.PI * 2 * i) / n + Math.random() * 0.6;
+    const dist = 26 + Math.random() * 30;
+    return `<i style="--dx:${(Math.cos(ang) * dist).toFixed(0)}px;--dy:${(Math.sin(ang) * dist).toFixed(0)}px;--c:${FX_COLORS[i % FX_COLORS.length]};--s:${(8 + Math.random() * 8).toFixed(0)}px"></i>`;
+  }).join('');
+  document.body.appendChild(box);
+  setTimeout(() => box.remove(), 700);
+}
+
+// 數字往上飄：「+10」
+export function flyText(x, y, text) {
+  const el = document.createElement('div');
+  el.className = 'fly-text';
+  el.textContent = text;
+  el.style.left = `${x}px`; el.style.top = `${y}px`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+// 全站只要啟動一次：按重要按鈕會噴小星星；圖片載入完成會加上 is-loaded（讓載入中的閃光底停下來）
+export function initFx() {
+  document.addEventListener('pointerdown', (e) => {
+    const hit = e.target.closest?.('a.cta, .btn.primary, .pill-btn.strong, .route-claim, .route-chest, .hg-feature, .pz-tile, .catch-btn, .vn-btn.strong, .result-go');
+    if (hit) sparkleAt(e.clientX, e.clientY);
+  }, { passive: true });
+  document.addEventListener('load', (e) => { if (e.target?.tagName === 'IMG') e.target.classList.add('is-loaded'); }, true);
+  document.addEventListener('error', (e) => { if (e.target?.tagName === 'IMG') e.target.classList.add('is-loaded'); }, true);
 }
