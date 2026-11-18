@@ -94,10 +94,10 @@ function flyTo(srcEl, dstEl, html) {
 }
 
 // ───────── 共用舞台骨架 ─────────
-function buildStage({ title, sub, dots = 0, pouch = [] }) {
+function buildStage({ title, sub, dots = 0, pouch = [], strip = false }) {
   closeDrama();
   const box = document.createElement('section');
-  box.className = 'drama';
+  box.className = strip ? 'drama strip-mode' : 'drama';
   box.setAttribute('aria-label', '短劇劇場');
   box.innerHTML = `
     <div class="vn-stage">
@@ -128,9 +128,10 @@ function buildStage({ title, sub, dots = 0, pouch = [] }) {
   const api = {
     box, $,
     // 換大畫面（key 一樣就不換）
-    setImage(key, srcs, { burst = false, shot = null } = {}) {
+    setImage(key, srcs, { burst = false, shot = null, index = 0 } = {}) {
       if (key === shownKey) return;
       shownKey = key;
+      if (strip) { api.stripPanel(key, srcs, burst, index); return; }
       const img = document.createElement('img');
       img.alt = '';
       const cg = $('#vnCg');
@@ -142,6 +143,73 @@ function buildStage({ title, sub, dots = 0, pouch = [] }) {
       [...cg.querySelectorAll('img')].slice(0, -1).forEach((old) => { old.classList.remove('in'); setTimeout(() => old.remove(), 700); });
       sfx('tap');
     },
+    // ───── 漫畫條模式（直立手機）：劇照一格一格往下疊、進場動畫、鏡頭推近講話的人 ─────
+    stripPanel(key, srcs, burst, index) {
+      const cg = $('#vnCg');
+      let fig = cg.querySelector(`.wt-panel[data-key="${key}"]`);
+      if (!fig) {
+        fig = document.createElement('figure');
+        fig.className = `wt-panel enter ${burst ? 'burst zoom' : index % 2 ? 'from-right' : 'from-left'}`;
+        fig.dataset.key = key;
+        fig.innerHTML = '<img class="wt-img" alt=""><img class="wt-sp" alt="" hidden><span class="wt-speed"></span><span class="wt-ring"></span><span class="wt-who"><b></b><i></i></span>';
+        const img = fig.querySelector('.wt-img');
+        // 沒有劇照時（用背景代替）：格子裡站一個講話角色的立繪
+        img.addEventListener('load', () => { if (!img.src.includes('/drama/')) { fig.classList.add('nostill'); api.stripFocus(api.lastWho); } });
+        loadChain(img, srcs, null, null);
+        fig.addEventListener('animationend', (e) => { if (e.target === fig) fig.classList.remove('enter'); });
+        cg.append(fig);
+        sfx('tap');
+      }
+      cg.querySelectorAll('.wt-panel').forEach((x) => { x.classList.toggle('now', x === fig); if (x !== fig) x.classList.add('seen'); });
+      box.classList.add('cg');
+      api.stripFig = fig;
+      requestAnimationFrame(() => {
+        if (fig === cg.lastElementChild) cg.scrollTo({ top: cg.scrollHeight, behavior: reducedMotion() ? 'auto' : 'smooth' });
+        else fig.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
+      });
+    },
+    stripFocus(who) {
+      api.lastWho = who;
+      const fig = api.stripFig;
+      if (!fig) return;
+      const face = FACES[api.panelId] || {};
+      const img = fig.querySelector('.wt-img');
+      const tag = fig.querySelector('.wt-who');
+      const sp = fig.querySelector('.wt-sp');
+      if (fig.classList.contains('nostill')) {
+        // 沒有劇照：讓講話的人站在格子中間
+        if (who && NAMES[who]) { sp.hidden = false; sp.src = `assets/art/${spriteOf(who)}.webp`; } else sp.hidden = true;
+        tag.style.opacity = who && NAMES[who] ? 1 : 0;
+        tag.style.left = '50%';
+        tag.querySelector('b').textContent = NAMES[who] || '';
+        return;
+      }
+      const x = who ? face[who] : undefined;
+      if (x === undefined) { img.style.transform = 'scale(1)'; tag.style.opacity = 0; return; }
+      img.style.transformOrigin = `${x * 100}% 35%`;
+      img.style.transform = 'scale(1.18)';
+      tag.style.opacity = 1;
+      tag.style.left = `${x * 100}%`;
+      tag.querySelector('b').textContent = NAMES[who] || '';
+      const ring = fig.querySelector('.wt-ring');
+      ring.style.left = `${x * 100}%`;
+      ring.classList.remove('on'); void ring.offsetWidth; ring.classList.add('on');
+      api.emote(fig, x, (api.panelCast || []).find((c) => c.c === who)?.e);
+    },
+    emote(fig, x, e) {
+      if (reducedMotion()) return;
+      const SETS = { shock: [['!', 'jolt', 34], ['!', 'jolt', 26]], happy: [['♥', 'pink', 22], ['✦', 'gold', 20], ['♥', 'pink', 16]], love: [['♥', 'pink', 26], ['♥', 'pink', 18], ['♥', 'pink', 14]], think: [['?', '', 30]], sad: [['…', '', 26]], cry: [['…', '', 26]], cool: [['✦', 'gold', 24], ['✦', 'gold', 16]] };
+      const set = SETS[e] || [['✦', 'gold', 18]];
+      set.forEach(([ch, cls, size], i) => setTimeout(() => {
+        const el = document.createElement('span');
+        el.className = `wt-emo ${cls}`;
+        el.textContent = ch;
+        el.style.cssText = `left:${(x * 100 + (i - (set.length - 1) / 2) * 7).toFixed(1)}%;top:${12 + (i % 2) * 6}%;font-size:${size}px;--dx:${(i - 1) * 10}px`;
+        fig.append(el);
+        el.addEventListener('animationend', () => el.remove());
+      }, 120 + i * 160));
+    },
+    stripReset() { $('#vnCg').innerHTML = ''; shownKey = ''; api.stripFig = null; },
     setSprites(left, right) {
       for (const [el, c] of [[$('#spL'), left], [$('#spR'), right]]) {
         if (!c || !NAMES[c]) { el.innerHTML = ''; el.dataset.who = ''; continue; }
@@ -151,6 +219,7 @@ function buildStage({ title, sub, dots = 0, pouch = [] }) {
       }
     },
     focus(who) {
+      if (strip) api.stripFocus(who);
       // 直立手機的鏡頭：把講話的角色放在畫面正中間（劇照裡每個角色的位置記在 facemap.js）
       //   旁白時鏡頭不動；換人講話時平順地從一個角色移到另一個
       const cg = $('#vnCg');
@@ -179,6 +248,7 @@ function buildStage({ title, sub, dots = 0, pouch = [] }) {
       b.classList.add('pop');
       b.classList.toggle('narr', narr);
       b.classList.toggle('shout', shout);
+      if (strip && shout && api.stripFig && !reducedMotion()) { const f = api.stripFig; f.classList.remove('shake'); void f.offsetWidth; f.classList.add('shake'); }
       b.classList.toggle('think', think);
       b.classList.toggle('mine', mine);
       $('#vnName').textContent = name;
@@ -227,7 +297,9 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
   const st = STORIES[lv.id];
   const steps = stepsOf(st);
   const words = (lv.words || []).map((id) => WORDS[id]).filter(Boolean);
-  const stage = buildStage({ title: st.title, sub: `第 ${n} 天・短劇`, dots: st.panels.length, pouch: words });
+  // 直立手機：用漫畫條模式看短劇
+  const strip = matchMedia('(orientation: portrait) and (max-width: 820px)').matches;
+  const stage = buildStage({ title: st.title, sub: `第 ${n} 天・短劇`, dots: st.panels.length, pouch: words, strip });
   const { $, box } = stage;
   const mine = token;
   $('#vnTools').innerHTML = '<button class="vn-btn" id="dAuto" type="button">自動 ✓</button>';
@@ -243,8 +315,10 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
   function setPanel(i) {
     const p = st.panels[i];
     stage.panelId = `${lv.id}-${i + 1}`;
-    stage.setImage(`p${i}`, panelSrcs(lv, i, p.bg), { burst: p.bg === 'burst', shot: SHOTS[i % SHOTS.length] });
+    stage.panelCast = p.cast || [];
+    stage.setImage(`p${i}`, panelSrcs(lv, i, p.bg), { burst: p.bg === 'burst', shot: SHOTS[i % SHOTS.length], index: i });
     box.querySelectorAll('.vn-dots i').forEach((d, k) => d.classList.toggle('on', k <= i));
+    if (strip && p.fx && stage.stripFig && !stage.stripFig.querySelector('.wt-fx')) { const f = stage.stripFig; setTimeout(() => f.insertAdjacentHTML('beforeend', `<span class="wt-fx">${esc(p.fx)}</span>`), 450); }
     const cast = p.cast.map((c) => c.c).filter((c) => NAMES[c]);
     stage.setSprites(cast[0], cast[1]);
   }
@@ -365,7 +439,7 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
       ${st.fact ? `<p><b>小知識</b>${esc(st.fact)}</p>` : ''}
       <div class="vn-ctrl"><button class="vn-btn" id="dAgain" type="button">從頭再看</button><button class="vn-btn strong" id="dEnd" type="button">${esc(endLabel)}</button></div>`);
     sfx('reward');
-    $('#dAgain').onclick = () => { $('#vnEnd').hidden = true; play(0); };
+    $('#dAgain').onclick = () => { $('#vnEnd').hidden = true; if (strip) stage.stripReset(); play(0); };
     $('#dEnd').onclick = () => resolver?.({ caught: [...caught], tapped });
     if (st.fact && ttsOK) await speakAsync(`小知識：${st.fact}`, 'zh-TW');
   }
