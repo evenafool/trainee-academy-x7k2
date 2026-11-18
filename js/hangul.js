@@ -2,7 +2,7 @@
 // 四關：基本母音 10 → 基本子音 14 → 雙子音 5 → 複合母音 11；每個字母點了會念（念成音節，例如 ㄱ→가）
 // 每關有小測驗（聽音選字母、看字母選讀音），80 分過關；還有「拼字積木」：子音＋母音拼成一個字
 import * as store from './store.js';
-import { esc, ic, shuffle, speakAsync, stopSpeaking, toast, confetti, sleep } from './util.js';
+import { esc, ic, shuffle, speakAsync, stopSpeaking, toast, confetti, sleep, reducedMotion } from './util.js';
 import { sfx } from './sound.js';
 import { mountHost } from './npc.js';
 
@@ -140,7 +140,7 @@ async function guide(st, items) {
   for (const x of items) {
     if (!alive()) return;
     $app.querySelectorAll('.hg-card').forEach((b) => b.classList.toggle('now', b.dataset.ch === x.ch));
-    $app.querySelector(`.hg-card[data-ch="${x.ch}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    $app.querySelector(`.hg-card[data-ch="${x.ch}"]`)?.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
     $now.textContent = `${x.ch}　${x.rom}　像 ${x.zh}`;
     await say(x.syl, 0.55); await sleep(400);
     if (!alive()) return;

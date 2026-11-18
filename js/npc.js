@@ -48,7 +48,9 @@ export const TIPS = {
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
 // 掛上陪玩角色；回傳 { say, right, wrong(type), end }
+let activeOff = null; // 上一位陪玩老師的收尾（清計時器、拿掉監聽）
 export function mountHost(key, $root = document.body) {
+  activeOff?.();
   document.querySelector('.npc-host')?.remove();
   const h = HOSTS[key];
   if (!h) return { say() {}, right() {}, wrong() {}, end() {} };
@@ -87,7 +89,8 @@ export function mountHost(key, $root = document.body) {
       introTimer = setTimeout(nextTip, 4300);
     }
   };
-  const off = () => { clearTimeout(introTimer); box.remove(); window.removeEventListener('hashchange', off); };
+  const off = () => { clearTimeout(timer); clearTimeout(introTimer); box.remove(); window.removeEventListener('hashchange', off); };
+  activeOff = off;
   window.addEventListener('hashchange', off);
   const body = box.querySelector('.npc-body');
   body.onclick = () => (step < h.intro.length ? nextTip() : say(pick([...h.intro, ...(h.right.length ? h.right : [h.intro[0]])]), 'cheer'));

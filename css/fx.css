@@ -53,7 +53,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid #f0b429; outline-offs
 @keyframes claimWiggle { 0%, 60%, 100% { transform: rotate(0) scale(1); } 70% { transform: rotate(-4deg) scale(1.08); } 80% { transform: rotate(4deg) scale(1.08); } 90% { transform: rotate(-2deg) scale(1.04); } }
 
 /* ───────── 上完課的成績單 ───────── */
-.result { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; background: rgba(60, 38, 48, .55); backdrop-filter: blur(6px); animation: viewFade .3s ease-out; overflow-y: auto; }
+dialog.result { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; margin: 0; border: 0; z-index: 80; padding: 16px; background: rgba(60, 38, 48, .55); backdrop-filter: blur(6px); overflow-y: auto; color: inherit; }
+dialog.result[open] { display: grid; place-items: center; animation: viewFade .3s ease-out; }
+dialog.result::backdrop { background: transparent; }
 .result-box { width: min(460px, 100%); display: grid; justify-items: center; gap: 12px; padding: 22px 20px 18px; border-radius: 28px; background: linear-gradient(180deg, #fffdf9, #fdf1e7); border: 4px solid #fff; box-shadow: 0 0 0 3px #f0c46b, 0 24px 60px rgba(0, 0, 0, .35); text-align: center; color: #4a3728; animation: resultPop .45s cubic-bezier(.2, 1.3, .4, 1); }
 @keyframes resultPop { from { transform: scale(.8) translateY(20px); opacity: 0; } }
 .result-kicker { margin: 0; font-size: 13px; font-weight: 900; letter-spacing: .12em; color: #c97b84; }
@@ -87,4 +89,29 @@ a:focus-visible, button:focus-visible { outline: 3px solid #f0b429; outline-offs
   body.is-lobby .me-stage .me-outfit { height: min(calc(100vh - 400px), 640px); min-height: 240px; }
   body.is-lobby .lobby-right .teacher-name { position: static; margin-top: 2px; }
   body.is-lobby .lobby-right .closet-link { margin-top: 8px; }
+}
+
+/* 建立檔案頁：顯示選到的應援色名稱 */
+.accent-name { color: var(--accent); font-weight: 900; }
+
+/* 首頁浮動「下一步」按鈕：在導覽列上方，那張卡已在畫面上時自動藏起來 */
+.next-pill { position: fixed; left: 50%; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 45; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px; max-width: calc(100% - 32px); padding: 11px 20px 11px 16px; border: 3px solid #fff; border-radius: 999px; font: inherit; font-size: 16px; font-weight: 900; white-space: nowrap; text-decoration: none; cursor: pointer; color: #fff;
+  background: linear-gradient(135deg, #e09aa3, #c97b84); box-shadow: 0 5px 0 #a35f69, 0 12px 26px rgba(163, 95, 105, .4); transition: opacity .3s, transform .3s; }
+.next-pill .ic { width: 26px; height: 26px; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .15)); }
+.next-pill > span { font-size: 20px; line-height: 1; }
+.next-pill.claim { color: #6b3a00; background: linear-gradient(135deg, #fff3c4, #ffd56b); box-shadow: 0 5px 0 #d9a14a, 0 12px 26px rgba(240, 180, 41, .5); }
+.next-pill.away { opacity: 0; pointer-events: none; transform: translate(-50%, 20px); }
+@media (prefers-reduced-motion: no-preference) {
+  .next-pill:not(.away) { animation: pillBob 1.6s ease-in-out infinite; }
+  .next-pill.claim:not(.away) { animation: pillBob 1.6s ease-in-out infinite, pillGlow 1.3s ease-in-out infinite; }
+}
+@keyframes pillBob { 50% { transform: translate(-50%, -5px); } }
+@keyframes pillGlow { 50% { box-shadow: 0 5px 0 #d9a14a, 0 0 0 6px rgba(255, 213, 107, .55), 0 12px 30px rgba(240, 180, 41, .65); } }
+.date-chip { font-weight: 800; color: #a35f69; }
+@media (max-width: 520px) { .date-chip { display: none; } .next-pill { font-size: 15px; } }
+/* 電腦版：放在頁首中間的空位，不擋內容 */
+@media (min-width: 761px) {
+  .next-pill { top: 30px; bottom: auto; font-size: 15px; padding: 8px 16px 8px 12px; }
+  .next-pill .ic { width: 22px; height: 22px; }
+  .next-pill.away { transform: translate(-50%, -16px); }
 }

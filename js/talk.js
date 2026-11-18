@@ -644,17 +644,16 @@ function complete(lv, tally, words, n) {
 
 // ───────── 成績單：上完課的總結＋下一步（星星一顆一顆亮、今天學的字、明天的預告） ─────────
 export function showResult(lv, n, res) {
-  document.querySelector('.result')?.remove();
+  document.querySelector('dialog.result')?.close();
   const words = [...lv.words, ...(lv.extra || [])].map((id) => WORDS[id]).filter(Boolean);
   const next = DAYS()[n]; // n 是從 1 開始的第幾天，所以 DAYS()[n] 就是下一集
   const d = res.daily;
-  const box = document.createElement('div');
+  const box = document.createElement('dialog');
   box.className = 'result';
-  box.setAttribute('role', 'dialog');
-  box.setAttribute('aria-label', '今天的成績單');
+  box.setAttribute('aria-labelledby', 'resTitle');
   box.innerHTML = `<div class="result-box">
       <p class="result-kicker">第 ${n} 天・完成</p>
-      <h2 class="result-title">${esc(STORIES[lv.id]?.title || lv.title)}</h2>
+      <h2 class="result-title" id="resTitle">${esc(STORIES[lv.id]?.title || lv.title)}</h2>
       <div class="result-stars" aria-label="${res.stars} 顆星">${[0, 1, 2].map(() => ic('star')).join('')}</div>
       <div class="result-xp">應援值 <b id="resXp">+0</b></div>
       <div class="result-sec"><small>今天學會的字</small><div class="result-words">${words.map((w) => `<span>${wic(w)}${esc(w.zh)}</span>`).join('')}</div></div>
@@ -666,10 +665,14 @@ export function showResult(lv, n, res) {
       </div>
     </div>`;
   document.body.append(box);
-  const off = () => { box.remove(); window.removeEventListener('hashchange', off); };
+  // 原生彈出視窗：焦點鎖在成績單裡、按 Esc 可以關掉；換頁時自動關
+  const off = () => { if (box.open) box.close(); };
   window.addEventListener('hashchange', off);
+  box.addEventListener('close', () => { window.removeEventListener('hashchange', off); box.remove(); }, { once: true });
   box.querySelector('#resHome').onclick = () => { try { sessionStorage.setItem('ta.arrive', '1'); } catch (e) { /* 略過 */ } off(); location.hash = '#/home'; };
-  confetti();
+  if (box.showModal) box.showModal(); else box.setAttribute('open', '');
+  box.querySelector('#resHome').focus();
+  confetti(46, box);
   // 星星一顆一顆亮起來
   const stars = [...box.querySelectorAll('.result-stars .ic')];
   stars.slice(0, res.stars).forEach((el, i) => setTimeout(() => { el.classList.add('on'); sfx('ding'); }, 450 + i * 380));

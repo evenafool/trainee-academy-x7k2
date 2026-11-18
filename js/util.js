@@ -172,10 +172,11 @@ export function toast(msg) {
 
 // ───────── 特效（配色跟產品一致：玫瑰粉、奶茶金、薰衣草、奶油白） ─────────
 const FX_COLORS = ['#f0b429', '#ffd56b', '#e0a3a9', '#c97b84', '#cdb4f0', '#fff3c4', '#f7cfd5'];
-const calm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+export const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const calm = reducedMotion;
 
 // 彩帶雨：過關、拿到證書、開寶箱時用
-export function confetti(n = 46) {
+export function confetti(n = 46, host = document.body) {
   if (calm()) return;
   document.querySelector('.confetti')?.remove();
   const box = document.createElement('div');
@@ -186,7 +187,7 @@ export function confetti(n = 46) {
     const size = kind === 'star' ? 14 + Math.random() * 10 : 8 + Math.random() * 8;
     return `<span style="left:${Math.random() * 100}%;--d:${(Math.random() * 0.7).toFixed(2)}s;--t:${(2 + Math.random() * 1.2).toFixed(2)}s;--sway:${(Math.random() * 80 - 40).toFixed(0)}px"><i class="${kind}" style="--c:${FX_COLORS[i % FX_COLORS.length]};--s:${size.toFixed(0)}px;--r:${(Math.random() * 720 - 360).toFixed(0)}deg"></i></span>`;
   }).join('');
-  document.body.appendChild(box);
+  host.appendChild(box); // 彈出視窗在最上層，彩帶要放進視窗裡才看得到
   setTimeout(() => box.remove(), 4200);
 }
 
@@ -218,6 +219,8 @@ export function flyText(x, y, text) {
 
 // 全站只要啟動一次：按重要按鈕會噴小星星；圖片載入完成會加上 is-loaded（讓載入中的閃光底停下來）
 export function initFx() {
+  // 換頁時把還沒播完的特效收掉，不會飄到下一頁
+  addEventListener('hashchange', () => document.querySelectorAll('.confetti, .sparkle-burst, .fly-text, .toast').forEach((el) => el.remove()));
   document.addEventListener('pointerdown', (e) => {
     const hit = e.target.closest?.('a.cta, .btn.primary, .pill-btn.strong, .route-claim, .route-chest, .hg-feature, .pz-tile, .catch-btn, .vn-btn.strong, .result-go');
     if (hit) sparkleAt(e.clientX, e.clientY);

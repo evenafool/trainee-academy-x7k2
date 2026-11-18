@@ -1,7 +1,7 @@
 import { STAGES, SUBJECTS, DECKS, RANKS, ACCENTS, CHEERS_RIGHT, CHEERS_WRONG } from './data.js';
 import { LEVELS, WORDS, STORIES, TEASERS, CHAPTERS, KEEPSAKES } from './course.js';
 import { applyNames, DEFAULT_NAMES } from './names.js';
-import { dayStr, VOICE_PICKS, ic, wic, listenOnce, speechMatches, splitKo, confetti, initFx, sparkleAt, flyText } from './util.js';
+import { dayStr, VOICE_PICKS, ic, wic, listenOnce, speechMatches, splitKo, confetti, initFx, sparkleAt, flyText, reducedMotion } from './util.js';
 import { sfx, armAudio, setMusic, setSfx } from './sound.js';
 import { openDrama } from './drama.js';
 import { renderMatch, renderSpeed } from './games.js';
@@ -191,26 +191,32 @@ views.onboard = () => {
   const p = store.get().profile || {};
   const draft = { name: p.name || '', stage: p.stage || 'jh', accent: p.accent || 'pink' };
   $app.innerHTML = `
-    <section class="onboard">
+    <form class="onboard" id="obForm">
       <h1 class="welcome-logo"><small>歡迎來到</small><img src="assets/art/logo.webp" alt="練習生學院"></h1>
       <p class="muted">國文・英文・韓文，用追星的熱情來讀書</p>
       <label class="field"><span>你的藝名</span>
         <input id="ob-name" maxlength="12" placeholder="例如：小熊、Mina" value="${esc(draft.name)}"></label>
       <div class="field"><span>你的學程</span>
-        <div class="pills" id="ob-stage">${STAGES.map((st) => `<button class="pill ${st.id === draft.stage ? 'on' : ''}" data-v="${st.id}">${st.name}<small>${st.exam}</small></button>`).join('')}</div></div>
-      <div class="field"><span>選你的應援色</span>
-        <div class="swatches" id="ob-accent">${ACCENTS.map((a) => `<button class="swatch ${a.id === draft.accent ? 'on' : ''}" data-v="${a.id}" style="--c:${a.color}" title="${a.name}"></button>`).join('')}</div></div>
-      <button class="btn primary big" id="ob-go">${p.name ? '儲存設定' : '開始我的出道之路 ' + ic('star')}</button>
+        <div class="pills" id="ob-stage">${STAGES.map((st) => `<button type="button" class="pill ${st.id === draft.stage ? 'on' : ''}" data-v="${st.id}" aria-pressed="${st.id === draft.stage}">${st.name}<small>${st.exam}</small></button>`).join('')}</div></div>
+      <div class="field"><span>選你的應援色　<b class="accent-name" id="accentName">${esc(ACCENTS.find((a) => a.id === draft.accent)?.name || '')}</b></span>
+        <div class="swatches" id="ob-accent">${ACCENTS.map((a) => `<button type="button" class="swatch ${a.id === draft.accent ? 'on' : ''}" data-v="${a.id}" style="--c:${a.color}" title="${a.name}" aria-label="${a.name}" aria-pressed="${a.id === draft.accent}"></button>`).join('')}</div></div>
+      <button type="submit" class="btn primary big" id="ob-go">${p.name ? '儲存設定' : '開始我的出道之路 ' + ic('star')}</button>
       ${COPYRIGHT}
-    </section>`;
+    </form>`;
   const bindPills = (id, k) => $app.querySelectorAll(`#${id} button`).forEach((b) => b.onclick = () => {
     draft[k] = b.dataset.v;
-    $app.querySelectorAll(`#${id} button`).forEach((x) => x.classList.toggle('on', x === b));
-    if (k === 'accent') document.documentElement.style.setProperty('--accent', ACCENTS.find((a) => a.id === b.dataset.v).color);
+    $app.querySelectorAll(`#${id} button`).forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); });
+    if (k === 'accent') {
+      const a = ACCENTS.find((x) => x.id === b.dataset.v);
+      document.documentElement.style.setProperty('--accent', a.color);
+      $app.querySelector('#accentName').textContent = a.name;
+    }
   });
   bindPills('ob-stage', 'stage');
   bindPills('ob-accent', 'accent');
-  $app.querySelector('#ob-go').onclick = () => {
+  // 用表單送出：在藝名欄按 Enter 也可以直接開始
+  $app.querySelector('#obForm').onsubmit = (e) => {
+    e.preventDefault();
     draft.name = $app.querySelector('#ob-name').value.trim() || '新人';
     store.get().profile = draft;
     store.save();
@@ -269,6 +275,15 @@ views.home = () => {
   ].map((r) => ({ ...r, done: (dd.tasks || []).includes(r.id), claimed: (dd.claimed || []).includes(r.id) }));
   const nextStep = route.find((r) => !r.done);
   const allDone = route.every((r) => r.done);
+  // 浮動的「下一步」按鈕：有獎勵沒領就提醒領獎；不然就帶去下一步（那張卡已經在畫面上時會自動藏起來）
+  const pending = route.filter((r) => r.done && !r.claimed).length + (allDone && !(dd.claimed || []).includes('chest') ? 1 : 0);
+  const NEXT = {
+    hangul: { label: `${ic('ko')} 下一步：韓文 40 音`, href: '#/hangul', watch: '.hg-feature' },
+    lesson: { label: `${ic('mic')} 開始今天的課`, href: '#/talk', watch: '.today .cta' },
+    bank: { label: `${ic('book')} 下一步：單字庫`, href: '#/exam/bank', watch: '.route' },
+    play: { label: `${ic('cards')} 下一步：玩一個練習`, scroll: '.play-zone', watch: '.play-zone' },
+  };
+  const nextAct = pending ? { label: `${ic('gift')} 有 ${pending} 個獎勵可以領！`, scroll: '.route', watch: '.route', claim: true } : nextStep ? NEXT[nextStep.id] : null;
   if (doneToday) lines.unshift(`今天的課上完了，好棒！下面的「練習區」有單字庫和模擬考，點發光的那個去玩吧！`);
 
   // 簡化版大廳：一張「今天的課」卡（劇照＋標題＋3 個字＋一個大按鈕），其他功能縮成一排小連結
@@ -277,6 +292,7 @@ views.home = () => {
       <div class="lobby-bg" aria-hidden="true"></div>
       <header class="lobby-top">
         <h1 class="brand brand-logo"><img src="assets/art/logo.webp" alt="練習生學院 TRAINEE ACADEMY"></h1>
+        <span class="stat-pill date-chip">${new Intl.DateTimeFormat('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date())}</span>
         <span class="stat-pill streak-chip" title="連續打卡">${ic('fire')} <b>${currentStreak()}</b> 天</span>
         <a class="me-chip" href="#/me"><span class="me-av">${esc(s.profile.name.slice(0, 1))}</span><span><b>${esc(s.profile.name)}</b><small>${esc(r.name)}</small></span></a>
       </header>
@@ -358,15 +374,35 @@ views.home = () => {
           <a class="closet-link ${newUnlocks().length ? 'tap-hint fresh' : ''}" href="#/closet">${newUnlocks().length ? `${ic('gift')} 新獲得 ${newUnlocks().length} 樣！去衣帽間` : `${ic('closet')} 衣帽間`}</a>
         </div>
       </div>
+      ${nextAct ? (nextAct.href ? `<a class="next-pill ${nextAct.claim ? 'claim' : ''}" id="nextPill" href="${nextAct.href}">${nextAct.label}<span aria-hidden="true">›</span></a>`
+        : `<button type="button" class="next-pill ${nextAct.claim ? 'claim' : ''}" id="nextPill" data-scroll="${nextAct.scroll}">${nextAct.label}<span aria-hidden="true">${nextAct.claim ? '↓' : '›'}</span></button>`) : ''}
     </section>`;
 
   // 剛上完課回到首頁：捲到學習路線，提醒領獎勵
   let arrived = false;
   try { arrived = sessionStorage.getItem('ta.arrive') === '1'; sessionStorage.removeItem('ta.arrive'); } catch (e) { /* 略過 */ }
-  if (arrived) setTimeout(() => { const el = $app.querySelector('.route'); el?.scrollIntoView({ behavior: 'smooth', block: 'center' }); el?.classList.add('arrive'); setTimeout(() => el?.classList.remove('arrive'), 3800); }, 350);
+  if (arrived) setTimeout(() => { const el = $app.querySelector('.route'); el?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' }); el?.classList.add('arrive'); setTimeout(() => el?.classList.remove('arrive'), 3800); }, 350);
+  const pill = $app.querySelector('#nextPill');
+  // 放到 body 底下，才不會被首頁容器的動畫影響而跟著捲走；首頁重畫或換頁時拿掉舊的
+  document.querySelectorAll('body > .next-pill').forEach((x) => x.remove());
+  if (pill) {
+    document.body.append(pill);
+    window.addEventListener('hashchange', () => pill.remove(), { once: true });
+    if (pill.dataset.scroll) pill.onclick = () => {
+      const el = $app.querySelector(pill.dataset.scroll);
+      el?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
+      el?.classList.add('flash'); setTimeout(() => el?.classList.remove('flash'), 1600);
+    };
+  }
+  const watched = nextAct && $app.querySelector(nextAct.watch);
+  if (pill && watched && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver(([e]) => pill.classList.toggle('away', e.isIntersecting), { threshold: 0.35 });
+    io.observe(watched);
+    window.addEventListener('hashchange', () => io.disconnect(), { once: true });
+  }
   $app.querySelectorAll('[data-scroll]').forEach((b) => b.onclick = () => {
     const el = $app.querySelector(b.dataset.scroll);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    el?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
     el?.classList.add('flash'); setTimeout(() => el?.classList.remove('flash'), 1600);
   });
   $app.querySelectorAll('[data-claim]').forEach((b) => b.onclick = () => {
@@ -893,7 +929,15 @@ function route() {
   document.body.classList.toggle('is-lobby', view === views.home || view === views.talk || view === views.cards);
   const hideNav = ['onboard', 'quiz', 'flash', 'talk'].includes(name) && !(name === 'onboard' && s.profile);
   $nav.hidden = hideNav;
-  $nav.querySelectorAll('a').forEach((a) => a.classList.toggle('on', a.getAttribute('href') === `#/${name}`));
+  // 子頁面也讓所屬的分頁亮著（例如 40 音、小遊戲 → 練習；衣帽間 → 我的）
+  const PARENT_TAB = { hangul: 'practice', game: 'practice', subject: 'practice', deck: 'practice', wrong: 'practice', map: 'practice', quiz: 'practice', flash: 'practice', closet: 'me', history: 'me', onboard: 'me' };
+  const tab = PARENT_TAB[name] || name;
+  document.body.dataset.view = views[name] ? name : 'home';
+  $nav.querySelectorAll('a').forEach((a) => {
+    const on = a.getAttribute('href') === `#/${tab}`;
+    a.classList.toggle('on', on);
+    if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
+  });
   view(arg);
   window.scrollTo(0, 0);
   // 換頁動畫：只在剛換頁的短時間內掛著，之後頁面自己重畫（例如領獎）不會再播一次

@@ -5,7 +5,7 @@
 import { FACES } from './facemap.js';
 import { STORIES, WORDS } from './course.js';
 import * as store from './store.js';
-import { esc, speakAsync, stopSpeaking, ttsOK, sleep, wic } from './util.js';
+import { esc, speakAsync, stopSpeaking, ttsOK, sleep, wic, reducedMotion } from './util.js';
 import { sfx, duck } from './sound.js';
 
 export const NAMES = { me: '你', mina: '敏雅', leo: 'Leo', nova: '露娜', kong: '孔老師', seoyun: '徐允', coach: '姜教練' };
@@ -260,7 +260,11 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
     sfx('ding');
     c.querySelector('button').onclick = (e) => { e.stopPropagation(); catchWord(id, e.currentTarget); };
     const hw = box.querySelector(`.hlw[data-w="${id}"]`);
-    if (hw) hw.onclick = (e) => { e.stopPropagation(); catchWord(id, e.currentTarget); };
+    if (hw) {
+      hw.onclick = (e) => { e.stopPropagation(); catchWord(id, e.currentTarget); };
+      // 用鍵盤也能收集（Tab 到發光的字、按 Enter 或空白鍵）
+      hw.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); catchWord(id, e.currentTarget); } };
+    }
   }
   // 孩子親手點到：爆出星星愛心 → 單字飛進口袋 → 口袋彈跳＋1 → 念發音
   async function catchWord(id, el) {
@@ -269,7 +273,7 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
     const r = el.getBoundingClientRect();
     burst(r.left + r.width / 2, r.top + r.height / 2);
     sfx('right');
-    navigator.vibrate?.(30);
+    if (!reducedMotion()) navigator.vibrate?.(30);
     const c = $('#vnCatch');
     const slot = box.querySelector(`.pw[data-w="${id}"]`);
     const src = c.hidden ? el : c.querySelector('.catch-btn') || el;
@@ -280,7 +284,11 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
     collect(id, true);
     if (ttsOK) {
       if (speechSynthesis.speaking) pendingSay = w;
-      else { await speakAsync(w.ko, 'ko-KR', rate('ko-KR')); await speakAsync(w.en, 'en-US', rate('en-US')); }
+      else {
+        await speakAsync(w.ko, 'ko-KR', rate('ko-KR'));
+        // 念完韓文時短劇如果已經關了，就不要再念英文
+        if (mine === token) await speakAsync(w.en, 'en-US', rate('en-US'));
+      }
     }
   }
   function collect(id, tapped) {
