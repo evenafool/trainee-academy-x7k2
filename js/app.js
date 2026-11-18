@@ -11,6 +11,7 @@ import { renderExam, examNext, examStats } from './exam.js';
 import { mountHost } from './npc.js';
 import { renderHangul, hangulProgress, TOTAL as HANGUL_TOTAL } from './hangul.js';
 import { avatarHTML, avatarState, autoOutfit, OUTFITS, newUnlocks, renderCloset } from './avatar.js';
+import { renderFriends, friendCount } from './friends.js';
 
 // 啟動時把課程、獎勵裡的暫定名換成孩子取的名字（改名後重新整理頁面就會重新套用）
 if (Object.keys(store.get().names || {}).length) {
@@ -32,7 +33,7 @@ const sample = (a, n) => shuffle(a).slice(0, n);
 const uniq = (a) => [...new Set(a)];
 const deckById = (id) => DECKS.find((d) => d.id === id);
 const subjectById = (id) => SUBJECTS.find((s) => s.id === id);
-const stageById = (id) => STAGES.find((s) => s.id === id);
+const stageById = (id) => STAGES.find((s) => s.id === id) || STAGES[0];
 
 function itemByKey(key) {
   const [deckId, i] = key.split(':');
@@ -434,6 +435,7 @@ views.home = () => {
 };
 
 views.closet = () => renderCloset($app, backBar);
+views.friends = () => renderFriends($app, backBar, toast);
 
 // 依語言分組的練習入口（首頁練習區、練習頁共用）
 function langGroups(ex, dayN) {
@@ -838,6 +840,7 @@ views.me = () => {
       <label>我未來的團名<small>出道那天會用到，可以之後再想</small><input id="nMyGroup" maxlength="12" value="${esc(s.names?.myGroup || '')}"></label>
       <button class="btn primary" type="submit">儲存名字</button>
     </form>
+    <a class="deck fr-entry" href="#/friends"><div class="emoji">${ic('heart')}</div><div class="grow"><b>好友</b><small>${friendCount() ? `${friendCount()} 位好友・看看大家學到哪裡了` : '交換好友卡，看看朋友學到第幾集'}</small></div><div class="chev">›</div></a>
     <a class="deck" href="#/history"><div class="emoji">${ic('book')}</div><div class="grow"><b>學習歷程</b><small>每天練了什麼、說了哪些句子、哪些還要加強</small></div><div class="chev">›</div></a>
     <div class="row center"><button class="btn" id="exportBtn">匯出進度</button><label class="btn">匯入進度<input type="file" id="importFile" accept=".json" hidden></label></div>
     <h2 class="sec">聲音</h2>
@@ -930,7 +933,7 @@ function route() {
   const hideNav = ['onboard', 'quiz', 'flash', 'talk'].includes(name) && !(name === 'onboard' && s.profile);
   $nav.hidden = hideNav;
   // 子頁面也讓所屬的分頁亮著（例如 40 音、小遊戲 → 練習；衣帽間 → 我的）
-  const PARENT_TAB = { hangul: 'practice', game: 'practice', subject: 'practice', deck: 'practice', wrong: 'practice', map: 'practice', quiz: 'practice', flash: 'practice', closet: 'me', history: 'me', onboard: 'me' };
+  const PARENT_TAB = { hangul: 'practice', game: 'practice', subject: 'practice', deck: 'practice', wrong: 'practice', map: 'practice', quiz: 'practice', flash: 'practice', closet: 'me', history: 'me', friends: 'me', onboard: 'me' };
   const tab = PARENT_TAB[name] || name;
   document.body.dataset.view = views[name] ? name : 'home';
   $nav.querySelectorAll('a').forEach((a) => {
