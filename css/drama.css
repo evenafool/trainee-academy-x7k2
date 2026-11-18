@@ -253,3 +253,5 @@
 .drama.strip-mode.cg .vn-sp.speaking, .drama.strip-mode .vn-sp.speaking { opacity: 1; transform: none; }
 .drama.strip-mode .vn-sp img { height: 560px; width: auto; max-width: none; filter: drop-shadow(0 6px 10px rgba(201, 123, 132, .35)); }
 .drama.strip-mode .vn-sp .vn-tag { display: none; }
+/* 劇照上不放名字（會蓋到臉）；講話的人看對話框的名牌和下方立繪 */
+.wt-panel .wt-who { display: none !important; }
