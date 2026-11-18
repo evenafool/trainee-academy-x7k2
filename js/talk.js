@@ -456,6 +456,22 @@ async function recall(my, tally, w, lang) {
   store.reviewWord(w.id, !!ok);
   return ok;
 }
+// 昨天那一集（今天前一天）：複習就用它短劇裡的三個字和台詞，印象最深
+function prevDay(lv) {
+  const days = DAYS();
+  const i = days.findIndex((l) => l.id === lv.id);
+  return i > 0 ? days[i - 1] : null;
+}
+function yesterdayWords(lv) {
+  const p = prevDay(lv);
+  return p ? p.words.map((id) => WORDS[id]).filter(Boolean) : [];
+}
+function yesterdayLine(lv) {
+  const p = prevDay(lv);
+  if (!p) return null;
+  const mine = (p.dialogue || []).filter((d) => d.c === 'me');
+  return mine.length ? { ...pick(mine), from: p.title } : null;
+}
 function oldLines(excludeId, n) {
   const cleared = store.get().course.cleared;
   const lines = DAYS().filter((l) => cleared[l.id] && l.id !== excludeId).flatMap((l) => l.dialogue.filter((d) => d.c === 'me').map((d) => ({ ...d, from: l.title })));
@@ -477,10 +493,21 @@ async function runLesson(my, lv, n) {
   await hearSafe(my, 'zh-TW', false);
 
   setStep(1);
-  const olds = oldWords(lv.words, 2);
-  if (olds.length) {
-    await say(my, [['先熱身，複習以前學過的字！', 'zh-TW']]);
-    for (const [i, w] of olds.entries()) await recall(my, tally, w, i % 2 ? 'en-US' : 'ko-KR');
+  // 複習昨天那一集短劇裡的三個字：先看昨天的劇照和那句台詞，再回想韓文／英文
+  const yd = prevDay(lv);
+  const olds = yesterdayWords(lv);
+  if (yd && olds.length) {
+    await say(my, [[`先熱身！還記得昨天的短劇「${STORIES[yd.id]?.title || yd.title}」嗎？`, 'zh-TW']], `複習昨天的短劇：${STORIES[yd.id]?.title || yd.title}`);
+    for (const [i, w] of olds.entries()) {
+      const dl = dramaLineFor(yd, w);
+      if (dl) {
+        const who = NAMES[dl.c] || dl.c;
+        setSceneSrc(panelSrcs(yd, dl.panel, dl.bg), `昨天短劇裡${who}說：「${dl.sub || dl.t}」`);
+        await say(my, [[`昨天${who}說了這句：`, 'zh-TW'], [dl.t, langOf(dl.t)]], `昨天${who}說：\n${dl.t}\n${dl.sub || ''}`);
+      }
+      await recall(my, tally, w, i % 2 ? 'en-US' : 'ko-KR');
+    }
+    setScene('story', lv.id, `短劇：${STORIES[lv.id].title}`);
   }
 
   for (const [i, w] of words.entries()) {
@@ -523,9 +550,9 @@ async function runLesson(my, lv, n) {
 
   await playDialogue(my, tally, lv, 7, n);
 
-  const old = oldLines(lv.id, 1)[0];
+  const old = yesterdayLine(lv);
   if (old) {
-    await say(my, [['最後，還記得這句嗎？', 'zh-TW']], `還記得「${old.from}」這句嗎？\n${old.zh}`);
+    await say(my, [['最後，還記得昨天你說的這句嗎？', 'zh-TW']], `還記得昨天「${old.from}」你說的這句嗎？\n${old.zh}`);
     await shadow(my, tally, old.ko, 'ko-KR', '');
   }
 

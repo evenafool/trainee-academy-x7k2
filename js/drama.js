@@ -21,7 +21,8 @@ const SHOTS = [{ pos: '35% 40%', zoom: 1.18 }, { pos: '65% 40%', zoom: 1.18 }, {
 let token = 0;
 // 主角立繪跟著章節換裝：粉絲（1～4 章）→ 練習生（5～10）→ 出道（11～15）→ 頒獎典禮（16～）
 let meCh = 1;
-const spriteOf = (c) => (c !== 'me' ? `sprite-${c}` : meCh <= 4 ? 'sprite-me' : meCh <= 10 ? 'me-trainee' : meCh <= 15 ? 'me-debut' : 'me-award');
+// 徐允出道後（第 11 章起）也換成偶像服
+const spriteOf = (c) => (c === 'seoyun' && meCh >= 11 ? 'seoyun-idol' : c !== 'me' ? `sprite-${c}` : meCh <= 4 ? 'sprite-me' : meCh <= 10 ? 'me-trainee' : meCh <= 15 ? 'me-debut' : 'me-award');
 export function closeDrama() {
   token++;
   stopSpeaking();
