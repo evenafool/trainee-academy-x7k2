@@ -186,7 +186,6 @@
     radial-gradient(circle, rgba(240, 200, 120, .3) 1.4px, transparent 1.7px) 12px 12px / 24px 24px,
     linear-gradient(180deg, #fff8f2 0%, #fdeef1 55%, #f6e8fb 100%); }
 .drama.strip-mode .vn-stage::before { content: "✦"; position: absolute; top: 18%; right: 7%; font-size: 22px; color: #f0c46b; opacity: .7; text-shadow: -230px 120px 0 #f4b8be, -120px 300px 0 #cdb4f0, -270px 380px 0 #f0c46b; pointer-events: none; }
-.drama.strip-mode .vn-sprites { display: none; }
 .drama.strip-mode .vn-top .dt-title { color: #7a2e3f; text-shadow: 0 1px 0 #fff; }
 .drama.strip-mode .vn-top .dt-title small { color: #c97b84; }
 .drama.strip-mode .vn-dots i { background: rgba(201, 123, 132, .25); }
@@ -195,7 +194,7 @@
 .drama.strip-mode .vn-btn { border-color: #fff; box-shadow: 0 3px 0 #ecd6c4; }
 .drama.strip-mode .vn-box { box-shadow: 0 0 0 3px #f4c9cf, 0 12px 28px rgba(201, 123, 132, .28); }
 
-.drama.strip-mode .vn-cg { inset: auto; top: 108px; bottom: 192px; left: 0; right: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; align-content: end; gap: 14px; padding: 12px 14px 16px; scrollbar-width: none; }
+.drama.strip-mode .vn-cg { inset: auto; top: 108px; bottom: 300px; left: 0; right: 0; overflow-y: auto; overscroll-behavior: contain; display: grid; align-content: start; gap: 14px; padding: 12px 14px 16px; scrollbar-width: none; }
 .drama.strip-mode .vn-cg::-webkit-scrollbar { display: none; }
 .drama.strip-mode .vn-cg::after, .drama.strip-mode .vn-cg::before { display: none; }
 
@@ -245,3 +244,12 @@
 @keyframes emoUp { 0% { transform: translate(-50%, 10px) scale(.3); opacity: 0; } 25% { transform: translate(-50%, -6px) scale(1.2); opacity: 1; } 100% { transform: translate(calc(-50% + var(--dx, 0px)), -46px) scale(1); opacity: 0; } }
 .wt-emo.jolt { animation: jolt .9s ease-out forwards; }
 @keyframes jolt { 0% { transform: translate(-50%, 0) scale(.2) rotate(-20deg); opacity: 0; } 30% { transform: translate(-50%, -10px) scale(1.4) rotate(8deg); opacity: 1; } 55% { transform: translate(-50%, -10px) scale(1) rotate(-6deg); } 100% { transform: translate(-50%, -14px) scale(1); opacity: 0; } }
+
+/* 漫畫條模式的立繪：講話的人小小的從對話框上方探出來，左邊的角色在左、右邊的在右 */
+.drama.strip-mode .vn-sprites { z-index: 2; }
+.drama.strip-mode.cg .vn-sp, .drama.strip-mode .vn-sp { height: 210px; bottom: 112px; overflow: hidden; align-items: start; opacity: 0; transform: translateY(40px) scale(.92); filter: none; transition: opacity .3s, transform .45s cubic-bezier(.3, 1.4, .5, 1); }
+.drama.strip-mode .vn-sp.left { left: 3%; right: auto; }
+.drama.strip-mode .vn-sp.right { right: 3%; left: auto; }
+.drama.strip-mode.cg .vn-sp.speaking, .drama.strip-mode .vn-sp.speaking { opacity: 1; transform: none; }
+.drama.strip-mode .vn-sp img { height: 560px; width: auto; max-width: none; filter: drop-shadow(0 6px 10px rgba(201, 123, 132, .35)); }
+.drama.strip-mode .vn-sp .vn-tag { display: none; }

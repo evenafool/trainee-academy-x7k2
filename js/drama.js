@@ -163,10 +163,19 @@ function buildStage({ title, sub, dots = 0, pouch = [], strip = false }) {
       cg.querySelectorAll('.wt-panel').forEach((x) => { x.classList.toggle('now', x === fig); if (x !== fig) x.classList.add('seen'); });
       box.classList.add('cg');
       api.stripFig = fig;
-      requestAnimationFrame(() => {
-        if (fig === cg.lastElementChild) cg.scrollTo({ top: cg.scrollHeight, behavior: reducedMotion() ? 'auto' : 'smooth' });
-        else fig.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
-      });
+      // 捲到這一格（圖片載入、進場動畫結束後再捲一次，確保整格看得到）
+      const reveal = () => {
+        if (api.stripFig !== fig) return;
+        const top = fig.offsetTop - 12, bottom = fig.offsetTop + fig.offsetHeight + 16;
+        let to = cg.scrollTop;
+        if (bottom > cg.scrollTop + cg.clientHeight) to = bottom - cg.clientHeight;
+        if (top < to) to = top;
+        if (to !== cg.scrollTop) cg.scrollTo({ top: to, behavior: reducedMotion() ? 'auto' : 'smooth' });
+      };
+      requestAnimationFrame(reveal);
+      setTimeout(reveal, 450);
+      setTimeout(reveal, 900);
+      fig.querySelector('.wt-img').addEventListener('load', reveal, { once: true });
     },
     stripFocus(who) {
       api.lastWho = who;
@@ -178,7 +187,7 @@ function buildStage({ title, sub, dots = 0, pouch = [], strip = false }) {
       const sp = fig.querySelector('.wt-sp');
       if (fig.classList.contains('nostill')) {
         // 沒有劇照：讓講話的人站在格子中間
-        if (who && NAMES[who]) { sp.hidden = false; sp.src = `assets/art/${spriteOf(who)}.webp`; } else sp.hidden = true;
+        sp.hidden = true; // 立繪改在對話框上方出現，格子裡只留背景
         tag.style.opacity = who && NAMES[who] ? 1 : 0;
         tag.style.left = '50%';
         tag.querySelector('b').textContent = NAMES[who] || '';
@@ -320,7 +329,9 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
     box.querySelectorAll('.vn-dots i').forEach((d, k) => d.classList.toggle('on', k <= i));
     if (strip && p.fx && stage.stripFig && !stage.stripFig.querySelector('.wt-fx')) { const f = stage.stripFig; setTimeout(() => f.insertAdjacentHTML('beforeend', `<span class="wt-fx">${esc(p.fx)}</span>`), 450); }
     const cast = p.cast.map((c) => c.c).filter((c) => NAMES[c]);
-    stage.setSprites(cast[0], cast[1]);
+    // 漫畫條模式：只有一個人的格子，左右輪流站（第 1、3 格在左，第 2 格在右）
+    if (strip && cast.length === 1 && i % 2) stage.setSprites(undefined, cast[0]);
+    else stage.setSprites(cast[0], cast[1]);
   }
 
   // 新單字出現：台詞裡的字發光＋旁邊跳出大大的「點我收集」
