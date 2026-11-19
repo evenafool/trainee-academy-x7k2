@@ -95,25 +95,46 @@ const norm = (s) => String(s).toLowerCase().replace(/[^\p{L}\p{N}]/gu, '');
 // 小遊戲、閃卡用的收音（跟上課的收音一樣穩）：
 // 先停掉老師的聲音、等一下再開麥克風；連續收音直到說完停頓 1 秒；
 // 沒聽到聲音會自動重開，最多聽 maxMs；不管怎樣一定會結束（不會卡住）
-export function listenOnce(lang, { maxMs = 9000, onInterim } = {}) {
+// ctl：傳一個空物件進來就是「按住說話」模式——不會因為停頓自動結束，
+//      要呼叫 ctl.stop()（放開，收尾後回傳）或 ctl.cancel()（取消，回傳空陣列＋cancel）
+export function listenOnce(lang, { maxMs = 9000, onInterim, ctl } = {}) {
   return new Promise((resolve, reject) => {
     if (!Rec) return reject(new Error('unsupported'));
     stopSpeaking();
+    const manual = !!ctl;
     let done = false;
     let alts = [];
     let interim = '';
+    let carry = ''; // 按住模式：前幾段已經聽完的字
     let quiet = null;
     let r = null;
+    let softErr = '';
+    let stopping = false;
     const started = Date.now();
-    const finish = () => {
+    const finish = (cancel) => {
       if (done) return;
       done = true;
       clearTimeout(quiet);
       clearTimeout(hard);
       try { r?.abort(); } catch (e) { /* 已經停了 */ }
-      resolve(alts.length ? alts : interim ? [interim] : []);
+      if (cancel === true) { resolve(Object.assign([], { cancel: true })); return; }
+      let out = alts.length ? alts : interim ? [`${carry}${interim}`.trim()] : carry ? [carry.trim()] : [];
+      if (manual && alts.length && interim) out = Object.assign(alts.map((a) => `${a} ${interim}`.trim()), { conf: alts.conf });
+      if (!out.length) out.err = softErr;
+      resolve(out);
     };
     const hard = setTimeout(finish, maxMs + 1500); // 保險：時間到一定結束
+    if (ctl) {
+      ctl.stop = () => {
+        if (done || stopping) return;
+        stopping = true;
+        if (!r) { finish(); return; }
+        try { r.stop(); } catch (e) { finish(); return; }
+        clearTimeout(quiet);
+        quiet = setTimeout(finish, 1500); // 等最後幾個字辨識完
+      };
+      ctl.cancel = () => finish(true);
+    }
     const start = () => {
       if (done) return;
       r = new Rec();
@@ -123,28 +144,41 @@ export function listenOnce(lang, { maxMs = 9000, onInterim } = {}) {
       r.maxAlternatives = 5;
       r.onresult = (e) => {
         interim = '';
+        let head = carry;
         for (const res of e.results) {
-          if (res.isFinal) alts = [...res].map((a) => a.transcript);
+          if (res.isFinal) { alts = Object.assign([...res].map((a) => (head + a.transcript).trim()), { conf: res[0].confidence }); head += res[0].transcript + ' '; }
           else interim += res[0].transcript;
         }
-        onInterim?.(alts[0] || interim);
+        onInterim?.(`${alts[0] || ''} ${interim}`.trim());
         clearTimeout(quiet);
-        quiet = setTimeout(finish, alts.length ? 1000 : 1800);
+        if (stopping) quiet = setTimeout(finish, interim ? 1200 : 200);
+        else if (!manual) quiet = setTimeout(finish, alts.length ? 1000 : 1800);
       };
       r.onerror = (e) => {
-        if (e.error === 'no-speech' || e.error === 'aborted' || e.error === 'network') return;
+        if (e.error === 'no-speech' || e.error === 'aborted' || e.error === 'network') { if (e.error !== 'aborted') softErr = e.error; return; }
         done = true;
         clearTimeout(hard);
         reject(new Error(e.error));
       };
       r.onend = () => {
         if (done) return;
+        if (stopping) { finish(); return; }
+        if (manual) {
+          // 還按著：把聽到的字留著，接著再聽
+          carry = `${alts[0] || carry.trim()} ${interim}`.trim();
+          if (interim) alts = Object.assign([carry], { conf: alts.conf });
+          if (carry) carry += ' ';
+          interim = '';
+          if (Date.now() - started < maxMs) { setTimeout(start, 100); return; }
+          finish();
+          return;
+        }
         if (!alts.length && !interim && Date.now() - started < maxMs) { setTimeout(start, 150); return; } // 沒聽到就再聽
         finish();
       };
       try { r.start(); } catch (err) { setTimeout(start, 300); }
     };
-    setTimeout(start, 250);
+    setTimeout(start, manual ? 60 : 250);
   });
 }
 // 相似度（最長共同子序列），容許發音有一點點不準

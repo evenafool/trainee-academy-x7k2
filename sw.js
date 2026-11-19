@@ -1,6 +1,6 @@
 // 離線快取：先用網路，失敗時用快取（內容更新時改版本號）
-const CACHE = 'idolstudy-v59';
-const FILES = ['./', './index.html', './css/style.css', './css/talk.css', './css/rewards.css', './css/lobby-pastel.css', './css/pastel-pages.css', './css/names.css', './css/v2.css', './css/drama.css', './js/names.js', './js/rewards.js', './js/app.js', './js/data.js', './js/store.js', './manifest.webmanifest', './icons/icon-192.png', './js/course.js', './js/util.js', './js/talk.js', './js/sound.js', './js/drama.js', './js/games.js', './js/course2.js', './js/course3.js', './js/themes.js', './js/extras.js', './js/bank.js', './js/examdata.js', './js/exam.js', './js/npc.js', './js/hangul.js', './js/facemap.js', './js/avatar.js', './js/friends.js', './css/exam.css', './css/fx.css', './assets/art/bg-practice.webp', './assets/art/teacher-cut.webp', './assets/art/teacher-face.webp', './assets/art/logo.webp', ...['home','wrong','cards','me','mic','speaker','gift','fire','book','chat','star','heart','zh','en','ko','meme','medal','map','trophy'].map((n) => `./assets/art/icons/ui-${n}.webp`)];
+const CACHE = 'idolstudy-v60';
+const FILES = ['./', './index.html', './css/style.css', './css/talk.css', './css/rewards.css', './css/lobby-pastel.css', './css/pastel-pages.css', './css/names.css', './css/v2.css', './css/drama.css', './js/names.js', './js/rewards.js', './js/app.js', './js/data.js', './js/store.js', './manifest.webmanifest', './icons/icon-192.png', './js/course.js', './js/util.js', './js/talk.js', './js/sound.js', './js/drama.js', './js/games.js', './js/course2.js', './js/course3.js', './js/themes.js', './js/extras.js', './js/bank.js', './js/examdata.js', './js/exam.js', './js/npc.js', './js/hangul.js', './js/facemap.js', './js/avatar.js', './js/friends.js', './js/cloud.js', './js/chat.js', './js/chatcards.js', './css/exam.css', './css/fx.css', './css/chat.css', './assets/art/bg-practice.webp', './assets/art/teacher-cut.webp', './assets/art/teacher-face.webp', './assets/art/logo.webp', ...['home','wrong','cards','me','mic','speaker','gift','fire','book','chat','star','heart','zh','en','ko','meme','medal','map','trophy'].map((n) => `./assets/art/icons/ui-${n}.webp`)];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));
@@ -14,6 +14,9 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  // 只快取自己網站的檔案和 Firebase 程式庫；登入、資料庫連線（googleapis 等）一律不經過這裡
+  const url = new URL(e.request.url);
+  if (url.origin !== self.location.origin && url.hostname !== 'www.gstatic.com') return;
   e.respondWith(
     fetch(e.request)
       .then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); return res; })

@@ -12,6 +12,8 @@ import { mountHost } from './npc.js';
 import { renderHangul, hangulProgress, TOTAL as HANGUL_TOTAL } from './hangul.js';
 import { avatarHTML, avatarState, autoOutfit, OUTFITS, newUnlocks, renderCloset } from './avatar.js';
 import { renderFriends, friendCount } from './friends.js';
+import { initCloud, accountHTML, bindAccount, currentUser, onChats } from './cloud.js';
+import { renderChat, stopChat } from './chat.js';
 
 // 啟動時把課程、獎勵裡的暫定名換成孩子取的名字（改名後重新整理頁面就會重新套用）
 if (Object.keys(store.get().names || {}).length) {
@@ -435,7 +437,8 @@ views.home = () => {
 };
 
 views.closet = () => renderCloset($app, backBar);
-views.friends = () => renderFriends($app, backBar, toast);
+views.friends = (arg) => renderFriends($app, backBar, toast, true, arg || '');
+views.chat = (arg) => renderChat($app, arg, toast);
 
 // 依語言分組的練習入口（首頁練習區、練習頁共用）
 function langGroups(ex, dayN) {
@@ -832,6 +835,7 @@ views.me = () => {
       <div class="stat"><b>${s.stats.answered}</b><small>作答題數</small></div>
       <div class="stat"><b>${acc}%</b><small>正確率</small></div>
     </div>
+    ${accountHTML()}
     <h2 class="sec">我的偶像世界</h2>
     <form class="names-form" id="namesForm">
       <label>經紀公司名稱<input id="nAgency" maxlength="12" placeholder="${esc(DEFAULT_NAMES.agency)}" value="${esc(s.names?.agency || '')}"></label>
@@ -842,7 +846,7 @@ views.me = () => {
     </form>
     <a class="deck fr-entry" href="#/friends"><div class="emoji">${ic('heart')}</div><div class="grow"><b>好友</b><small>${friendCount() ? `${friendCount()} 位好友・看看大家學到哪裡了` : '交換好友卡，看看朋友學到第幾集'}</small></div><div class="chev">›</div></a>
     <a class="deck" href="#/history"><div class="emoji">${ic('book')}</div><div class="grow"><b>學習歷程</b><small>每天練了什麼、說了哪些句子、哪些還要加強</small></div><div class="chev">›</div></a>
-    <div class="row center"><button class="btn" id="exportBtn">匯出進度</button><label class="btn">匯入進度<input type="file" id="importFile" accept=".json" hidden></label></div>
+    <div class="row center" ${currentUser() ? 'hidden' : ''}><button class="btn" id="exportBtn">匯出進度</button><label class="btn">匯入進度<input type="file" id="importFile" accept=".json" hidden></label></div>
     <h2 class="sec">聲音</h2>
     <div class="sound-set">
       <label><input type="checkbox" id="setMusic" ${s.settings?.music !== false ? 'checked' : ''}> 輕柔配樂</label>
@@ -855,8 +859,9 @@ views.me = () => {
       <a class="btn big" href="#/onboard">${ic('me')} 修改藝名／學程／應援色</a>
       <button class="btn ghost danger" id="me-reset">清除所有進度</button>
     </div>
-    <p class="muted small center">${ttsOK ? '' : '這個瀏覽器不支援語音朗讀，聽力題會自動略過。'}進度只存在這台裝置上。</p>
+    <p class="muted small center">${ttsOK ? '' : '這個瀏覽器不支援語音朗讀，聽力題會自動略過。'}${currentUser() ? '進度會自動備份到你的 Google 帳號。' : '進度只存在這台裝置上，用 Google 登入就會自動備份。'}</p>
     ${COPYRIGHT}`;
+  bindAccount($app, toast, () => views.me());
   $app.querySelector('#namesForm').onsubmit = (e) => {
     e.preventDefault();
     const v = (id) => $app.querySelector(id).value.trim();
@@ -929,11 +934,12 @@ function route() {
   if (name !== 'flash') flash = null;
   const view = views[name] || views.home;
   if (view !== views.talk) stopTalk();
+  if (view !== views.chat) stopChat();
   document.body.classList.toggle('is-lobby', view === views.home || view === views.talk || view === views.cards);
-  const hideNav = ['onboard', 'quiz', 'flash', 'talk'].includes(name) && !(name === 'onboard' && s.profile);
+  const hideNav = ['onboard', 'quiz', 'flash', 'talk', 'chat'].includes(name) && !(name === 'onboard' && s.profile);
   $nav.hidden = hideNav;
   // 子頁面也讓所屬的分頁亮著（例如 40 音、小遊戲 → 練習；衣帽間 → 我的）
-  const PARENT_TAB = { hangul: 'practice', game: 'practice', subject: 'practice', deck: 'practice', wrong: 'practice', map: 'practice', quiz: 'practice', flash: 'practice', closet: 'me', history: 'me', friends: 'me', onboard: 'me' };
+  const PARENT_TAB = { hangul: 'practice', game: 'practice', subject: 'practice', deck: 'practice', wrong: 'practice', map: 'practice', quiz: 'practice', flash: 'practice', closet: 'me', history: 'me', friends: 'me', chat: 'me', onboard: 'me' };
   const tab = PARENT_TAB[name] || name;
   document.body.dataset.view = views[name] ? name : 'home';
   $nav.querySelectorAll('a').forEach((a) => {
@@ -953,6 +959,14 @@ applyAccent();
 armAudio();
 initFx();
 route();
+initCloud();
+// 有朋友傳新訊息：「我的」分頁和好友入口亮紅點
+onChats((sum) => {
+  const tab = $nav.querySelector('a[href="#/me"]');
+  if (tab) tab.dataset.badge = sum.unread ? String(sum.unread) : '';
+  const entry = document.querySelector('.fr-entry');
+  if (entry) entry.dataset.badge = sum.unread ? String(sum.unread) : '';
+});
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.register('./sw.js').catch(() => {});

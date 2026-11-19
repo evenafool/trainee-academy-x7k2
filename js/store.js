@@ -52,7 +52,24 @@ function load() {
   return base;
 }
 
+// 雲端同步用：內容真的有變才更新 savedAt，並通知訂閱者（cloud.js）
+let lastBody = '';
+const saveHooks = [];
+export const onSave = (fn) => saveHooks.push(fn);
 export function save() {
+  try {
+    const { savedAt, ...rest } = state;
+    const body = JSON.stringify(rest);
+    const changed = body !== lastBody;
+    if (changed) { if (lastBody) state.savedAt = Date.now(); else state.savedAt ??= Date.now(); lastBody = body; }
+    localStorage.setItem(KEY, JSON.stringify(state));
+    if (changed) for (const fn of saveHooks) { try { fn(state); } catch (e) { /* 忽略 */ } }
+  } catch (e) { /* 忽略 */ }
+}
+// 用整份資料取代目前進度（從雲端還原時用）
+export function replaceAll(data) {
+  state = { ...structuredClone(DEFAULT), ...data };
+  lastBody = '';
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* 忽略 */ }
 }
 
