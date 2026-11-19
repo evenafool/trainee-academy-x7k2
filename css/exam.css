@@ -419,3 +419,71 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
 .next-ep { display: grid; gap: 4px; padding: 10px 14px; border-radius: 16px; background: linear-gradient(135deg, #fff8dc, #ffe9b8); border: 2px solid #fff; box-shadow: 0 0 0 2px #f0c46b; color: #6b3a1f; font-weight: 800; font-size: 14px; }
 .next-ep .ic { width: 20px; height: 20px; vertical-align: -4px; }
 .next-ep small { font-weight: 700; color: #8a6200; line-height: 1.5; }
+
+/* ───── 40 音圖像記憶：字母一筆一筆畫出來＋變身小圖 ───── */
+.hga, .hgm { display: block; width: 100%; height: 100%; overflow: visible; }
+.hga .lt, .hgm path { fill: none; stroke-width: 10; stroke-linecap: round; stroke-linejoin: round; }
+.hga.c .lt, .hgm.c .keep, .hgm.c .out { stroke: #4a6aa8; }
+.hga.v .lt, .hgm.v .keep, .hgm.v .out { stroke: #e0568f; }
+.hgm .in { stroke: #f0a020; }
+.hga.play .lt { stroke-dasharray: 1; animation: hgDraw .32s ease-out both; animation-delay: calc(var(--d, 0s) + var(--i) * .3s); }
+@keyframes hgDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.hga .dc > * { transform-box: fill-box; transform-origin: center; }
+.hga.play .dc > * { animation: hgPop .5s cubic-bezier(.3, 1.6, .5, 1) both; animation-delay: calc(var(--d, 0s) + var(--n) * .3s + .15s); }
+@keyframes hgPop { from { opacity: 0; transform: scale(.2) rotate(-20deg); } }
+.hga .df { stroke: none; }
+.hga .skin { fill: #ffd9c2; } .hga .eye { fill: #4a3728; } .hga .dark { fill: #6b4a35; } .hga .cushion { fill: #ff9ec4; }
+.hga .c1 { fill: #ff6fa8; } .hga .c2 { fill: #ffc93c; } .hga .c3 { fill: #7ad3a8; } .hga .car { fill: #ff6f61; } .hga .knob { fill: #f0b429; } .hga .drink { fill: #ffd38a; opacity: .85; }
+.hga .dl { fill: none; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.hga .wood { stroke: #b07a4f; } .hga .roof { stroke: #f08a5d; } .hga .cupH { stroke: #4a6aa8; stroke-width: 8; } .hga .steam { stroke: #c9b8d8; stroke-width: 3; }
+.hga .canopy { stroke: #ff9ec4; stroke-width: 6; } .hga .lips { stroke: #ff6f8f; stroke-width: 4; } .hga .move { stroke: #c9b8d8; stroke-width: 3; } .hga .mouth { stroke: #4a3728; stroke-width: 3; }
+.hga .slide { stroke: #f0a020; stroke-width: 3; stroke-dasharray: 4 5; }
+.hga .road { fill: none; stroke: #fff; stroke-width: 2.5; stroke-dasharray: 5 6; }
+.hga .ring { fill: none; stroke: #c9b8d8; stroke-width: 3; stroke-dasharray: 6 7; transform-box: fill-box; transform-origin: center; animation: hgSpin 9s linear infinite; }
+@keyframes hgSpin { to { transform: rotate(360deg); } }
+.hga .sun { fill: #ffc93c; } .hga .ray { fill: none; stroke: #ffc93c; stroke-width: 3; stroke-linecap: round; }
+.hga .spk { fill: #ffc93c; }
+.hga .bub rect { fill: #fff; stroke: #ffb3d1; stroke-width: 2; }
+.hga .bub text { font: 900 14px/1 inherit; fill: #c2477f; text-anchor: middle; }
+.hga .puff circle { fill: #cfe6ff; transform-box: fill-box; transform-origin: center; animation: hgPuff 1.6s ease-in-out infinite; }
+.hga .puff circle:nth-child(2) { animation-delay: .2s; } .hga .puff circle:nth-child(3) { animation-delay: .4s; }
+@keyframes hgPuff { 50% { transform: translateX(5px) scale(1.15); opacity: .55; } }
+.hga .burst path { fill: none; stroke: #ffc93c; stroke-width: 4; stroke-linecap: round; }
+.hgm:not(.play) .out { opacity: 0; }
+.hgm.play .out { animation: hgOut .35s both; animation-delay: calc(var(--d, 0s) + .55s); }
+@keyframes hgOut { to { opacity: 0; } }
+.hgm.play .in { stroke-dasharray: 1; animation: hgDraw .45s ease-out both; animation-delay: calc(var(--d, 0s) + .85s + var(--i) * .25s); }
+
+.hg-card { position: relative; }
+.hg-ch-mini { position: absolute; top: 6px; left: 10px; font-size: 15px; font-weight: 900; color: #c7b29f; }
+.hg-art { display: block; width: 76px; height: 76px; margin: 4px 0 2px; }
+.hg-pic { font-size: 12px; font-weight: 800; color: #c2477f; background: #fff0f6; border-radius: 99px; padding: 2px 9px; line-height: 1.5; text-align: center; }
+.hg-secchip { font-style: normal; font-size: 11px; font-weight: 800; color: #c2477f; background: #fff0f6; border-radius: 99px; padding: 2px 8px; }
+
+.hg-secret { background: linear-gradient(135deg, #fffaf0, #fff0f6); border: 3px dashed #ffc2da; border-radius: 22px; padding: 12px; margin: 4px 0 14px; }
+.hg-sec-h { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.hg-sec-no { background: #ff8fbf; color: #fff; font-weight: 900; font-size: 12px; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+.hg-sec-h b { flex: 1; font-size: 17px; color: #4a3728; }
+.hg-sec-say { border: 0; background: #fff; border-radius: 50%; width: 40px; height: 40px; display: grid; place-items: center; box-shadow: 0 2px 0 #e3cbb5; cursor: pointer; flex: none; }
+.hg-sec-say .ic { width: 24px; height: 24px; }
+.hg-morphs { display: grid; grid-template-columns: repeat(auto-fill, minmax(136px, 1fr)); gap: 8px; }
+.hg-morph { display: grid; grid-template-columns: 42px 1fr 58px; align-items: center; justify-items: center; gap: 2px; background: #fff; border: 0; border-radius: 16px; padding: 8px 6px 4px; box-shadow: 0 3px 0 #f1d9c5; cursor: pointer; font: inherit; color: #4a3728; }
+.hg-morph:active { transform: translateY(2px); }
+.hg-mfrom { width: 42px; height: 42px; opacity: .75; }
+.hg-mto { width: 58px; height: 58px; }
+.hg-mop { font-size: 11px; font-weight: 900; color: #f0a020; white-space: nowrap; }
+.hg-morph small { grid-column: 1 / -1; font-size: 13px; color: #8a7563; font-weight: 800; }
+.hg-facts { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.hg-facts li { display: flex; gap: 8px; align-items: center; font-size: 13.5px; line-height: 1.5; color: #5a4636; font-weight: 700; }
+.hg-fic { flex: none; width: 30px; height: 30px; background: #fff; border-radius: 10px; padding: 4px; box-sizing: border-box; }
+
+.hg-qmorph { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 110px; }
+.hg-qa { width: 86px; height: 86px; }
+.hg-qa.big { width: 100px; height: 100px; }
+.hg-qop { font-weight: 900; color: #f0a020; font-size: 18px; }
+.hg-qmorph b { font-size: 52px; color: #c9b8d8; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hga.play .lt, .hga.play .dc > *, .hga .puff circle, .hga .ring, .hgm.play .in { animation: none; }
+  .hgm .out { opacity: 0; }
+}

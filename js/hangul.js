@@ -5,6 +5,7 @@ import * as store from './store.js';
 import { esc, ic, shuffle, speakAsync, stopSpeaking, toast, confetti, sleep, reducedMotion } from './util.js';
 import { sfx } from './sound.js';
 import { mountHost } from './npc.js';
+import { PICS, HOOKS, SECRETS, letterSVG, morphSVG, spoken } from './hangul-art.js';
 
 // [字母, 拼音, 注音小撇步, 念的時候用的音節, 例字, 例字意思]
 export const STAGES = [
@@ -58,6 +59,9 @@ export function hangulProgress() {
 let $app = null;
 let host = null;
 const say = async (t, rate = 0.7) => { await speakAsync(t, 'ko-KR', rate); };
+const sylOf = (ch) => ALL.find((x) => x.ch === ch)?.syl || ch;
+// 重播動畫：拿掉 play 再加回去
+const replay = (el) => { if (!el) return; el.classList.remove('play'); void el.getBoundingClientRect(); el.classList.add('play'); };
 
 // ───────── 總覽：四關＋拼字積木 ─────────
 function renderHome() {
@@ -78,6 +82,7 @@ function renderHome() {
           <span class="hg-num">${i + 1}</span>
           <span class="hg-chars">${s.items.slice(0, 5).map((it) => esc(it[0])).join(' ')}${s.items.length > 5 ? ' …' : ''}</span>
           <b>${esc(s.title.split('：')[1])}</b><small>${esc(s.sub)}</small>
+          ${SECRETS[s.id] ? `<i class="hg-secchip">祕密 ${SECRETS[s.id].no}：${esc(SECRETS[s.id].title)}</i>` : ''}
           <em>${h.passed[s.id] ? `${ic('medal')} 過關` : nextStage?.id === s.id ? '從這裡開始！' : `${s.items.length} 個`}</em>
           ${nextStage?.id === s.id ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span>' : ''}
         </a>`).join('')}
@@ -93,13 +98,15 @@ function renderStage(id) {
   const items = ALL.filter((x) => x.stage === id);
   $app.innerHTML = `
     <div class="backbar"><a href="#/hangul" class="backlink">‹</a><b>${esc(st.title)}</b></div>
-    <p class="hg-tip">點卡片聽發音和單字，全部聽過就挑戰小測驗。</p>
+    ${secretHTML(st)}
+    <p class="hg-tip">點卡片看字母變身、聽發音和單字，全部聽過就挑戰小測驗。</p>
     <div class="hg-grid">
-      ${items.map((x) => `
+      ${items.map((x, i) => `
         <button type="button" class="hg-card ${h.heard[x.ch] ? 'heard' : ''}" data-ch="${esc(x.ch)}">
-          <span class="hg-ch">${esc(x.ch)}</span>
-          <span class="hg-rom">${esc(x.rom)}</span>
-          <span class="hg-zh">像 ${esc(x.zh)}</span>
+          <span class="hg-ch-mini">${esc(x.ch)}</span>
+          <span class="hg-art">${letterSVG(x.ch, { delay: 0.4 + i * 0.12 })}</span>
+          <span class="hg-rom">${esc(x.rom)}・像 ${esc(x.zh.replace(/（.*）/, ''))}</span>
+          ${PICS[x.ch] ? `<span class="hg-pic">${esc(PICS[x.ch].label)}</span>` : ''}
           <span class="hg-ex">${esc(x.word)}<small>${esc(x.mean)}</small></span>
         </button>`).join('')}
     </div>
@@ -108,10 +115,16 @@ function renderStage(id) {
       <button type="button" class="btn big" id="hgQuiz">${ic('star')} 小測驗（8 題，80 分過關）</button>
     </div>
     <div class="hg-guide" id="hgGuideBox" hidden><b id="hgNow"></b><p id="hgSaid">老師念的時候可以小聲跟著念</p><button type="button" class="pill-btn" id="hgStop">停止</button></div>`;
+  // 進來時：卡片一張張把自己畫出來、祕密卡變身
+  requestAnimationFrame(() => { $app.querySelectorAll('.hga, .hgm').forEach((el) => el.classList.add('play')); });
+  bindSecret(st);
   $app.querySelectorAll('.hg-card').forEach((b) => b.onclick = async () => {
     const x = ALL.find((y) => y.ch === b.dataset.ch);
     h.heard[x.ch] = true;
     store.save();
+    const art = b.querySelector('.hga');
+    art?.style.setProperty('--d', '0s');
+    replay(art);
     b.classList.add('heard', 'pop');
     setTimeout(() => b.classList.remove('pop'), 400);
     stopSpeaking();
@@ -122,6 +135,37 @@ function renderStage(id) {
   });
   $app.querySelector('#hgQuiz').onclick = () => startQuiz(st, items);
   $app.querySelector('#hgGuide').onclick = () => guide(st, items);
+}
+
+// 這一關的祕密規則：字母變身動畫，點了念「前 → 後」
+function secretHTML(st) {
+  const sec = SECRETS[st.id];
+  if (!sec) return '';
+  return `<section class="hg-secret">
+    <div class="hg-sec-h"><span class="hg-sec-no">祕密 ${sec.no}</span><b>${esc(sec.title)}</b><button type="button" class="hg-sec-say" id="hgSecSay" aria-label="聽老師說">${ic('speaker')}</button></div>
+    <div class="hg-morphs">${sec.pairs.map(([a, b, op], k) => `<button type="button" class="hg-morph" data-a="${a}" data-b="${b}">
+      <span class="hg-mfrom">${letterSVG(a, { decor: false })}</span><span class="hg-mop">${esc(op || sec.op)}</span><span class="hg-mto">${morphSVG(a, b, 0.3 + k * 0.5)}</span>
+      <small lang="ko">${sylOf(a)} → ${sylOf(b)}</small></button>`).join('')}</div>
+    <ul class="hg-facts">${sec.facts.map(([ch, t]) => `<li><span class="hg-fic">${letterSVG(ch, { decor: false })}</span><span>${esc(t)}</span></li>`).join('')}</ul>
+  </section>`;
+}
+function bindSecret(st) {
+  const sec = SECRETS[st.id];
+  if (!sec) return;
+  $app.querySelector('#hgSecSay').onclick = async () => {
+    stopSpeaking();
+    $app.querySelectorAll('.hg-morph .hgm').forEach(replay);
+    await speakAsync(spoken(sec.say), 'zh-TW');
+  };
+  $app.querySelectorAll('.hg-morph').forEach((b) => b.onclick = async () => {
+    const m = b.querySelector('.hgm');
+    m.style.setProperty('--d', '0s');
+    replay(m);
+    stopSpeaking();
+    await say(sylOf(b.dataset.a), 0.6);
+    await sleep(250);
+    await say(sylOf(b.dataset.b), 0.6);
+  });
 }
 
 // 語音教學：老師一個一個帶念（中文講解 → 韓文示範兩次＋例字 → 孩子跟念 → 稱讚或再示範）
@@ -136,12 +180,24 @@ async function guide(st, items) {
   $app.querySelector('#hgStop').onclick = () => { guideRun++; stopSpeaking(); box.hidden = true; };
   window.addEventListener('hashchange', () => { guideRun++; }, { once: true });
   const alive = () => my === guideRun;
-  const zh = (s) => speakAsync(s, 'zh-TW');
+  const zh = (s) => speakAsync(spoken(s), 'zh-TW');
+  const sec = SECRETS[st.id];
+  if (sec) {
+    $now.textContent = `祕密 ${sec.no}：${sec.title}`;
+    $app.querySelectorAll('.hg-morph .hgm').forEach(replay);
+    await zh(sec.say);
+    await sleep(300);
+  }
   for (const x of items) {
     if (!alive()) return;
     $app.querySelectorAll('.hg-card').forEach((b) => b.classList.toggle('now', b.dataset.ch === x.ch));
     $app.querySelector(`.hg-card[data-ch="${x.ch}"]`)?.scrollIntoView({ block: 'nearest', behavior: reducedMotion() ? 'auto' : 'smooth' });
-    $now.textContent = `${x.ch}　${x.rom}　像 ${x.zh}`;
+    $now.textContent = `${x.ch}　${x.rom}　${PICS[x.ch]?.label || `像 ${x.zh}`}`;
+    const card = $app.querySelector(`.hg-card[data-ch="${x.ch}"] .hga`);
+    card?.style.setProperty('--d', '0s');
+    replay(card);
+    if (HOOKS[x.ch]) { await zh(HOOKS[x.ch]); await sleep(200); }
+    if (!alive()) return;
     await say(x.syl, 0.55); await sleep(400);
     if (!alive()) return;
     await say(x.word, 0.65);
@@ -163,6 +219,14 @@ function startQuiz(st, items) {
     const opts = shuffle([x, ...shuffle(pool.filter((y) => y.ch !== x.ch)).slice(0, 3)]);
     return i % 2 ? { x, type: 'rom', opts, prompt: x.ch } : { x, type: 'listen', opts };
   });
+  // 變身題：ㄱ＋一筆會變成誰？（用這關的祕密規則出題）
+  const sec = SECRETS[st.id];
+  const morphs = sec ? shuffle(sec.pairs.filter(([, b]) => items.some((y) => y.ch === b))).slice(0, 2) : [];
+  morphs.forEach(([a, b, op], k) => {
+    const x = items.find((y) => y.ch === b);
+    const opts = shuffle([x, ...shuffle(pool.filter((y) => y.ch !== b)).slice(0, 3)]);
+    qs[k ? 5 : 2] = { x, type: 'morph', opts, from: a, op: op || sec.op };
+  });
   let i = 0;
   let good = 0;
   const draw = () => {
@@ -171,18 +235,25 @@ function startQuiz(st, items) {
     $app.innerHTML = `
       <div class="quiz-top"><a class="x" href="#/hangul/${st.id}">✕</a><div class="qbar"><i style="width:${(i / qs.length) * 100}%"></i></div><div class="combo">${i + 1}/${qs.length}</div></div>
       <div class="q-card">
-        <div class="q-tag">${q.type === 'listen' ? '聽聽看，是哪一個字母？' : '這個字母念什麼？'}</div>
-        ${q.type === 'listen' ? `<button type="button" class="listen" id="hgHear" aria-label="再聽一次">${ic('speaker')}</button>` : `<div class="q-prompt huge">${esc(q.prompt)}</div>`}
+        <div class="q-tag">${q.type === 'listen' ? '聽聽看，是哪一個字母？' : q.type === 'morph' ? '變身題：會變成誰？' : '這個字母念什麼？'}</div>
+        ${q.type === 'listen' ? `<button type="button" class="listen" id="hgHear" aria-label="再聽一次">${ic('speaker')}</button>`
+          : q.type === 'morph' ? `<div class="hg-qmorph" id="hgQm"><span class="hg-qa">${letterSVG(q.from, { decor: false })}</span><span class="hg-qop">${esc(q.op)}</span><b>？</b></div>`
+          : `<div class="q-prompt huge">${esc(q.prompt)}</div>`}
       </div>
-      <div class="options hg-opts">${q.opts.map((o, j) => `<button type="button" class="opt ${q.type === 'listen' ? 'huge' : ''}" data-j="${j}">${esc(q.type === 'listen' ? o.ch : `${o.rom}（${o.zh}）`)}</button>`).join('')}</div>`;
+      <div class="options hg-opts">${q.opts.map((o, j) => `<button type="button" class="opt ${q.type !== 'rom' ? 'huge' : ''}" data-j="${j}">${esc(q.type !== 'rom' ? o.ch : `${o.rom}（${o.zh}）`)}</button>`).join('')}</div>`;
     const play = () => say(q.x.syl, 0.6);
     if (q.type === 'listen') { $app.querySelector('#hgHear').onclick = play; setTimeout(play, 250); }
     $app.querySelectorAll('.opt').forEach((b) => b.onclick = async () => {
       const ok = q.opts[+b.dataset.j].ch === q.x.ch;
       $app.querySelectorAll('.opt').forEach((x, j) => { x.disabled = true; x.classList.add(q.opts[j].ch === q.x.ch ? 'right' : j === +b.dataset.j ? 'wrong' : 'dim'); });
-      if (ok) { good++; sfx('right'); host?.right(); } else { sfx('soft'); host?.say(`是「${q.x.ch}」${q.x.rom}`, 'think', 3000); }
+      if (q.type === 'morph') {
+        // 答完播變身動畫給她看
+        const $qm = $app.querySelector('#hgQm');
+        if ($qm) { $qm.innerHTML = `<span class="hg-qa">${letterSVG(q.from, { decor: false })}</span><span class="hg-qop">${esc(q.op)}</span><span class="hg-qa big">${morphSVG(q.from, q.x.ch)}</span>`; requestAnimationFrame(() => $qm.querySelector('.hgm')?.classList.add('play')); }
+      }
+      if (ok) { good++; sfx('right'); host?.right(); } else { sfx('soft'); host?.say(q.type === 'morph' ? `${q.from}${q.op}＝${q.x.ch}` : `是「${q.x.ch}」${q.x.rom}`, 'think', 3000); }
       await say(q.x.syl, 0.6);
-      setTimeout(() => { i++; draw(); }, ok ? 500 : 1200);
+      setTimeout(() => { i++; draw(); }, q.type === 'morph' ? 1600 : ok ? 500 : 1200);
     });
   };
   const finish = () => {
