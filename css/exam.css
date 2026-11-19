@@ -487,3 +487,52 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
   .hga.play .lt, .hga.play .dc > *, .hga .puff circle, .hga .ring, .hgm.play .in { animation: none; }
   .hgm .out { opacity: 0; }
 }
+.hga .face { fill: none; stroke: #f3c9a8; stroke-width: 3; }
+.hga .blush { fill: #ffb3c7; opacity: .8; }
+.hga .pull { stroke: #e0568f; stroke-width: 3; }
+
+.hga .hair { fill: #6b4a35; } .hga .blush { fill: #ffb3c7; opacity: .85; }
+.hga .doorF { fill: #ffe2c4; } .hga .umbF { fill: #ffd6e7; } .hga .dot { fill: #fff; opacity: .9; }
+.hga .bubF { fill: #e6f2ff; } .hga .shine { fill: #fff; } .hga .skinF { fill: #ffe9dc; } .hga .mouthO { fill: #e0568f; }
+.hg-more { margin-top: 10px; }
+.hg-more summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; color: #c2477f; background: #fff; border-radius: 99px; padding: 5px 12px; box-shadow: 0 2px 0 #f1d9c5; }
+.hg-more summary::-webkit-details-marker { display: none; }
+.hg-more summary .ic { width: 18px; height: 18px; }
+.hg-more[open] summary { margin-bottom: 4px; }
+/* 例字：卡片底部獨立一塊，不跟讀音擠在一起 */
+.hg-card { padding-bottom: 0; overflow: hidden; align-content: start; }
+.hg-rom { margin-top: 2px; }
+.hg-pic { margin: 4px 0 2px; }
+.hg-ex { align-self: end; width: calc(100% + 12px); margin: 10px -6px 0; padding: 8px 6px 10px; box-sizing: border-box; border-top: 2px dashed #f1e2d3; background: #f6f8ff; display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.hg-card.heard .hg-ex { background: #fff0f4; }
+.hg-ex i { font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: 2px; color: #fff; background: #a9b8de; border-radius: 99px; padding: 1px 8px; }
+.hg-ex b { font-size: 18px; font-weight: 900; color: #4a6aa8; line-height: 1.3; }
+.hg-ex small { display: block; font-size: 11.5px; color: #8a7563; font-weight: 700; }
+.hg-card { display: flex; flex-direction: column; align-items: center; }
+.hg-card .hg-pic { margin-bottom: 10px; }
+.hg-card .hg-ex { margin-top: auto; }
+
+/* ───── 字母卡：正面原形字，點一下翻到背面（動畫＋記法） ───── */
+.hg-card { display: block; padding: 0; background: none; border: 0; box-shadow: none; perspective: 900px; overflow: visible; }
+.hg-card.heard { background: none; }
+.hg-flip { display: grid; height: 100%; transition: transform .55s cubic-bezier(.4, 1.3, .5, 1); transform-style: preserve-3d; }
+.hg-card.flipped .hg-flip { transform: rotateY(180deg); }
+.hg-face { grid-area: 1 / 1; display: flex; flex-direction: column; align-items: center; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: #fff; border: 3px solid #fff; border-radius: 18px; box-shadow: 0 4px 0 #e3cbb5; padding: 12px 6px 0; overflow: hidden; min-height: 100%; box-sizing: border-box; }
+.hg-face.back { transform: rotateY(180deg); }
+.hg-card.heard .hg-face { background: #fff7f8; }
+.hg-card.now .hg-face { box-shadow: 0 0 0 4px #f0b429, 0 4px 0 #e3cbb5; }
+.hg-face.front { justify-content: center; gap: 4px; padding-bottom: 12px; background: linear-gradient(160deg, #fff, #fff6fa); }
+.hg-card.is-c .hg-face.front { background: linear-gradient(160deg, #fff, #f3f6ff); }
+.hg-big { font-size: 74px; font-weight: 900; line-height: 1.05; }
+.hg-card.is-v .hg-big { color: #e0568f; }
+.hg-card.is-c .hg-big { color: #4a6aa8; }
+.hg-face.front .hg-rom { font-size: 16px; }
+.hg-turn { display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; font-size: 11.5px; font-weight: 800; color: #b59cc4; background: #fff; border: 1.5px dashed #e2d3ef; border-radius: 99px; padding: 2px 10px; }
+.hg-turn .ic { width: 16px; height: 16px; animation: hgWiggle 1.8s ease-in-out infinite; }
+@keyframes hgWiggle { 0%, 70%, 100% { transform: rotate(0); } 80% { transform: rotate(-14deg); } 90% { transform: rotate(10deg); } }
+.hg-card:active .hg-flip { filter: brightness(.97); }
+@media (prefers-reduced-motion: reduce) { .hg-flip { transition: none; } .hg-turn .ic { animation: none; } }
+
+.hga .ghost { font: 900 118px/1 inherit; fill: #4a3728; opacity: .08; text-anchor: middle; }
+.hga .ghost.serif { font-family: Georgia, 'Times New Roman', serif; font-weight: 700; }
+.hga .lipsF { fill: #ffd0dc; }
