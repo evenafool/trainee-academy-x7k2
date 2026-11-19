@@ -307,8 +307,8 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
   const st = STORIES[lv.id];
   const steps = stepsOf(st);
   const words = (lv.words || []).map((id) => WORDS[id]).filter(Boolean);
-  // 直立手機：用漫畫條模式看短劇
-  const strip = matchMedia('(orientation: portrait) and (max-width: 820px)').matches;
+  // 一律用直式漫畫條（三格）看短劇；電腦／橫螢幕會置中成手機寬度
+  const strip = true;
   const stage = buildStage({ title: st.title, sub: `第 ${n} 天・短劇`, dots: st.panels.length, pouch: words, strip });
   const { $, box } = stage;
   const mine = token;
@@ -343,6 +343,12 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
     const c = $('#vnCatch');
     c.innerHTML = `<button type="button" class="catch-btn"><span class="catch-ring"></span>${wic(w)}<span><small>新單字！點我收集</small><b>${esc(w.zh)}</b><em>${esc(w.ko)}・${esc(w.en)}</em></span><img class="catch-hand" src="assets/art/icons/w-this.webp" alt=""></button>`;
     c.hidden = false;
+    // 漫畫條模式：貼在對話框正上方、立繪旁邊的空白處（對話框高度會變，所以每次量）
+    const root = c.closest('.drama');
+    if (root?.classList.contains('strip-mode')) {
+      const gap = root.getBoundingClientRect().bottom - $('#vnBox').getBoundingClientRect().top;
+      c.style.bottom = `${Math.round(gap + 8)}px`;
+    } else c.style.bottom = '';
     sfx('ding');
     c.querySelector('button').onclick = (e) => { e.stopPropagation(); catchWord(id, e.currentTarget); };
     const hw = box.querySelector(`.hlw[data-w="${id}"]`);

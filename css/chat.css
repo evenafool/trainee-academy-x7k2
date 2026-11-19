@@ -223,3 +223,14 @@
 .ct-rec.cancel small { color: var(--ng); font-weight: 700; }
 .ct-rec.cancel .ct-wave i { background: #ffb3b3; }
 @media (prefers-reduced-motion: reduce) { .ct-mictip, .ct-rec-mic, .ct-micbtn.on { animation: none; } }
+
+/* 好友頁上方兩顆大按鈕 */
+.fr-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0 4px; }
+.fr-act { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 8px; border: 0; border-radius: 18px; background: #fff; box-shadow: 0 4px 0 #f1d9c5; font: inherit; color: inherit; cursor: pointer; }
+.fr-act:first-child { background: linear-gradient(160deg, #fff, #ffe9f2); }
+.fr-act .ic { width: 34px; height: 34px; }
+.fr-act b { font-size: 15px; }
+.fr-act small { font-size: 11.5px; color: var(--muted, #8a7a8f); }
+.fr-act:active { transform: translateY(2px); box-shadow: 0 2px 0 #f1d9c5; }
+#frAddH, #frMine { scroll-margin-top: 70px; }
+.nav a { min-width: 0; }

@@ -14,6 +14,7 @@ import { avatarHTML, avatarState, autoOutfit, OUTFITS, newUnlocks, renderCloset 
 import { renderFriends, friendCount } from './friends.js';
 import { initCloud, accountHTML, bindAccount, currentUser, onChats } from './cloud.js';
 import { renderChat, stopChat } from './chat.js';
+import { renderBinders } from './binder.js';
 
 // 啟動時把課程、獎勵裡的暫定名換成孩子取的名字（改名後重新整理頁面就會重新套用）
 if (Object.keys(store.get().names || {}).length) {
@@ -265,157 +266,151 @@ views.home = () => {
   const nx = examNext();
   // 練習區依語言分組：同一個語言的東西放在一起
   const groups = langGroups(ex, lesson.n);
-  // 今天的課上完了 → 手指移到單字庫（考試準備度在下方「考試」分頁）
-  const tapHref = doneToday ? '#/exam/bank' : '';
-  // 今日學習路線：一步一步、每步可以領小獎勵
+  // 今日學習路線：一步一步、每步可以領小獎勵（收在「任務」面板裡）
   const dd = store.daily();
-  const hpDone = hangulProgress().done;
+  const hp = hangulProgress();
+  // 主線＝看短劇、上今天的課；40 音是加分的基礎練習（不擋主線、不算進寶箱）
+  const mark = (r) => ({ ...r, done: (dd.tasks || []).includes(r.id), claimed: (dd.claimed || []).includes(r.id) });
   const route = [
-    ...(hpDone ? [] : [{ id: 'hangul', icon: 'ko', name: '韓文 40 音', sub: `打好基礎・已過 ${hangulProgress().passed}／${hangulProgress().stages} 關`, href: '#/hangul', prog: hangulProgress().passed / hangulProgress().stages }]),
-    { id: 'lesson', icon: 'mic', name: '今天的課', sub: '看短劇、學 6 個字', href: '#/talk', scroll: '.today', up: true },
+    { id: 'lesson', icon: 'mic', name: '看短劇・上今天的課', sub: `第 ${lesson.n} 集・學新字`, href: '#/talk', main: true },
     { id: 'bank', icon: 'book', name: '單字庫', sub: '再學 8 個新字', href: '#/exam/bank' },
-    { id: 'play', icon: 'cards', name: '玩一個練習', sub: '從下面的練習區挑一個', href: '#/practice', scroll: '.play-zone' },
-  ].map((r) => ({ ...r, done: (dd.tasks || []).includes(r.id), claimed: (dd.claimed || []).includes(r.id) }));
+    { id: 'play', icon: 'cards', name: '玩一個練習', sub: '練習區挑一個', href: '#/practice' },
+  ].map(mark);
+  const extra = hp.done ? [] : [mark({ id: 'hangul', icon: 'ko', name: '加分：韓文 40 音', sub: `基礎練習・已過 ${hp.passed}／${hp.stages} 關`, href: '#/hangul', extra: true })];
   const nextStep = route.find((r) => !r.done);
   const allDone = route.every((r) => r.done);
-  // 浮動的「下一步」按鈕：有獎勵沒領就提醒領獎；不然就帶去下一步（那張卡已經在畫面上時會自動藏起來）
-  const pending = route.filter((r) => r.done && !r.claimed).length + (allDone && !(dd.claimed || []).includes('chest') ? 1 : 0);
-  const NEXT = {
-    hangul: { label: `${ic('ko')} 下一步：韓文 40 音`, href: '#/hangul', watch: '.hg-feature' },
-    lesson: { label: `${ic('mic')} 開始今天的課`, href: '#/talk', watch: '.today .cta' },
-    bank: { label: `${ic('book')} 下一步：單字庫`, href: '#/exam/bank', watch: '.route' },
-    play: { label: `${ic('cards')} 下一步：玩一個練習`, scroll: '.play-zone', watch: '.play-zone' },
-  };
-  const nextAct = pending ? { label: `${ic('gift')} 有 ${pending} 個獎勵可以領！`, scroll: '.route', watch: '.route', claim: true } : nextStep ? NEXT[nextStep.id] : null;
-  if (doneToday) lines.unshift(`今天的課上完了，好棒！下面的「練習區」有單字庫和模擬考，點發光的那個去玩吧！`);
+  const chestReady = allDone && !(dd.claimed || []).includes('chest');
+  const pending = [...route, ...extra].filter((r) => r.done && !r.claimed).length + (chestReady ? 1 : 0);
+  const doneN = route.filter((r) => r.done).length;
+  if (doneToday) lines.unshift('今天的課上完了，好棒！點左邊的「任務」領獎勵，或去練習區再玩一個吧！');
 
-  // 簡化版大廳：一張「今天的課」卡（劇照＋標題＋3 個字＋一個大按鈕），其他功能縮成一排小連結
+  // 下面那顆大按鈕：永遠是「現在最該做的那一件事」
+  const BIG = {
+    lesson: { t: '開始今天的課', s: `第 ${lesson.n} 天・${st.title}`, href: '#/talk', icon: 'mic' },
+    bank: { t: '去單字庫', s: '再學 8 個新字', href: '#/exam/bank', icon: 'book' },
+    play: { t: '玩一個練習', s: '挑一個你喜歡的', href: '#/practice', icon: 'cards' },
+  };
+  const big = pending ? { t: `領 ${pending} 個獎勵`, s: chestReady ? '今日寶箱也可以開了！' : '完成的任務還沒領', sheet: true, icon: 'gift' }
+    : nextStep ? BIG[nextStep.id]
+    : { t: '再上一次今天的課', s: '今天全部完成了！', href: '#/talk', icon: 'trophy' };
+
+  const outfitId = avatarState().outfit || autoOutfit();
+  const fresh = newUnlocks().length;
+  const xpNum = new Intl.NumberFormat('zh-TW').format(s.xp || 0);
+  const side = (o) => `<${o.href ? `a href="${o.href}"${o.ext ? ' target="_blank" rel="noopener"' : ''}` : `button type="button"`} class="gl-ic ${o.cls || ''}" ${o.id ? `id="${o.id}"` : ''} aria-label="${o.name}">
+      <span class="gl-ic-b">${ic(o.icon)}${o.badge ? `<i class="gl-dot">${o.badge}</i>` : ''}${o.tag ? `<em class="gl-tag">${o.tag}</em>` : ''}</span><small>${o.name}</small></${o.href ? 'a' : 'button'}>`;
+  const LEFT = [
+    { id: 'glTasks', icon: 'gift', name: '任務', badge: pending || '', cls: pending ? 'hot' : '' },
+    ...(hp.done ? [] : [{ href: '#/hangul', icon: 'ko', name: '40 音' }]),
+    { href: '#/quiz/daily', icon: 'star', name: '打歌' },
+  ];
+  const LEFT2 = [
+    { href: '#/exam/bank', icon: 'book', name: '單字庫' },
+    { href: '#/game/match-ko', icon: 'cards', name: '翻牌' },
+    { href: `${AI_TEACHER_URL}#day-${lesson.n}`, icon: 'chat', name: 'AI 老師', ext: true },
+  ];
+  // 右邊：直排的活動橫幅（圖片卡＋緞帶標題）
+  const cardMember = ['luna', 'hana', 'riri', 'jun', 'taeo', 'sena', 'ray', 'yuri'][lesson.n % 8];
+  const BANNERS = [
+    { href: '#/closet', img: `assets/art/me-${outfitId}.webp`, face: true, name: '衣帽間', sub: fresh ? `新獲得 ${fresh} 樣` : '換造型', tag: fresh ? 'NEW' : '', cls: 'closet' },
+    { href: '#/cards', img: `assets/art/card-${cardMember}.webp`, face: true, name: '小卡冊', sub: '收藏小卡', cls: 'cards' },
+    { href: '#/friends', img: 'assets/art/icons/mascot-love.webp', name: '好友', sub: '聊天・彩蛋', cls: 'friends' },
+    { href: '#/map', img: 'assets/art/bg-stage.webp', name: '章節地圖', sub: '回放舊集數', cls: 'map' },
+  ];
+  const banner = (b) => `<${b.href ? `a href="${b.href}"` : `button type="button" id="${b.id}"`} class="gl-bn ${b.cls || ''}" aria-label="${b.name}">
+      ${b.face ? `<span class="gl-bn-pic" style="background-image:url('${b.img}')"></span>` : `<img src="${b.img}" alt="" ${b.alt ? `onerror="this.onerror=null;this.src='${b.alt}'"` : ''}>`}
+      ${b.play ? '<span class="gl-ep-play">▶</span>' : ''}${b.tag ? `<em class="gl-bn-tag">${b.tag}</em>` : ''}
+      <span class="gl-bn-t"><b>${b.name}</b><small>${esc(b.sub)}</small></span></${b.href ? 'a' : 'button'}>`;
+
+  // 少女養成遊戲式大廳：主角站中間、兩側圓形功能鈕、上方資源列、下方「今日短劇」海報卡＋大按鈕
   $app.innerHTML = `
-    <section class="lobby">
-      <div class="lobby-bg" aria-hidden="true"></div>
-      <header class="lobby-top">
-        <h1 class="brand brand-logo"><img src="assets/art/logo.webp" alt="練習生學院 TRAINEE ACADEMY"></h1>
-        <span class="stat-pill date-chip">${new Intl.DateTimeFormat('zh-TW', { month: 'long', day: 'numeric', weekday: 'short' }).format(new Date())}</span>
-        <span class="stat-pill streak-chip" title="連續打卡">${ic('fire')} <b>${currentStreak()}</b> 天</span>
-        <a class="me-chip" href="#/me"><span class="me-av">${esc(s.profile.name.slice(0, 1))}</span><span><b>${esc(s.profile.name)}</b><small>${esc(r.name)}</small></span></a>
+    <section class="gl">
+      <div class="gl-bg" aria-hidden="true" style="background-image:url('assets/art/bg-${lesson.lv.bg || 'practice'}.webp')"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <header class="gl-top">
+        <a class="gl-prof" href="#/me" aria-label="我的">
+          <span class="gl-face" style="background-image:url('assets/art/me-${outfitId}.webp')"></span>
+          <span class="gl-prof-t"><b>${esc(s.profile.name)}</b><small>${esc(r.name)}</small><span class="gl-xp"><i style="width:${pct}%"></i></span></span>
+        </a>
+        <span class="gl-res" title="連續打卡天數">${ic('fire')}<b>${currentStreak()}</b></span>
+        <span class="gl-res" title="應援值">${ic('heart')}<b>${xpNum}</b></span>
+        <span class="gl-res" title="出道倒數">${ic('trophy')}<b>${days}</b></span>
       </header>
 
-      <div class="lobby-main">
-        <div class="lobby-left">
-          <div class="hero-pair">
-          <article class="glass today">
-            <figure class="today-art watch-drama" id="watchDrama" title="看今天的短劇">
-              <span class="play-badge">▶ 看短劇</span>
-              <img src="assets/art/story-${lesson.lv.id}.webp" alt="今天的短劇：${esc(st.title)}" onerror="this.onerror=null;this.src='assets/art/bg-${lesson.lv.bg}.webp'">
-              <figcaption>第 ${lesson.n} 天</figcaption>
-            </figure>
-            <p class="drama-kind">${esc(st.kind)}</p>
-            <h1>${esc(st.title)}</h1>
-            <ul class="today-words">
-              ${words.map((w) => `<li><span class="w-emoji">${wic(w)}</span><b>${esc(w.zh)}</b></li>`).join('')}
-            </ul>
-            <a class="cta ${nextStep?.id === 'lesson' ? 'tap-hint' : ''}" href="#/talk">${ic('mic')} ${doneToday ? '再上一次今天的課' : '開始今天的課'}${nextStep?.id === 'lesson' ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span>' : ''}</a>
-            ${lesson.doneToday && lesson.next ? `<div class="next-ep">${ic('star')} 今天這集完成了！明天解鎖第 ${lesson.next.n} 集：<b>${esc(STORIES[lesson.next.lv.id]?.title || lesson.next.lv.title)}</b>${TEASERS[lesson.lv.id] ? `<small>下集預告：${esc(TEASERS[lesson.lv.id])}</small>` : ''}</div>`
-              : lesson.allDone ? `<div class="next-ep">${ic('trophy')} 全部的集數都上完了！可以從章節地圖回放喜歡的集數。</div>`
-              : `<div class="prize-mini">上完拿到 ${rewardHTML(prize)} <b>${esc(prize.name)}</b></div>`}
-          </article>
-          ${(() => { const hp = hangulProgress(); if (hp.done) return ''; return `<a class="glass hg-feature ${nextStep?.id === 'hangul' ? 'tap-hint' : ''}" href="#/hangul" aria-label="韓文 40 音">
-            <span class="hg-feature-bg" aria-hidden="true">${['가', '나', '다', '라', '마', '바', '사', '아'].map((c, i) => `<i style="--i:${i}">${c}</i>`).join('')}</span>
-            <img class="hg-feature-mina" src="assets/art/sprite-mina.webp" alt="" onerror="this.remove()">
-            <span class="hg-feature-body">
-              <em>第 0 課・最重要的基礎</em>
-              <b>韓文 40 音</b>
-              <small>學會 40 個字母，所有韓文都念得出來！</small>
-              <span class="hg-feature-prog"><span class="hg-prog"><i style="width:${(hp.passed / hp.stages) * 100}%"></i></span><span>${hp.passed}／${hp.stages} 關</span></span>
-              <span class="hg-feature-go">${ic('speaker')} ${hp.passed ? '繼續學 40 音' : '開始學 40 音'}</span>
-            </span>
-            ${nextStep?.id === 'hangul' ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>先從這裡開始！</b></span>' : ''}
-          </a>`; })()}
-          </div>
+      <nav class="gl-side gl-left" aria-label="功能">
+        ${[...LEFT, ...LEFT2].map(side).join('')}
+      </nav>
+      <nav class="gl-banners" aria-label="活動">${BANNERS.map(banner).join('')}</nav>
 
-          <section class="glass route" aria-label="今日學習路線">
-            <div class="route-head"><b>${ic('map')} 今日學習路線</b><small>照順序做，每完成一步都能領獎勵！</small><a class="route-map" href="#/map">${ic('map')} 章節地圖 ›</a></div>
-            <ol class="route-steps">
-              ${route.map((r, i) => false ? `<li class="hg-step ${r === nextStep ? 'now' : ''}">
-                <a class="hg-step-link ${r === nextStep ? 'tap-hint' : ''}" href="#/hangul">
-                  <span class="hg-step-ch">가</span>
-                  <span class="hg-step-t"><em>第 0 課・最重要的基礎</em><b>韓文 40 音</b><small>學會 40 個字母，所有韓文都念得出來</small>
-                    <span class="hg-prog"><i style="width:${r.prog * 100}%"></i></span><span class="hg-step-n">已過關 ${hangulProgress().passed}／${hangulProgress().stages} 關</span></span>
-                  <span class="hg-step-go">${hangulProgress().passed ? '繼續學 ›' : '開始學 ›'}</span>
-                  ${r === nextStep ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>先從這裡開始！</b></span>' : ''}
-                </a></li>` : `<li class="${r.done ? 'done' : ''} ${r === nextStep ? 'now' : ''}">
-                <span class="route-n">${r.done ? '✓' : i + 1}</span>${ic(r.icon)}<span class="route-t"><b>${r.name}</b><small>${r.sub}</small></span>
-                ${r.done ? (r.claimed ? `<span class="route-got">${ic('gift')} 已領</span>` : `<button type="button" class="route-claim" data-claim="${r.id}">${ic('gift')} 領獎勵 +10</button>`)
-                  : r.scroll ? `<button type="button" class="route-go ${r === nextStep ? 'tap-hint' : ''}" data-scroll="${r.scroll}">${r.up ? (r === nextStep ? '下一步 ↑' : '在上面 ↑') : (r === nextStep ? '下一步 ↓' : '在下面 ↓')}</button>`
-                  : `<a class="route-go ${r === nextStep ? 'tap-hint' : ''}" href="${r.href}">${r === nextStep ? '下一步 ›' : '前往 ›'}</a>`}</li>`).join('')}
-            </ol>
-            <a class="route-stamps" href="#/map" aria-label="今日集章">
-              <span class="dg-title">今日集章 <b class="dg-count">${Math.min(store.daily().stamps.length, store.DAILY_GOAL)}/${store.DAILY_GOAL}</b></span>
-              <span class="mg-row">${Object.keys(store.STAMPS).map((k) => `<span class="stamp ${store.daily().stamps.includes(k) ? 'on' : ''}" title="${store.STAMPS[k].name}">${ic(store.STAMPS[k].icon)}<small>${store.STAMPS[k].name}</small></span>`).join('')}</span>
-            </a>
-            ${allDone ? ((dd.claimed || []).includes('chest') ? `<p class="route-chest done">${ic('trophy')} 今日寶箱已打開，明天見！</p>` : `<button type="button" class="route-chest tap-hint" data-claim="chest">${ic('gift')} 全部完成！打開今日寶箱 +30</button>`) : ''}
-          </section>
+      <button class="gl-me me-stage" id="teacherBtn" type="button" aria-label="我的角色（點一下聊天）">${avatarHTML()}</button>
 
+      <div class="gl-say" id="sayBox">
+        <span class="gl-say-name">${esc(s.profile.name)}</span>
+        <p id="speech" aria-live="polite">${esc(lines[0])}</p>
+        <span class="gl-say-next" aria-hidden="true">▼</span>
+      </div>
 
-          <section class="glass play-zone ${doneToday ? 'hot' : ''}" aria-label="練習區">
-            <div class="pz-head"><b>${ic('star')} 練習區</b><small>${doneToday ? '今天的課上完了！再玩一個，把章集滿！' : '依語言分好了，挑一個玩！'}</small></div>
-            ${groups.map((g) => langRowHTML(g, tapHref)).join('')}
-          </section>
-
-          <div class="glass debut-strip">
-            <span>出道倒數</span><b>${days}</b><span>天</span>
-            <div class="xpbar"><i style="width:${pct}%"></i></div>
-          </div>
-          ${COPYRIGHT}
-
+      <article class="gl-ep ${lesson.doneToday ? 'done' : ''}" aria-label="今日短劇">
+        <button type="button" class="gl-ep-art" id="watchDrama" aria-label="看今天的短劇：${esc(st.title)}">
+          <img src="assets/art/story-${lesson.lv.id}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/bg-${lesson.lv.bg}.webp'">
+          <span class="gl-ep-play">▶</span>
+          <em class="gl-ep-no">第 ${lesson.n} 集</em>
+          ${lesson.doneToday ? `<span class="gl-ep-ok">${ic('star')}看完了</span>` : '<span class="gl-ep-new">今日短劇</span>'}
+        </button>
+        <div class="gl-ep-body">
+          <small class="gl-ep-kind">${esc(st.kind)}</small>
+          <b class="gl-ep-title">${esc(st.title)}</b>
+          <ul class="gl-words" aria-label="今天的 3 個字">${words.map((w) => `<li>${wic(w)}<span>${esc(w.zh)}</span></li>`).join('')}</ul>
+          ${big.sheet ? `<button type="button" class="gl-go claim" id="glGo">` : `<a class="gl-go" id="glGo" href="${big.href}">`}
+            ${ic(big.icon)}<b>${esc(big.t)}</b>
+            <img class="gl-go-hand" src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()">
+          ${big.sheet ? '</button>' : '</a>'}
         </div>
+      </article>
 
-        <div class="lobby-right">
-          <p class="speech" id="speech" aria-live="polite">${esc(lines[0])}</p>
-          <button class="teacher me-stage" id="teacherBtn" type="button" aria-label="我的角色（點兩下打開衣帽間）">${avatarHTML()}</button>
-          <span class="teacher-name">${esc(s.profile.name)}・${esc(OUTFITS.find((o) => o.id === (avatarState().outfit || autoOutfit()))?.name || '')}</span>
-          <a class="closet-link ${newUnlocks().length ? 'tap-hint fresh' : ''}" href="#/closet">${newUnlocks().length ? `${ic('gift')} 新獲得 ${newUnlocks().length} 樣！去衣帽間` : `${ic('closet')} 衣帽間`}</a>
+      <div class="gl-sheet" id="glSheet" hidden>
+        <div class="gl-sheet-card" role="dialog" aria-label="今日任務">
+          <div class="gl-sheet-h"><b>${ic('gift')} 今日任務</b><span>${doneN}／${route.length}</span><button type="button" class="gl-x" id="glSheetX" aria-label="關閉">✕</button></div>
+          <ol class="gl-steps">
+            ${[...route, ...extra].map((x, i) => `<li class="${x.done ? 'done' : ''} ${x === nextStep ? 'now' : ''} ${x.extra ? 'extra' : ''}">
+              <span class="gl-st-ic">${ic(x.icon)}<i>${x.done ? '✓' : x.extra ? '+' : i + 1}</i></span>
+              <span class="gl-st-t"><b>${x.name}</b><small>${x.sub}</small></span>
+              ${x.done ? (x.claimed ? `<span class="gl-st-got">已領</span>` : `<button type="button" class="gl-st-claim" data-claim="${x.id}">${ic('gift')} +10</button>`)
+                : `<a class="gl-st-go" href="${x.href}">${x === nextStep ? '去做' : '前往'}</a>`}
+            </li>`).join('')}
+          </ol>
+          <button type="button" class="gl-chest ${chestReady ? 'ready' : ''} ${allDone && !chestReady ? 'open' : ''}" ${chestReady ? 'data-claim="chest"' : 'disabled'}>
+            ${ic(allDone && !chestReady ? 'trophy' : 'gift')}<span><b>${chestReady ? '打開今日寶箱 +30' : allDone ? '寶箱已打開，明天見！' : '今日寶箱'}</b><small>${allDone ? '' : `再完成 ${route.length - doneN} 個就能打開`}</small></span>
+          </button>
+          <a class="gl-stamps" href="#/map" aria-label="今日集章">
+            ${Object.keys(store.STAMPS).map((k) => `<span class="stamp ${dd.stamps.includes(k) ? 'on' : ''}" title="${store.STAMPS[k].name}">${ic(store.STAMPS[k].icon)}<small>${store.STAMPS[k].name}</small></span>`).join('')}
+          </a>
+          ${COPYRIGHT}
         </div>
       </div>
-      ${nextAct ? (nextAct.href ? `<a class="next-pill ${nextAct.claim ? 'claim' : ''}" id="nextPill" href="${nextAct.href}">${nextAct.label}<span aria-hidden="true">›</span></a>`
-        : `<button type="button" class="next-pill ${nextAct.claim ? 'claim' : ''}" id="nextPill" data-scroll="${nextAct.scroll}">${nextAct.label}<span aria-hidden="true">${nextAct.claim ? '↓' : '›'}</span></button>`) : ''}
     </section>`;
 
-  // 剛上完課回到首頁：捲到學習路線，提醒領獎勵
+  document.querySelectorAll('body > .next-pill, body > .gl-sheet').forEach((x) => x.remove());
+  const sheet = $app.querySelector('#glSheet');
+  document.body.append(sheet); // 放到最上層，才不會被下方導覽列蓋住
+  const openSheet = (on) => { sheet.hidden = !on; homeSheetOpen = on; if (on) sfx('tap'); };
+  // 剛上完課回到首頁、或剛領完獎勵重畫：直接打開任務面板
   let arrived = false;
   try { arrived = sessionStorage.getItem('ta.arrive') === '1'; sessionStorage.removeItem('ta.arrive'); } catch (e) { /* 略過 */ }
-  if (arrived) setTimeout(() => { const el = $app.querySelector('.route'); el?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' }); el?.classList.add('arrive'); setTimeout(() => el?.classList.remove('arrive'), 3800); }, 350);
-  const pill = $app.querySelector('#nextPill');
-  // 放到 body 底下，才不會被首頁容器的動畫影響而跟著捲走；首頁重畫或換頁時拿掉舊的
-  document.querySelectorAll('body > .next-pill').forEach((x) => x.remove());
-  if (pill) {
-    document.body.append(pill);
-    window.addEventListener('hashchange', () => pill.remove(), { once: true });
-    if (pill.dataset.scroll) pill.onclick = () => {
-      const el = $app.querySelector(pill.dataset.scroll);
-      el?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'center' });
-      el?.classList.add('flash'); setTimeout(() => el?.classList.remove('flash'), 1600);
-    };
-  }
-  const watched = nextAct && $app.querySelector(nextAct.watch);
-  if (pill && watched && 'IntersectionObserver' in window) {
-    const io = new IntersectionObserver(([e]) => pill.classList.toggle('away', e.isIntersecting), { threshold: 0.35 });
-    io.observe(watched);
-    window.addEventListener('hashchange', () => io.disconnect(), { once: true });
-  }
-  $app.querySelectorAll('[data-scroll]').forEach((b) => b.onclick = () => {
-    const el = $app.querySelector(b.dataset.scroll);
-    el?.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth', block: 'start' });
-    el?.classList.add('flash'); setTimeout(() => el?.classList.remove('flash'), 1600);
-  });
-  $app.querySelectorAll('[data-claim]').forEach((b) => b.onclick = () => {
-    const r = b.getBoundingClientRect();
-    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+  if (arrived || homeSheetOpen) sheet.hidden = false;
+  $app.querySelector('#glTasks').onclick = () => openSheet(true);
+  if (big.sheet) $app.querySelector('#glGo').onclick = () => openSheet(true);
+  sheet.querySelector('#glSheetX').onclick = () => openSheet(false);
+  sheet.onclick = (e) => { if (e.target === sheet || e.target.closest('a')) openSheet(false); };
+  window.addEventListener('hashchange', () => { homeSheetOpen = false; sheet.remove(); }, { once: true });
+  sheet.querySelectorAll('[data-claim]').forEach((b) => b.onclick = () => {
+    const rc = b.getBoundingClientRect();
+    const x = rc.left + rc.width / 2, y = rc.top + rc.height / 2;
     const chest = b.dataset.claim === 'chest';
     const xp = store.claimTask(b.dataset.claim);
     if (!xp) return;
     sfx('reward');
-    views.home(); // 重畫（不換頁，捲動位置不變）
+    homeSheetOpen = true;
+    views.home(); // 重畫（面板保持打開）
     sparkleAt(x, y, chest ? 14 : 9);
     flyText(x, y, `+${xp} 應援值`);
     if (chest) { confetti(); toast('今日寶箱打開了！明天再來挑戰！'); }
@@ -424,17 +419,21 @@ views.home = () => {
     await openDrama(lesson.lv, lesson.n, { endLabel: '去上今天的課' });
     if (location.hash === '#/home' || location.hash === '') location.hash = '#/talk';
   };
-  $app.querySelector('#teacherBtn').onclick = () => {
+  const say = () => {
     lineIdx = (lineIdx + 1) % lines.length;
     const line = lines[lineIdx];
     const sp = $app.querySelector('#speech');
     sp.textContent = line;
-    sp.classList.remove('pop');
-    void sp.offsetWidth;
-    sp.classList.add('pop');
+    const box = $app.querySelector('#sayBox');
+    box.classList.remove('pop');
+    void box.offsetWidth;
+    box.classList.add('pop');
     speak(line, 'zh-TW'); // 韓文部分會自動換韓文聲音念
   };
+  $app.querySelector('#teacherBtn').onclick = say;
+  $app.querySelector('#sayBox').onclick = say;
 };
+let homeSheetOpen = false;
 
 views.closet = () => renderCloset($app, backBar);
 views.friends = (arg) => renderFriends($app, backBar, toast, true, arg || '');
@@ -445,7 +444,7 @@ function langGroups(ex, dayN) {
   const sub = (id) => `#/subject/${id}`;
   return [
     { id: 'ko', name: '韓文', cls: 'pink', tiles: [
-      { href: '#/hangul', icon: 'ko', name: '40 音', sub: `${hangulProgress().passed}／4 關`, badge: hangulProgress().done ? '' : '必學' },
+      { href: '#/hangul', icon: 'ko', name: '40 音', sub: `${hangulProgress().passed}／4 關`, badge: '' },
       { href: '#/game/match-ko', icon: 'cards', name: '翻牌配對', sub: '圖＋韓文' },
       { href: '#/game/speed-ko', icon: 'fire', name: '快問快答', sub: '60 秒用說的' },
       { href: sub('ko'), icon: 'book', name: '韓文題庫', sub: '追星韓語・TOPIK' },
@@ -785,58 +784,102 @@ views.map = () => {
   $app.querySelectorAll('[data-drama]').forEach((b) => { b.onclick = () => { const k = +b.dataset.drama; openDrama(days[k - 1], k, { endLabel: '關閉' }); }; });
 };
 
-views.cards = () => {
-  const s = store.get();
-  const got = new Map(s.collection.map((r) => [r.day, r]));
-  const days = LEVELS.filter((l) => !l.boss);
-  const total = Math.max(days.length, ...s.collection.map((r) => r.day));
-  const slots = Array.from({ length: total }, (_, i) => i + 1);
-  const fmt = (t) => { const d = new Date(t); return `${d.getMonth() + 1}/${d.getDate()}`; };
-  const old = [...s.cards].reverse();
-  $app.innerHTML = `
-    <section class="lobby collection">
-      <div class="lobby-bg" aria-hidden="true"></div>
-      <header class="lobby-top">
-        <a class="back-btn" href="#/home">‹ 回大廳</a>
-        <div class="brand">我的收藏室<small>MY COLLECTION</small></div>
-        <div class="pills"><span class="stat-pill">${ic('cards')} 小卡 <b>${s.collection.filter((r) => r.kind === 'card').length}</b></span><span class="stat-pill">${ic('gift')} 周邊 <b>${s.collection.filter((r) => r.kind === 'merch').length}</b></span></div>
-      </header>
-      <div class="col-main">
-        <section class="glass col-binder">
-          <h2>卡冊</h2>
-          <p class="muted small">每上完一天的課，就會拿到那一天的收藏品。灰色的是還沒解鎖的。</p>
-          <div class="binder">${slots.map((n) => {
-            const r = got.get(n) || rewardForDay(n);
-            return `<div class="slot"><span class="slot-day">第 ${n} 天</span>${rewardHTML(r, { locked: !got.has(n) })}</div>`;
-          }).join('')}</div>
-        </section>
-        <section class="glass col-history">
-          <h2>收藏歷程</h2>
-          ${s.collection.length ? `<ol class="timeline">${[...s.collection].reverse().map((r) => `<li><span class="tl-date">${fmt(r.at)}</span><span class="tl-dot"></span><div><b>${esc(r.name)}</b><small>第 ${r.day} 天「${esc(r.title)}」上完拿到</small></div></li>`).join('')}</ol>`
-            : '<p class="muted">還沒有收藏品。上完第一天的課，就會拿到第一張小卡！</p><a class="cta" href="#/talk">' + ic('mic') + ' 去上今天的課</a>'}
-        </section>
-      </div>
-      ${old.length ? `<section class="glass col-old"><h2>測驗抽到的單字卡</h2><div class="card-grid">${old.map((c) => cardHTML(c, true)).join('')}</div></section>` : ''}
-    </section>`;
-};
+views.cards = (arg) => renderBinders($app, arg, { cardHTML });
 
 views.me = () => {
   const s = store.get();
   const r = rankOf(s.xp);
   const acc = s.stats.answered ? Math.round((s.stats.correct / s.stats.answered) * 100) : 0;
+  // 練習生證上的資料
+  s.profile.joined ??= (s.history?.[0]?.day || store.today());
+  const outfit = OUTFITS.find((o) => o.id === avatarState().outfit) ? avatarState().outfit : autoOutfit();
+  const days = LEVELS.filter((l) => !l.boss && s.course?.cleared?.[l.id] != null).length;
+  s.uid ??= Math.random().toString(36).slice(2, 12);
+  const no = (s.uid || '').replace(/[^a-z0-9]/gi, '').slice(0, 6).toUpperCase().padEnd(6, '0');
+  const agency = s.names?.agency || DEFAULT_NAMES.agency;
+  const nextPct = r.next ? Math.min(100, Math.round(((s.xp - r.xp) / (r.next.xp - r.xp)) * 100)) : 100;
+  // 能力值（像偶像養成遊戲的六角圖）：從真實學習紀錄算出來，前期成長快、後面慢慢變難
+  const ex = examStats();
+  const hp = hangulProgress();
+  const sc = (v, max) => Math.round(100 * Math.sqrt(Math.max(0, Math.min(1, v / max))));
+  const SK = [
+    { name: '韓文', icon: 'ko', v: sc(ex.koA + hp.passed * 12, 300), how: '40 音、韓文單字' },
+    { name: '英文', icon: 'en', v: sc(ex.enB, 600), how: '單字庫、模擬小考' },
+    { name: '口說', icon: 'mic', v: sc(s.course?.spoken || 0, 200), how: '跟讀、語音特訓' },
+    { name: '拼字', icon: 'book', v: sc(ex.spelled, 180), how: '拼字題拼對' },
+    { name: '答題', icon: 'star', v: Math.round(acc * Math.min(1, s.stats.answered / 20)), how: '答對率（答滿 20 題才算滿）' },
+    { name: '毅力', icon: 'fire', v: sc(days * 2 + (s.streak || 0) * 3, 120), how: '每天上課、連續打卡' },
+  ];
+  const grade = (v) => (v >= 90 ? 'S' : v >= 70 ? 'A' : v >= 50 ? 'B' : v >= 30 ? 'C' : v >= 10 ? 'D' : 'E');
+  const total = Math.round(SK.reduce((a, k) => a + k.v, 0) / SK.length);
+  const C = 110, R = 78;
+  const pt = (i, f) => { const a = -Math.PI / 2 + (i * Math.PI * 2) / SK.length; return [C + Math.cos(a) * R * f, C + Math.sin(a) * R * f]; };
+  const poly = (f) => SK.map((_, i) => pt(i, typeof f === 'function' ? f(i) : f).map((n) => n.toFixed(1)).join(',')).join(' ');
+  const radar = `<svg class="me-radar" viewBox="0 0 220 220" role="img" aria-label="能力值六角圖">
+    ${[1, 0.75, 0.5, 0.25].map((f) => `<polygon points="${poly(f)}" class="rg"/>`).join('')}
+    ${SK.map((_, i) => { const [x, y] = pt(i, 1); return `<line x1="${C}" y1="${C}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" class="rl"/>`; }).join('')}
+    <polygon points="${poly((i) => Math.max(0.06, SK[i].v / 100))}" class="rv"/>
+    ${SK.map((k, i) => { const [x, y] = pt(i, Math.max(0.06, k.v / 100)); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" class="rd"/>`; }).join('')}
+    ${SK.map((k, i) => { const [x, y] = pt(i, 1.24); return `<text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" class="rt">${k.name}</text><text x="${x.toFixed(1)}" y="${(y + 17).toFixed(1)}" class="rn">${k.v}</text>`; }).join('')}
+  </svg>`;
+  const cardsN = (s.cards?.length || 0) + (s.collection?.length || 0);
+
   $app.innerHTML = `
     <h1 class="page-title">${ic('me')} 我的</h1>
-    <div class="profile-card">
-      <div class="avatar">${esc(s.profile.name.slice(0, 1))}</div>
-      <div><b>${esc(s.profile.name)}</b><div class="muted small">${esc(r.name)}・${esc(stageById(s.profile.stage).name)}</div></div>
+    <div class="idc-wrap">
+      <div class="idc-strap" aria-hidden="true"><i></i></div>
+      <div class="idc" aria-label="練習生證">
+        <span class="idc-flip">
+          <span class="idc-face front">
+            <span class="idc-head"><span class="idc-logo">${ic('star')}</span><span class="idc-org"><b>${esc(agency)}</b><small>TRAINEE ID・練習生證</small></span><span class="idc-hole"></span></span>
+            <span class="idc-body">
+              <span class="idc-photo"><img src="assets/art/me-${outfit}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/sprite-me.webp'"><i class="idc-tape"></i></span>
+              <span class="idc-info">
+                <span class="idc-name"><small>藝名 NAME</small><b>${esc(s.profile.name)}</b></span>
+                <span class="idc-row"><small>等級</small><em class="idc-rank">${esc(r.name)}</em><i lang="ko">${esc(r.ko)}</i></span>
+                <span class="idc-row"><small>學程</small><b>${esc(stageById(s.profile.stage).name)}</b></span>
+                <span class="idc-row"><small>編號</small><b class="mono">No.${esc(no)}</b></span>
+                <span class="idc-row"><small>入學</small><b>${esc(s.profile.joined)}</b></span>
+              </span>
+            </span>
+            <span class="idc-foot"><span class="idc-bar"></span><span class="idc-holo">${ic('medal')}</span></span>
+          </span>
+        </span>
+      </div>
     </div>
-    <div class="grid3">
-      <div class="stat"><b>${s.xp}</b><small>應援值</small></div>
-      <div class="stat"><b>${s.stats.answered}</b><small>作答題數</small></div>
-      <div class="stat"><b>${acc}%</b><small>正確率</small></div>
-    </div>
-    ${accountHTML()}
-    <h2 class="sec">我的偶像世界</h2>
+
+    <section class="me-panel me-lv" aria-label="等級與經驗值">
+      <div class="me-lv-top">
+        <span class="me-lv-badge"><small>Lv.</small>${r.idx + 1}</span>
+        <span class="me-lv-t"><b>${esc(r.name)}</b><i lang="ko">${esc(r.ko)}</i></span>
+        <span class="me-lv-xp">${ic('heart')}<b>${s.xp}</b><small>應援值</small></span>
+      </div>
+      <div class="me-xpbar"><i style="width:${nextPct}%"></i><span>${r.next ? `${s.xp - r.xp} / ${r.next.xp - r.xp}` : 'MAX'}</span></div>
+      <p class="me-lv-next">${r.next ? `再 <b>${r.next.xp - s.xp}</b> 應援值升上「${esc(r.next.name)}」` : '已經是最高等級！'}</p>
+      <div class="me-road">${RANKS.map((x, i) => `<span class="mr-step ${i < r.idx ? 'done' : ''} ${i === r.idx ? 'now' : ''}"><i>${i <= r.idx ? ic('star') : ''}</i><b>${esc(x.name)}</b><small>${x.xp}</small></span>`).join('')}</div>
+    </section>
+
+    <section class="me-panel me-skill" aria-label="能力值">
+      <div class="me-ph"><b>${ic('trophy')} 能力值</b><span class="me-total">綜合 <em class="g-${grade(total)}">${grade(total)}</em></span></div>
+      ${radar}
+      <ul class="me-sk">${SK.map((k) => `<li><span class="sk-ic">${ic(k.icon)}</span><span class="sk-t"><b>${k.name}</b><small>${k.how}</small></span><span class="sk-bar"><i style="width:${Math.max(3, k.v)}%"></i></span><em class="g-${grade(k.v)}">${grade(k.v)}</em></li>`).join('')}</ul>
+    </section>
+
+    <section class="me-panel me-nums" aria-label="成績">
+      <span>${ic('mic')}<b>${days}</b><small>上完集數</small></span>
+      <span>${ic('fire')}<b>${s.streak || 0}</b><small>連續天數</small></span>
+      <span>${ic('star')}<b>${s.stats.answered}</b><small>作答題數</small></span>
+      <span>${ic('medal')}<b>${acc}%</b><small>正確率</small></span>
+      <span>${ic('cards')}<b>${cardsN}</b><small>收藏</small></span>
+      <span>${ic('chat')}<b>${friendCount()}</b><small>好友</small></span>
+      <a class="me-hist" href="#/history">${ic('book')}<span><b>學習歷程</b><small>每天練了什麼</small></span><i>›</i></a>
+    </section>
+
+    ${currentUser() ? accountHTML() : `<button type="button" class="fr-login" id="cloudIn"><span class="g-logo">G</span><span><b>用 Google 登入</b><small>自動備份進度、換手機也不怕</small></span><i>›</i></button>`}
+    <h2 class="sec me-set-h">設定</h2>
+    <a class="me-sec me-link" href="#/onboard">${ic('me')}<span><b>改藝名・學程・應援色</b><small>${esc(s.profile.name)}・${esc(stageById(s.profile.stage).name)}</small></span><i class="chev">›</i></a>
+    <details class="me-sec">
+      <summary>${ic('star')}<span><b>我的偶像世界</b><small>經紀公司、前輩女團、未來團名</small></span><i class="chev">›</i></summary>
     <form class="names-form" id="namesForm">
       <label>經紀公司名稱<input id="nAgency" maxlength="12" placeholder="${esc(DEFAULT_NAMES.agency)}" value="${esc(s.names?.agency || '')}"></label>
       <label>前輩女團名稱<input id="nGroup" maxlength="12" placeholder="${esc(DEFAULT_NAMES.group)}" value="${esc(s.names?.group || '')}"></label>
@@ -844,24 +887,26 @@ views.me = () => {
       <label>我未來的團名<small>出道那天會用到，可以之後再想</small><input id="nMyGroup" maxlength="12" value="${esc(s.names?.myGroup || '')}"></label>
       <button class="btn primary" type="submit">儲存名字</button>
     </form>
-    <a class="deck fr-entry" href="#/friends"><div class="emoji">${ic('heart')}</div><div class="grow"><b>好友</b><small>${friendCount() ? `${friendCount()} 位好友・看看大家學到哪裡了` : '交換好友卡，看看朋友學到第幾集'}</small></div><div class="chev">›</div></a>
-    <a class="deck" href="#/history"><div class="emoji">${ic('book')}</div><div class="grow"><b>學習歷程</b><small>每天練了什麼、說了哪些句子、哪些還要加強</small></div><div class="chev">›</div></a>
-    <div class="row center" ${currentUser() ? 'hidden' : ''}><button class="btn" id="exportBtn">匯出進度</button><label class="btn">匯入進度<input type="file" id="importFile" accept=".json" hidden></label></div>
-    <h2 class="sec">聲音</h2>
-    <div class="sound-set">
-      <label><input type="checkbox" id="setMusic" ${s.settings?.music !== false ? 'checked' : ''}> 輕柔配樂</label>
-      <label><input type="checkbox" id="setSfx" ${s.settings?.sfx !== false ? 'checked' : ''}> 音效</label>
-      <label><input type="checkbox" id="setSlow" ${s.settings?.slow !== false ? 'checked' : ''}> 外語慢速念</label>
-    </div>
-    <h2 class="sec">升級之路</h2>
-    <div class="ranks">${RANKS.map((x, i) => `<div class="rk ${i <= r.idx ? 'on' : ''}"><b>${esc(x.name)}</b><small>${esc(x.ko)}・${x.xp}</small></div>`).join('')}</div>
-    <div class="actions">
-      <a class="btn big" href="#/onboard">${ic('me')} 修改藝名／學程／應援色</a>
-      <button class="btn ghost danger" id="me-reset">清除所有進度</button>
-    </div>
-    <p class="muted small center">${ttsOK ? '' : '這個瀏覽器不支援語音朗讀，聽力題會自動略過。'}${currentUser() ? '進度會自動備份到你的 Google 帳號。' : '進度只存在這台裝置上，用 Google 登入就會自動備份。'}</p>
+    </details>
+    <details class="me-sec">
+      <summary>${ic('speaker')}<span><b>聲音設定</b><small>配樂、音效、外語慢速念</small></span><i class="chev">›</i></summary>
+      <div class="me-switches">
+        <label class="sw"><span>輕柔配樂</span><input type="checkbox" id="setMusic" ${s.settings?.music !== false ? 'checked' : ''}><i></i></label>
+        <label class="sw"><span>音效</span><input type="checkbox" id="setSfx" ${s.settings?.sfx !== false ? 'checked' : ''}><i></i></label>
+        <label class="sw"><span>外語慢速念</span><input type="checkbox" id="setSlow" ${s.settings?.slow !== false ? 'checked' : ''}><i></i></label>
+      </div>
+    </details>
+    <details class="me-sec">
+      <summary>${ic('book')}<span><b>進度備份</b><small>${currentUser() ? '已自動備份到 Google 帳號' : '匯出、匯入、清除進度'}</small></span><i class="chev">›</i></summary>
+      <div class="row center" ${currentUser() ? 'hidden' : ''}><button class="btn" id="exportBtn">匯出進度</button><label class="btn">匯入進度<input type="file" id="importFile" accept=".json" hidden></label></div>
+      <div class="actions">
+        <button class="btn ghost danger" id="me-reset">清除所有進度</button>
+      </div>
+      <p class="muted small center">${ttsOK ? '' : '這個瀏覽器不支援語音朗讀，聽力題會自動略過。'}${currentUser() ? '進度會自動備份到你的 Google 帳號。' : '進度只存在這台裝置上，用 Google 登入就會自動備份。'}</p>
+    </details>
     ${COPYRIGHT}`;
   bindAccount($app, toast, () => views.me());
+  store.save();
   $app.querySelector('#namesForm').onsubmit = (e) => {
     e.preventDefault();
     const v = (id) => $app.querySelector(id).value.trim();
@@ -935,11 +980,11 @@ function route() {
   const view = views[name] || views.home;
   if (view !== views.talk) stopTalk();
   if (view !== views.chat) stopChat();
-  document.body.classList.toggle('is-lobby', view === views.home || view === views.talk || view === views.cards);
+  document.body.classList.toggle('is-lobby', view === views.home || view === views.talk);
   const hideNav = ['onboard', 'quiz', 'flash', 'talk', 'chat'].includes(name) && !(name === 'onboard' && s.profile);
   $nav.hidden = hideNav;
   // 子頁面也讓所屬的分頁亮著（例如 40 音、小遊戲 → 練習；衣帽間 → 我的）
-  const PARENT_TAB = { hangul: 'practice', game: 'practice', subject: 'practice', deck: 'practice', wrong: 'practice', map: 'practice', quiz: 'practice', flash: 'practice', closet: 'me', history: 'me', friends: 'me', chat: 'me', onboard: 'me' };
+  const PARENT_TAB = { hangul: 'practice', game: 'practice', subject: 'practice', deck: 'practice', wrong: 'practice', map: 'practice', quiz: 'practice', flash: 'practice', closet: 'me', history: 'me', chat: 'friends', onboard: 'me' };
   const tab = PARENT_TAB[name] || name;
   document.body.dataset.view = views[name] ? name : 'home';
   $nav.querySelectorAll('a').forEach((a) => {
@@ -962,7 +1007,7 @@ route();
 initCloud();
 // 有朋友傳新訊息：「我的」分頁和好友入口亮紅點
 onChats((sum) => {
-  const tab = $nav.querySelector('a[href="#/me"]');
+  const tab = $nav.querySelector('a[href="#/friends"]');
   if (tab) tab.dataset.badge = sum.unread ? String(sum.unread) : '';
   const entry = document.querySelector('.fr-entry');
   if (entry) entry.dataset.badge = sum.unread ? String(sum.unread) : '';

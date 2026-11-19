@@ -403,7 +403,7 @@ function bar(n, total, marks) {
 function certTile(c, st) {
   const s = certStatus(c, st);
   const href = s.state === 'done' ? `#/exam/cert/${c.id}` : s.state === 'ready' ? `#/exam/test/${c.id}` : c.track === 'sp' ? '#/exam/quiz' : '#/exam/bank';
-  const label = s.state === 'done' ? '已認證 ✓' : s.state === 'ready' ? '可以考了！點我' : s.state === 'soon' ? `內容製作中（還差 ${s.left}）` : `還差 ${s.left} 字`;
+  const label = s.state === 'done' ? '已認證' : s.state === 'ready' ? '可以考了！' : s.state === 'soon' ? '製作中' : `差 ${s.left} 字`;
   return `<a class="ex-cert ${s.state}" href="${href}">${medal(c, 'mini')}<b>${esc(c.name)}</b><small>${esc(label)}</small></a>`;
 }
 function renderHub() {
@@ -411,40 +411,41 @@ function renderHub() {
   const mx = maxStats();
   const bankLeft = BANK.reduce((a, t) => a + t.words.filter((w) => !store.get().course.learned[w.id]).length, 0);
   const next = examNext();
+  const goal = (n, steps) => steps.find((m) => n < m);
+  const enG = goal(st.enB, [300, 600, 900, 1200]);
+  const koG = goal(st.koA, [100, 300, 500, 982]);
+  const ring = (cls, icon, n, total, unit, g) => `
+      <div class="ex-ring ${cls}">
+        <div class="ex-gauge" style="--p:${Math.min(100, (n / total) * 100)}"><span>${ic(icon)}<b>${n}</b><small>／${fmt(total)}</small></span></div>
+        <b class="ex-ring-t">${unit}</b>
+        <span class="ex-chip">${g ? `${ic('star')} 下一關 ${fmt(g)}・差 ${fmt(g - n)}` : `${ic('trophy')} 全部達成`}</span>
+      </div>`;
+  const done = CERTS.filter((c) => certStatus(c, st).state === 'done').length;
   $app.innerHTML = `
     <div class="backbar"><a href="#/home" class="backlink">‹</a><b>${ic('medal')} 考試準備度</b></div>
-    <p class="ex-intro">對照<b>教育部課綱的英文字表</b>和<b>韓國國立國語院的初級字表</b>，看看你離考試目標還有多遠。</p>
     <a class="ex-next" href="${next.href}"><span class="ex-hand"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"></span><b>下一步：${esc(next.label)}</b><small>點我開始</small></a>
 
-    <article class="glass ex-track">
-      <h2>${ic('en')} 英文單字</h2>
-      <div class="ex-big"><b>${st.enB}</b><small>／${fmt(EXAM_TOTAL.enBasic)} 個國中基本字</small></div>
-      ${bar(st.enB, EXAM_TOTAL.enBasic, [300, 600, 900, 1200])}
+    <div class="ex-rings">
+      ${ring('en', 'en', st.enB, EXAM_TOTAL.enBasic, '英文基本字', enG)}
+      ${ring('ko', 'ko', st.koA, EXAM_TOTAL.koA, '韓文初級字', koG)}
+    </div>
+    <details class="ex-fold">
+      <summary>${ic('book')} 目標怎麼算？<i>›</i></summary>
       <ul class="ex-goals">
-        <li class="${st.enB >= 300 ? 'on' : ''}">國小畢業目標：會聽讀說 300 字 ${st.enB >= 300 ? '✓' : `（還差 ${300 - st.enB}）`}</li>
-        <li class="${st.spelled >= 180 ? 'on' : ''}">國小拼寫目標：會拼 180 字　目前 ${st.spelled} 字 ${st.spelled >= 180 ? '✓' : ''}</li>
-        <li class="${st.enB >= 1200 ? 'on' : ''}">國中畢業目標：1,200 個基本字 ${st.enB >= 1200 ? '✓' : `（還差 ${fmt(1200 - st.enB)}）`}</li>
-        <li>會考字表 2,000 字：目前 ${st.enAll} 字（App 現有內容最多到 ${fmt(mx.enAll)} 字，其餘約 ${fmt(EXAM_TOTAL.enAll - mx.enAll)} 字製作中）</li>
+        <li class="${st.enB >= 300 ? 'on' : ''}">英文・國小畢業：會聽讀說 300 字 ${st.enB >= 300 ? '✓' : `（還差 ${300 - st.enB}）`}</li>
+        <li class="${st.spelled >= 180 ? 'on' : ''}">英文・國小拼寫：會拼 180 字（目前 ${st.spelled}）${st.spelled >= 180 ? '✓' : ''}</li>
+        <li class="${st.enB >= 1200 ? 'on' : ''}">英文・國中畢業：1,200 個基本字 ${st.enB >= 1200 ? '✓' : `（還差 ${fmt(1200 - st.enB)}）`}</li>
+        <li>英文・會考字表 2,000 字：目前 ${st.enAll} 字（App 內容到 ${fmt(mx.enAll)} 字，其餘製作中）</li>
+        <li>韓文・A 級是韓國國立國語院「韓語學習用語彙」最基礎的一級，TOPIK I 的核心字（App 內容到 ${mx.koA} 字）</li>
       </ul>
-    </article>
-
-    <article class="glass ex-track ko">
-      <h2>${ic('ko')} 韓文單字</h2>
-      <div class="ex-big"><b>${st.koA}</b><small>／${EXAM_TOTAL.koA} 個初級 A 級字</small></div>
-      ${bar(st.koA, EXAM_TOTAL.koA, [100, 300, 500, 982])}
-      <ul class="ex-goals">
-        <li>A 級是韓國國立國語院「韓語學習用語彙」最基礎的一級，TOPIK I（初級）的核心字</li>
-        <li>App 現有內容最多到 ${mx.koA} 個 A 級字，其餘製作中</li>
-      </ul>
-    </article>
+    </details>
 
     <div class="ex-actions">
-      <a class="ex-btn big glow" href="#/exam/bank">${ic('book')}<b>單字庫</b><small>國中 1,200 字，還有 ${bankLeft} 個新字</small></a>
-      <a class="ex-btn big" href="#/exam/quiz">${ic('star')}<b>模擬小考</b><small>選擇＋拼字＋克漏字，10 題</small></a>
+      <a class="ex-btn big glow" href="#/exam/bank">${ic('book')}<b>單字庫</b><small>還有 ${bankLeft} 個新字</small></a>
+      <a class="ex-btn big" href="#/exam/quiz">${ic('star')}<b>模擬小考</b><small>10 題</small></a>
     </div>
 
-    <h2 class="sec">我的自家認證</h2>
-    <p class="muted small">學到門檻字數後，模擬考 20 題拿到 ${Math.round(PASS * 100)} 分以上就發證書。</p>
+    <div class="ex-ch"><b>${ic('medal')} 自家認證</b><span>${done}／${CERTS.length}</span><small>模擬考 ${Math.round(PASS * 100)} 分拿證書</small></div>
     <div class="ex-certs">${CERTS.map((c) => certTile(c, st)).join('')}</div>
 
     <details class="glass ex-honest">

@@ -255,3 +255,37 @@
 .drama.strip-mode .vn-sp .vn-tag { display: none; }
 /* 劇照上不放名字（會蓋到臉）；講話的人看對話框的名牌和下方立繪 */
 .wt-panel .wt-who { display: none !important; }
+
+/* 漫畫條模式：新單字卡＝小膠囊，貼在對話框正上方、立繪旁邊的空白處（bottom 由 JS 量），講話的人在左就放右邊 */
+.drama.strip-mode .vn-catch { top: auto; left: auto; right: 10px; width: min(52%, 196px); display: block; z-index: 6; }
+.drama.strip-mode:has(.vn-sp.right.speaking) .vn-catch { right: auto; left: 10px; }
+.drama.strip-mode .catch-btn { width: 100%; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 999px; animation: catchPop .45s cubic-bezier(.3, 1.6, .5, 1), catchBob 1.2s ease-in-out .45s infinite; }
+.drama.strip-mode .catch-btn .wic { width: 44px; height: 44px; flex: none; }
+.drama.strip-mode .catch-btn small { font-size: 10.5px; }
+.drama.strip-mode .catch-btn b { font-size: 17px; line-height: 1.15; }
+.drama.strip-mode .catch-btn em { font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drama.strip-mode .catch-btn > span:not(.catch-ring) { min-width: 0; }
+.drama.strip-mode .catch-ring { border-radius: 999px; }
+.drama.strip-mode .catch-hand { width: 34px; height: 34px; right: -8px; bottom: -12px; }
+/* 泡泡尾巴往下指向講話的人 */
+.drama.strip-mode .catch-btn::before { content: ''; position: absolute; left: 26px; bottom: -11px; border: 8px solid transparent; border-top: 12px solid #fff; border-bottom: 0; filter: drop-shadow(0 2px 0 #f0b429); }
+.drama.strip-mode:has(.vn-sp.left.speaking) .catch-btn::before { left: 18px; }
+.drama.strip-mode:has(.vn-sp.right.speaking) .catch-btn::before { left: auto; right: 30px; }
+@keyframes catchPop { from { transform: scale(.4); opacity: 0; } }
+
+/* 電腦／平板橫放：直式漫畫條置中成手機寬度，兩邊壓暗 */
+@media (min-width: 560px) {
+  .drama.strip-mode { left: calc(50% - 240px); right: calc(50% - 240px); box-shadow: 0 0 0 100vmax rgba(74, 55, 40, .55); border-left: 3px solid #fff; border-right: 3px solid #fff; }
+  /* 直條裡照手機版排：標題一行、單字口袋自己一行、對話框貼齊直條 */
+  .drama.strip-mode .vn-top { flex-wrap: wrap; gap: 6px 8px; padding: 8px 10px; }
+  .drama.strip-mode .vn-top .dt-title { flex: 1 1 50%; min-width: 0; }
+  .drama.strip-mode .vn-top .dt-title b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .drama.strip-mode .vn-top .dt-title small { white-space: nowrap; }
+  .drama.strip-mode .vn-pouch { order: 5; flex: 1 1 100%; justify-content: center; }
+  .drama.strip-mode .vn-dots { display: none; }
+  .drama.strip-mode .vn-btn { padding: 5px 10px; }
+  .drama.strip-mode .vn-box { left: 11px; right: 11px; translate: none; width: auto; padding: 20px 14px 10px; min-height: 0; }
+  .drama.strip-mode .vn-coach { top: 110px; }
+  .drama.strip-mode .vn-end { grid-template-columns: minmax(0, 1fr); padding: 12px; }
+  .drama.strip-mode .vn-endcard { width: 100%; min-width: 0; box-sizing: border-box; padding: 18px 14px; }
+}

@@ -3,7 +3,9 @@
 //   ・動畫：泡泡彈出、貼圖跳動、應援滿畫面、禮物翻牌、答對撒彩帶
 import * as store from './store.js';
 import { LEVELS, WORDS } from './course.js';
-import { rewardForDay, rewardHTML } from './rewards.js';
+import { rewardForDay, rewardHTML, memberById } from './rewards.js';
+import { claimEgg, secretCard } from './eggs.js';
+import { sfx } from './sound.js';
 import { esc, ic, wic, confetti, speak, speakAsync, shuffle, sttOK, listenOnce, flyText } from './util.js';
 import { CARD_GROUPS, CARD_BY_ID, STICKERS, CHEERS, KO_ONLY, PATTERNS, PATTERN_BY_ID, isNounish, koSim, koKey, cleanHeard } from './chatcards.js';
 import { currentUser, sendMsg, watchMsgs, markSeen, chatId, publicCard, myUid } from './cloud.js';
@@ -78,6 +80,30 @@ function myStuff() {
   const words = [...new Set(eps.flatMap((l) => l.words || []))].filter((id) => WORDS[id]);
   const gifts = [...(s.collection || [])].reverse();
   return { eps, words, gifts };
+}
+
+// 彩蛋解鎖：卡片背面翻過來亮相，偶像用韓文回你一句
+function eggPop(e) {
+  const m = memberById(e.id);
+  const box = document.createElement('div');
+  box.className = 'egg-pop';
+  box.innerHTML = `<div class="egg-in">
+    <p class="egg-t">${ic('gift')} 發現隱藏彩蛋！</p>
+    <div class="egg-flip"><div class="egg-back"><span>SECRET</span></div><div class="egg-front">${rewardHTML(secretCard(e), { big: true })}</div></div>
+    <p class="egg-say"><b lang="ko">${esc(e.say)}</b><small>${esc(m.name)}：${esc(e.sayZh)}</small></p>
+    <p class="egg-why">你拼出了「<b lang="ko">${esc(e.ko)}</b>」（${esc(e.zh)}）</p>
+    <a class="btn primary" href="#/cards/secret">${ic('cards')} 去 SECRET 卡冊看看</a>
+    <button type="button" class="btn ghost" data-close="1">繼續聊天</button>
+  </div>`;
+  document.body.appendChild(box);
+  requestAnimationFrame(() => box.classList.add('show'));
+  sfx('reward');
+  setTimeout(() => { box.classList.add('flipped'); confetti(70); }, 700);
+  setTimeout(() => { try { speak(e.say, 'ko-KR', 0.8); } catch (err) { /* 沒有語音 */ } }, 1500);
+  const close = () => { box.classList.remove('show'); setTimeout(() => box.remove(), 250); };
+  box.querySelector('[data-close]').onclick = close;
+  box.querySelector('a').onclick = close;
+  box.onclick = (ev) => { if (ev.target === box) close(); };
 }
 
 let unsub = null;
@@ -273,6 +299,9 @@ export async function renderChat($app, arg, toast) {
     send({ t: 'ko', k: '', x: v });
     $in.value = '';
     syncInput();
+    // 自己拼出彩蛋字 → 解鎖 SECRET 小卡
+    const egg = claimEgg(v);
+    if (egg) setTimeout(() => eggPop(egg), 900);
   });
 
   // ───── 說韓文：按住麥克風說，放開完成，往上滑取消 ─────

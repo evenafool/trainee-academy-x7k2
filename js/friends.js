@@ -152,8 +152,8 @@ export async function addFriend(text) {
   return { card: r.card, updated: !!old };
 }
 
-const shortShare = (sc) => `來當我在「練習生學院」的好友吧！✨\n我的好友碼：${sc}\n（打開練習生學院 →「我的」→「好友」輸入）`;
-const shareText = (code) => `來當我在「練習生學院」的好友吧！✨\n打開練習生學院 →「我的」→「好友」→ 把這段貼上：\n${code}`;
+const shortShare = (sc) => `來當我在「練習生學院」的好友吧！✨\n我的好友碼：${sc}\n（打開練習生學院 → 下面的「好友」→「加好友」輸入）`;
+const shareText = (code) => `來當我在「練習生學院」的好友吧！✨\n打開練習生學院 → 下面的「好友」→「加好友」→ 把這段貼上：\n${code}`;
 
 const ago = (at) => {
   const diff = Math.round((new Date(store.today()) - new Date(at)) / 86400000);
@@ -161,23 +161,21 @@ const ago = (at) => {
 };
 const chapterName = (c) => CHAPTERS.find((x) => x.id === c)?.title || '';
 
-function cardHTML(c, { me = false } = {}) {
+const faceOf = (o) => `background-image:url('assets/art/me-${esc(OUTFIT_OK.includes(o) ? o : 'fan')}.webp')`;
+function cardHTML(c) {
   const total = DAYS().length;
   const pct = Math.round((c.d / total) * 100);
-  return `<div class="fr-card ${me ? 'me' : ''}" data-id="${esc(c.id)}">
-    <img class="fr-av" src="assets/art/me-${esc(c.o)}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/sprite-me.webp'">
+  const name = esc(c.nick || c.n);
+  return `<div class="fr-card" data-id="${esc(c.id)}">
+    <span class="fr-face" style="${faceOf(c.o)}"><i class="fr-rk">${esc(rankName(c.x))}</i></span>
     <div class="fr-info">
-      <div class="fr-top"><b>${esc(c.nick || c.n)}</b>${me ? '<span class="fr-tag">我</span>' : ''}<small>${esc(rankName(c.x))}</small></div>
-      <div class="fr-ep">${c.d ? `第 ${c.d} 集・${esc(c.t)}` : '還沒開始上課'}${c.c ? `<small>第 ${c.c} 章 ${esc(chapterName(c.c))}</small>` : ''}</div>
+      <div class="fr-top"><b>${name}</b><small>${ago(c.at)}</small></div>
+      <div class="fr-bub">${c.d ? `看到第 ${c.d} 集・${esc(c.t)}` : '還沒開始上課'}</div>
       <div class="fr-bar"><i style="width:${pct}%"></i></div>
-      <div class="fr-stats">
-        <span>${ic('star')} ${c.s}</span>
-        <span>${ic('heart')} ${c.x}</span>
-        <span>${ic('fire')} 連續 ${c.k} 天</span>
-      </div>
-      ${me ? '' : `<div class="fr-foot"><small>${ago(c.at)}</small><button class="fr-del" data-del="${esc(c.id)}" aria-label="刪除好友">刪除</button></div>
-      ${c.u ? `<a class="btn small primary fr-chat" href="#/chat/${encodeURIComponent(c.u)}">${ic('chat')} 聊天<span class="fr-badge" data-unread="${esc(c.u)}" hidden></span></a>` : '<small class="fr-nochat">朋友用 Google 登入、再加一次好友碼後，就能聊天</small>'}`}
+      <div class="fr-stats"><span>${ic('star')} ${c.s}</span><span>${ic('heart')} ${c.x}</span><span>${ic('fire')} ${c.k} 天</span><button class="fr-del" data-del="${esc(c.id)}" aria-label="刪除好友 ${name}">刪除</button></div>
+      ${c.u ? '' : '<small class="fr-nochat">朋友登入 Google、再加一次好友碼，就能聊天</small>'}
     </div>
+    ${c.u ? `<a class="fr-chat" href="#/chat/${encodeURIComponent(c.u)}" aria-label="跟 ${name} 聊天">${ic('chat')}<span>聊天</span><i class="fr-badge" data-unread="${esc(c.u)}" hidden></i></a>` : ''}
   </div>`;
 }
 
@@ -253,45 +251,60 @@ export function renderFriends($app, backBar, toast, live = true, arg = '') {
   const code = encodeCard(mine);
   const sc = shortCode();
   const list = Object.values(friends()).sort((a, b) => b.d - a.d || b.x - a.x);
+  const face = (o) => `background-image:url('assets/art/me-${esc(OUTFIT_OK.includes(o) ? o : 'fan')}.webp')`;
   $app.innerHTML = `
-    ${backBar('#/me', '好友', ic('heart'))}
-    ${accountHTML()}
-    <h2 class="sec">我的好友卡</h2>
-    ${cardHTML(mine, { me: true })}
-    <div class="fr-code">
-      ${sc ? `<p class="muted small">把你的好友碼告訴朋友，朋友用 Google 登入後輸入，就能互相看到進度。</p>
-      <div class="fr-short" id="frShort" aria-label="我的好友碼">${esc(sc)}</div>
-      <div class="fr-qr" id="frQR" aria-label="我的好友 QR Code"></div>
-      <p class="muted small center">朋友用手機相機或 App 裡的「掃描 QR」掃這個，就能加你好友</p>
-      <div class="row center">
-        <button class="btn primary" id="frCopy">複製好友碼</button>
-        ${navigator.share ? '<button class="btn" id="frShare">傳給朋友</button>' : ''}
+    <div class="fr-hero">
+      <div class="fr-hero-top"><a href="#/home" class="fr-back" aria-label="回首頁">‹</a><b>好友・聊天</b></div>
+      <div class="fr-me">
+        <span class="fr-face big" style="${face(mine.o)}"></span>
+        <span class="fr-me-txt"><b>${esc(mine.n)}</b><small class="fr-rank">${esc(rankName(mine.x))}</small><span class="fr-bub">${mine.d ? `正在看第 ${mine.d} 集` : '準備開始上課！'}</span></span>
       </div>
-      <details class="fr-long"><summary>朋友沒有登入？用長代碼</summary>
-        <code id="frCode">${esc(code)}</code>
-        <div class="row center"><button class="btn" id="frCopyLong">複製長代碼</button></div>
-      </details>`
-      : `<p class="muted small">把下面的代碼傳給朋友（LINE、訊息都可以），朋友貼到她的練習生學院，就會看到你的進度。${currentUser() ? '' : '<br><b>用 Google 登入後，會變成好記的 6 碼好友碼。</b>'}</p>
-      <div class="fr-qr" id="frQR" aria-label="我的好友 QR Code"></div>
-      <p class="muted small center">朋友掃這個 QR Code 也可以加你好友</p>
-      <code id="frCode">${esc(code)}</code>
-      <div class="row center">
-        <button class="btn primary" id="frCopy">複製代碼</button>
-        ${navigator.share ? '<button class="btn" id="frShare">傳給朋友</button>' : ''}
-      </div>`}
+      <img class="fr-hero-cat" src="assets/art/icons/mascot-love.webp" alt="" onerror="this.remove()">
     </div>
-    <h2 class="sec">加好友</h2>
-    <form class="fr-add" id="frAdd">
-      <textarea id="frInput" rows="2" placeholder="輸入朋友的 6 碼好友碼（例如 K7M2QX），或貼上長代碼" autocapitalize="characters" autocomplete="off" spellcheck="false"></textarea>
-      <div class="row center fr-add-btns">
-        <button class="btn" type="button" id="frScan">📷 掃描 QR</button>
-        <button class="btn primary" type="submit">加好友</button>
-      </div>
-    </form>
+    ${list.length ? `<div class="fr-stories" aria-label="好友">${list.map((c) => `${c.u ? `<a class="fr-st" href="#/chat/${encodeURIComponent(c.u)}">` : `<button type="button" class="fr-st" data-goto="${esc(c.id)}">`}<span class="fr-face" style="${face(c.o)}"><i class="fr-st-dot" data-unread="${esc(c.u || '')}" hidden></i></span><b>${esc(c.nick || c.n)}</b>${c.u ? '</a>' : '</button>'}`).join('')}</div>` : ''}
+    <div class="fr-actions">
+      <button type="button" class="fr-act add" data-jump="frAdd"><span class="fr-act-ic">${ic('heart')}</span><b>加好友</b><small>輸入或掃好友碼</small></button>
+      <button type="button" class="fr-act code" data-jump="frMine"><span class="fr-act-ic">${ic('cards')}</span><b>我的好友碼</b><small>${sc ? `<em>${esc(sc)}</em>` : '傳給朋友加我'}</small></button>
+    </div>
+    ${currentUser() ? '' : `<button type="button" class="fr-login" id="cloudIn"><span class="g-logo">G</span><span><b>用 Google 登入</b><small>登入後才能聊天、自動更新好友進度</small></span><i>›</i></button>`}
     <div id="frIncoming"></div>
-    <h2 class="sec">好友的進度 <small class="muted">${list.length ? `${list.length} 位` : ''}</small></h2>
-    ${list.length ? list.map((c) => cardHTML(c)).join('') : '<div class="fr-empty muted">還沒有好友，先把你的好友碼傳給朋友吧！</div>'}
-    <p class="muted small center fr-note">${currentUser() ? '你和好友都用 Google 登入的話，好友進度會自動更新（☁️）。好友還沒登入的，請她登入後再傳一次代碼。' : '好友的進度是她傳代碼那天的樣子。想看最新進度，請朋友再傳一次新的代碼，貼上就會更新；兩個人都用 Google 登入，就會自動更新。'}<br>好友卡只有暱稱和學習進度，不會傳出任何個人資料。</p>`;
+    <div class="fr-listh">${ic('heart')}<b>好友</b><span>${list.length}</span></div>
+    ${list.length ? list.map((c) => cardHTML(c)).join('') : `<div class="fr-empty"><img src="assets/art/icons/mascot-cheer.webp" alt="" onerror="this.remove()"><b>還沒有好友</b><p>把「我的好友碼」傳給朋友，<br>或輸入朋友的好友碼，就能一起聊天、比進度！</p></div>`}
+    <section class="fr-ticket" id="frAddH">
+      <div class="fr-ticket-h">${ic('heart')}<b>加好友</b></div>
+      <form class="fr-add" id="frAdd">
+        <textarea id="frInput" rows="2" placeholder="輸入朋友的 6 碼好友碼（例如 K7M2QX），或貼上長代碼" autocapitalize="characters" autocomplete="off" spellcheck="false"></textarea>
+        <div class="row center fr-add-btns">
+          <button class="btn" type="button" id="frScan">掃描 QR</button>
+          <button class="btn primary" type="submit">加好友</button>
+        </div>
+      </form>
+    </section>
+    <section class="fr-ticket invite" id="frMine">
+      <div class="fr-ticket-h">${ic('cards')}<b>我的好友碼</b><small>傳給朋友，朋友就能加你</small></div>
+      <div class="fr-code">
+        ${sc ? `<div class="fr-short" id="frShort" aria-label="我的好友碼">${[...sc].map((ch) => `<span>${esc(ch)}</span>`).join('')}</div>
+        <div class="fr-qr" id="frQR" aria-label="我的好友 QR Code"></div>
+        <p class="muted small center">朋友用相機或「掃描 QR」掃這個就能加你</p>
+        <div class="row center">
+          <button class="btn primary" id="frCopy">複製好友碼</button>
+          ${navigator.share ? '<button class="btn" id="frShare">傳給朋友</button>' : ''}
+        </div>
+        <details class="fr-long"><summary>朋友沒有登入？用長代碼</summary>
+          <code id="frCode">${esc(code)}</code>
+          <div class="row center"><button class="btn" id="frCopyLong">複製長代碼</button></div>
+        </details>`
+        : `<p class="muted small">把代碼傳給朋友（LINE、訊息都可以），朋友貼上就會看到你的進度。${currentUser() ? '' : '<br><b>用 Google 登入後，會變成好記的 6 碼好友碼，也能聊天。</b>'}</p>
+        <div class="fr-qr" id="frQR" aria-label="我的好友 QR Code"></div>
+        <code id="frCode">${esc(code)}</code>
+        <div class="row center">
+          <button class="btn primary" id="frCopy">複製代碼</button>
+          ${navigator.share ? '<button class="btn" id="frShare">傳給朋友</button>' : ''}
+        </div>`}
+      </div>
+    </section>
+    ${currentUser() ? accountHTML() : ''}
+    <details class="fr-more"><summary>好友卡是怎麼更新的？</summary><p class="muted small">${currentUser() ? '你和好友都用 Google 登入的話，好友進度會自動更新。好友還沒登入的，請她登入後再傳一次代碼。' : '好友的進度是她傳代碼那天的樣子。想看最新進度，請朋友再傳一次新的代碼；兩個人都用 Google 登入，就會自動更新。'}<br>好友卡只有暱稱和學習進度，不會傳出任何個人資料。</p></details>`;
 
   const copyText = async (text, sel) => {
     try {
@@ -308,6 +321,17 @@ export function renderFriends($app, backBar, toast, live = true, arg = '') {
   const cl = $app.querySelector('#frCopyLong');
   if (cl) cl.onclick = () => copyText(shareText(code), '#frCode');
   bindAccount($app, toast, () => renderFriends($app, backBar, toast));
+  // 上面兩顆大按鈕：跳到「加好友」或「我的好友碼」
+  $app.querySelectorAll('[data-goto]').forEach((b) => b.onclick = () => {
+    const el = $app.querySelector(`.fr-card[data-id="${CSS.escape(b.dataset.goto)}"]`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el?.classList.remove('fr-new'); void el?.offsetWidth; el?.classList.add('fr-new');
+  });
+  $app.querySelectorAll('[data-jump]').forEach((b) => b.onclick = () => {
+    const add = b.dataset.jump === 'frAdd';
+    $app.querySelector(add ? '#frAddH' : '#frMine')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (add) setTimeout(() => $app.querySelector('#frInput')?.focus({ preventScroll: true }), 450);
+  });
   // 未讀數、還不是好友卻傳訊息來的人
   $app._chatOff?.();
   $app._chatOff = onChats(async (sum) => {
@@ -371,7 +395,7 @@ export function renderFriends($app, backBar, toast, live = true, arg = '') {
   if (sh) sh.onclick = () => navigator.share({ title: '練習生學院好友卡', text: sc ? shortShare(sc) : shareText(code) }).catch(() => {});
   $app.querySelector('#frAdd').onsubmit = async (e) => {
     e.preventDefault();
-    const btn = e.target.querySelector('button');
+    const btn = e.target.querySelector('button[type=submit]');
     btn.disabled = true;
     const r = await addFriend($app.querySelector('#frInput').value);
     btn.disabled = false;

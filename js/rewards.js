@@ -68,6 +68,15 @@ export function rewardHTML(r, { locked = false, big = false } = {}) {
       <div class="rc-info"><b>${esc(r.name)}</b><small>回憶小物</small></div>
     </div>`;
   }
+  if (r.kind === 'secret') {
+    const m = memberById(r.member);
+    return `<div class="rcard secret ${locked ? 'locked' : ''} ${big ? 'big' : ''}" style="--mc:${m.color}">
+      <div class="rc-art"><img src="assets/art/card-${m.id}.webp" alt="" onerror="this.remove()"></div>
+      <span class="rc-holo" aria-hidden="true"></span>
+      <span class="rc-rar">SECRET</span>
+      <div class="rc-info"><b>${esc(m.name)}</b><small>${esc(m.group)}・聊天彩蛋</small></div>
+    </div>`;
+  }
   if (r.kind === 'card') {
     const m = memberById(r.member);
     return `<div class="rcard ${r.rarity} ${locked ? 'locked' : ''} ${big ? 'big' : ''}" style="--mc:${m.color}">
