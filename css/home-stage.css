@@ -57,20 +57,14 @@ body.is-lobby:has(.gl) #app { padding: 0; max-width: none; }
 
 /* 右邊：直排活動橫幅（圖片卡＋緞帶標題，像偶像養成遊戲的活動入口） */
 .gl-banners { position: absolute; z-index: 3; right: 8px; top: calc(64px + env(safe-area-inset-top)); display: grid; gap: 10px; }
-.gl-bn { position: relative; display: block; width: 104px; height: 66px; padding: 0; border: 3px solid #fff; border-radius: 16px; overflow: hidden; background: #fbefe6; box-shadow: 0 4px 0 #e6d2bf, 0 8px 14px rgba(120, 85, 55, .2); text-decoration: none; color: #fff; font: inherit; cursor: pointer; transition: transform .15s; }
-.gl-bn > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 13px; }
-.gl-bn-pic { position: absolute; inset: 0; background: no-repeat 50% 7% / 190% auto; }
-.gl-bn.closet { background: linear-gradient(160deg, #fde3e6, #f6d6c7); }
-.gl-bn.cards .gl-bn-pic { background-size: 125% auto; background-position: 50% 42%; }
-.gl-bn.friends { background: linear-gradient(160deg, #e9f3ff, #fde3ef); }
-.gl-bn.friends > img { object-fit: contain; padding: 4px 30px 18px 4px; }
-.gl-bn:nth-child(4) .gl-bn-t { background: linear-gradient(180deg, rgba(120, 150, 110, 0), rgba(120, 150, 110, .92) 45%); }
-.gl-bn-t { position: absolute; left: 0; right: 0; bottom: 0; display: grid; padding: 12px 8px 4px; background: linear-gradient(180deg, rgba(201, 123, 132, 0), rgba(201, 123, 132, .92) 45%); text-align: left; line-height: 1.1; }
-.gl-bn-t b { font-size: 13.5px; text-shadow: 0 1px 2px rgba(120, 50, 60, .5); letter-spacing: .04em; }
-.gl-bn-t small { font-size: 9.5px; font-weight: 800; opacity: .95; }
-.gl-bn:nth-child(2) .gl-bn-t { background: linear-gradient(180deg, rgba(176, 137, 104, 0), rgba(176, 137, 104, .92) 45%); }
-.gl-bn:nth-child(3) .gl-bn-t { background: linear-gradient(180deg, rgba(150, 128, 190, 0), rgba(150, 128, 190, .92) 45%); }
-.gl-bn:nth-child(4) .gl-bn-t { background: linear-gradient(180deg, rgba(110, 160, 200, 0), rgba(110, 160, 200, .92) 45%); }
+.gl-bn { position: relative; display: block; width: 108px; height: 72px; padding: 0; border: 3px solid #fff; border-radius: 16px; overflow: hidden; background: #fbefe6; box-shadow: 0 4px 0 #e6d2bf, 0 8px 14px rgba(120, 85, 55, .2); text-decoration: none; color: #fff; font: inherit; cursor: pointer; transition: transform .15s; }
+.gl-bn > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; border-radius: 13px; transform: scale(1.06); }
+.gl-bn-t { position: absolute; left: 4px; bottom: 4px; display: grid; padding: 1px 9px 2px; border-radius: 10px; background: rgba(201, 123, 132, .92); border: 1.5px solid #fff; text-align: left; line-height: 1.15; box-shadow: 0 2px 4px rgba(120, 50, 60, .25); }
+.gl-bn-t b { font-size: 12.5px; letter-spacing: .04em; }
+.gl-bn-t small { display: none; }
+.gl-bn:nth-child(2) .gl-bn-t { background: rgba(150, 120, 200, .92); }
+.gl-bn:nth-child(3) .gl-bn-t { background: rgba(214, 120, 150, .92); }
+.gl-bn:nth-child(4) .gl-bn-t { background: rgba(176, 137, 104, .92); }
 .gl-bn-tag { position: absolute; top: 3px; right: 3px; padding: 1px 7px; border-radius: 8px; background: #ff5d73; color: #fff; font: 900 10px/16px system-ui, sans-serif; font-style: normal; border: 2px solid #fff; transform: rotate(8deg); animation: glWiggle 1.8s ease-in-out infinite; }
 .gl-bn:active { transform: translateY(3px); box-shadow: 0 1px 0 #e6d2bf; }
 .gl-ep-play { position: absolute; top: 34%; left: 50%; transform: translate(-50%, -50%); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .92); color: var(--pk); font-size: 11px; padding-left: 2px; box-shadow: 0 2px 6px rgba(0, 0, 0, .2); }
@@ -172,7 +166,7 @@ body.is-lobby:has(.gl) #app { padding: 0; max-width: none; }
   .gl-ic-b .ic { width: 30px; height: 30px; }
   .gl-side { gap: 2px; }
   .gl-ic small { font-size: 10px; }
-  .gl-bn { height: 56px; }
+  .gl-bn { height: 62px; }
   .gl-banners { gap: 7px; }
   .gl-say { bottom: 170px; left: calc(50% + 30px); width: min(68%, 300px); }
   .gl-say.pop { animation: none; }
@@ -185,8 +179,9 @@ body.is-lobby:has(.gl) #app { padding: 0; max-width: none; }
   .gl-left { left: max(20px, calc(50% - 420px)); }
   .gl-banners { right: max(20px, calc(50% - 420px)); top: 90px; gap: 14px; }
   .gl-bn { width: 150px; height: 92px; }
-  .gl-bn-t b { font-size: 16px; }
-  .gl-bn-t small { font-size: 11px; }
+  .gl-bn-t b { font-size: 15px; }
+  .gl-bn-t small { display: block; font-size: 10.5px; }
+  .gl-bn-t { padding: 2px 10px 3px; }
   .gl-me { left: 50%; }
   .gl-ic-b { width: 64px; height: 64px; }
   .gl-ic-b .ic { width: 44px; height: 44px; }
@@ -202,3 +197,21 @@ body.is-lobby:has(.gl) #app { padding: 0; max-width: none; }
 @media (prefers-reduced-motion: reduce) {
   .gl-ep-art .gl-ep-play, .gl-bn-tag, .gl-bg i, .gl-me .me-outfit, .gl-me .me-acc, .gl-go, .gl-go-hand, .gl-ic.hot .gl-ic-b, .gl-st-claim, .gl-chest.ready, .gl-say-next { animation: none; }
 }
+
+/* 每日紅點：玫瑰色小寶石＋白邊＋高光，會輕輕呼吸；點了「啵」一下消失 */
+.gl-red { position: absolute; z-index: 2; top: -4px; left: -4px; width: 17px; height: 17px; border-radius: 50%; pointer-events: none;
+  background: radial-gradient(circle at 34% 30%, #ffd0d8 0 14%, #ff7a92 34%, #ec4566 70%, #cf2f52);
+  border: 2.5px solid #fff; box-shadow: 0 2px 0 rgba(180, 60, 90, .35), 0 3px 8px rgba(236, 69, 102, .45); animation: redBeat 1.8s ease-in-out infinite; }
+.gl-red::before { content: ''; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid rgba(255, 122, 146, .7); animation: redRing 1.8s ease-out infinite; }
+.gl-red::after { content: ''; position: absolute; top: 2px; left: 3px; width: 5px; height: 3px; border-radius: 50%; background: rgba(255, 255, 255, .9); transform: rotate(-30deg); }
+.gl-red.pop { animation: redPop .42s cubic-bezier(.3, 1.6, .5, 1) forwards; }
+.gl-red.pop::before { display: none; }
+@keyframes redBeat { 0%, 100% { transform: scale(1); } 12% { transform: scale(1.18); } 24% { transform: scale(.96); } 36% { transform: scale(1.08); } }
+@keyframes redRing { from { transform: scale(.6); opacity: .9; } to { transform: scale(1.5); opacity: 0; } }
+@keyframes redPop { 40% { transform: scale(1.6); opacity: 1; } 100% { transform: scale(0); opacity: 0; } }
+.gl-bn .gl-red { top: 4px; left: 4px; }
+.gl-ep-art .gl-red { top: 6px; left: auto; right: 6px; width: 20px; height: 20px; }
+@media (prefers-reduced-motion: reduce) { .gl-red, .gl-red::before { animation: none; } }
+/* 下方導覽列：有新東西的分頁掛同款小紅點 */
+.nav a.has-red { position: relative; }
+.nav a.has-red::after { content: ''; position: absolute; top: 3px; left: calc(50% + 7px); width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 34% 30%, #ffd0d8 0 14%, #ff7a92 34%, #ec4566 70%, #cf2f52); border: 2px solid #fff; box-shadow: 0 2px 5px rgba(236, 69, 102, .45); animation: redBeat 1.8s ease-in-out infinite; filter: none; }

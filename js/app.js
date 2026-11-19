@@ -165,7 +165,7 @@ function buildQuiz(kind) {
     const wrongKeys = sample(Object.keys(s.wrong).filter((k) => itemByKey(k)), 4);
     const pool = visibleDecks(stage).flatMap((d) => deckIndices(d, stage).map((i) => `${d.id}:${i}`)).filter((k) => !wrongKeys.includes(k));
     const keys = shuffle([...wrongKeys, ...sample(pool, 10 - wrongKeys.length)]);
-    return { title: '今日打歌任務', daily: true, qs: keys.map((k) => { const x = itemByKey(k); return makeQuestion(x.deck, x.i); }) };
+    return { title: '每日 10 題挑戰', daily: true, qs: keys.map((k) => { const x = itemByKey(k); return makeQuestion(x.deck, x.i); }) };
   }
   if (kind === 'review') {
     const keys = sample(Object.keys(s.wrong).filter((k) => itemByKey(k)), 10);
@@ -248,6 +248,14 @@ function teacherLines(name, lesson) {
   ];
 }
 
+// 收藏總數（每日獎勵＋單字卡），用來判斷「有新小卡」紅點
+function cardsTotal(s) { return (s.collection?.length || 0) + (s.cards?.length || 0); }
+// 下方導覽列的更新紅點（目前：收藏有新小卡）
+function refreshNavDots() {
+  const s = store.get();
+  const tab = document.querySelector('#nav a[href="#/cards"]');
+  if (tab) tab.classList.toggle('has-red', cardsTotal(s) > (s.notes?.cards ?? 0));
+}
 views.home = () => {
   const s = store.get();
   const r = rankOf(s.xp);
@@ -297,27 +305,40 @@ views.home = () => {
   const outfitId = avatarState().outfit || autoOutfit();
   const fresh = newUnlocks().length;
   const xpNum = new Intl.NumberFormat('zh-TW').format(s.xp || 0);
-  const side = (o) => `<${o.href ? `a href="${o.href}"${o.ext ? ' target="_blank" rel="noopener"' : ''}` : `button type="button"`} class="gl-ic ${o.cls || ''}" ${o.id ? `id="${o.id}"` : ''} aria-label="${o.name}">
-      <span class="gl-ic-b">${ic(o.icon)}${o.badge ? `<i class="gl-dot">${o.badge}</i>` : ''}${o.tag ? `<em class="gl-tag">${o.tag}</em>` : ''}</span><small>${o.name}</small></${o.href ? 'a' : 'button'}>`;
+  // 每日紅點：今天該點的入口掛一顆紅點，點過就消掉（隔天重來）
+  if (s.dots?.day !== store.today()) s.dots = { day: store.today(), seen: [] };
+  const today = store.today();
+  const did10 = (s.history || []).some((h) => h.day === today && /每日 10 題|打歌任務/.test(h.title || ''));
+  const dot = (id, cond) => (cond && !s.dots.seen.includes(id) ? id : '');
+  const red = (id) => (id ? `<i class="gl-red" data-red="${id}" aria-hidden="true"></i>` : '');
+  // 更新紅點：有新東西（新造型、新小卡、新錯題）才亮，點進去看過就消掉
+  s.notes ??= {};
+  const cardsN = cardsTotal(s);
+  const upd = (key, n, cond = n > (s.notes[key] ?? 0)) => (cond ? { key, n } : null);
+  const newCards = upd('cards', cardsN);
+  const newWrong = upd('wrong', wrongN);
+  const newCloset = upd('closet', 0, fresh > 0);
+  const side = (o) => `<${o.href ? `a href="${o.href}"${o.ext ? ' target="_blank" rel="noopener"' : ''}` : `button type="button"`} class="gl-ic ${o.cls || ''}" ${o.id ? `id="${o.id}"` : ''} ${o.dot ? `data-dot="${o.dot}"` : ''} ${o.upd ? `data-upd="${o.upd.key}" data-n="${o.upd.n}"` : ''} aria-label="${o.name}">
+      <span class="gl-ic-b">${red(o.dot || o.upd?.key)}${ic(o.icon)}${o.badge ? `<i class="gl-dot">${o.badge}</i>` : ''}${o.tag ? `<em class="gl-tag">${o.tag}</em>` : ''}</span><small>${o.name}</small></${o.href ? 'a' : 'button'}>`;
+  // 左邊：每天都會用到的通用入口（各語言的練習都收在「練習區」）
   const LEFT = [
-    { id: 'glTasks', icon: 'gift', name: '任務', badge: pending || '', cls: pending ? 'hot' : '' },
-    ...(hp.done ? [] : [{ href: '#/hangul', icon: 'ko', name: '40 音' }]),
-    { href: '#/quiz/daily', icon: 'star', name: '打歌' },
+    { id: 'glTasks', icon: 'gift', name: '任務', badge: pending || '', cls: pending ? 'hot' : '', dot: dot('tasks', !pending && !allDone) },
+    ...(hp.done ? [] : [{ href: '#/hangul', icon: 'ko', name: '40 音', badge: `${hp.passed}/${hp.stages}`, dot: dot('hangul', !(dd.tasks || []).includes('hangul')) }]),
+    { href: '#/quiz/daily', icon: 'star', name: '每日10題', dot: dot('daily10', !did10) },
+    wrongN ? { href: '#/quiz/review', icon: 'wrong', name: '錯題本', badge: wrongN > 99 ? '99+' : wrongN, upd: newWrong } : { href: '#/exam/bank', icon: 'book', name: '單字庫' },
+    { href: '#/practice', icon: 'cards', name: '練習區' },
   ];
   const LEFT2 = [
-    { href: '#/exam/bank', icon: 'book', name: '單字庫' },
-    { href: '#/game/match-ko', icon: 'cards', name: '翻牌' },
     { href: `${AI_TEACHER_URL}#day-${lesson.n}`, icon: 'chat', name: 'AI 老師', ext: true },
   ];
   // 右邊：直排的活動橫幅（圖片卡＋緞帶標題）
-  const cardMember = ['luna', 'hana', 'riri', 'jun', 'taeo', 'sena', 'ray', 'yuri'][lesson.n % 8];
   const BANNERS = [
-    { href: '#/closet', img: `assets/art/me-${outfitId}.webp`, face: true, name: '衣帽間', sub: fresh ? `新獲得 ${fresh} 樣` : '換造型', tag: fresh ? 'NEW' : '', cls: 'closet' },
-    { href: '#/cards', img: `assets/art/card-${cardMember}.webp`, face: true, name: '小卡冊', sub: '收藏小卡', cls: 'cards' },
-    { href: '#/friends', img: 'assets/art/icons/mascot-love.webp', name: '好友', sub: '聊天・彩蛋', cls: 'friends' },
-    { href: '#/map', img: 'assets/art/bg-stage.webp', name: '章節地圖', sub: '回放舊集數', cls: 'map' },
+    { href: '#/closet', img: 'assets/art/bn-closet.webp', name: '衣帽間', sub: fresh ? `新獲得 ${fresh} 樣` : '換造型', upd: newCloset },
+    { href: '#/cards', img: 'assets/art/bn-cards.webp', name: '小卡冊', sub: '收藏小卡', upd: newCards },
+    { href: '#/friends', img: 'assets/art/bn-friends.webp', name: '好友', sub: '聊天・彩蛋' },
+    { href: '#/map', img: 'assets/art/bn-map.webp', name: '章節地圖', sub: '回放舊集數' },
   ];
-  const banner = (b) => `<${b.href ? `a href="${b.href}"` : `button type="button" id="${b.id}"`} class="gl-bn ${b.cls || ''}" aria-label="${b.name}">
+  const banner = (b) => `<${b.href ? `a href="${b.href}"` : `button type="button" id="${b.id}"`} class="gl-bn ${b.cls || ''}" ${b.upd ? `data-upd="${b.upd.key}" data-n="${b.upd.n}"` : ''} aria-label="${b.name}">${red(b.upd?.key)}
       ${b.face ? `<span class="gl-bn-pic" style="background-image:url('${b.img}')"></span>` : `<img src="${b.img}" alt="" ${b.alt ? `onerror="this.onerror=null;this.src='${b.alt}'"` : ''}>`}
       ${b.play ? '<span class="gl-ep-play">▶</span>' : ''}${b.tag ? `<em class="gl-bn-tag">${b.tag}</em>` : ''}
       <span class="gl-bn-t"><b>${b.name}</b><small>${esc(b.sub)}</small></span></${b.href ? 'a' : 'button'}>`;
@@ -350,9 +371,9 @@ views.home = () => {
       </div>
 
       <article class="gl-ep ${lesson.doneToday ? 'done' : ''}" aria-label="今日短劇">
-        <button type="button" class="gl-ep-art" id="watchDrama" aria-label="看今天的短劇：${esc(st.title)}">
+        <button type="button" class="gl-ep-art" id="watchDrama" ${dot('drama', !lesson.doneToday) ? 'data-dot="drama"' : ''} aria-label="看今天的短劇：${esc(st.title)}">
           <img src="assets/art/story-${lesson.lv.id}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/bg-${lesson.lv.bg}.webp'">
-          <span class="gl-ep-play">▶</span>
+          <span class="gl-ep-play">▶</span>${red(dot('drama', !lesson.doneToday))}
           <em class="gl-ep-no">第 ${lesson.n} 集</em>
           ${lesson.doneToday ? `<span class="gl-ep-ok">${ic('star')}看完了</span>` : '<span class="gl-ep-new">今日短劇</span>'}
         </button>
@@ -415,6 +436,21 @@ views.home = () => {
     flyText(x, y, `+${xp} 應援值`);
     if (chest) { confetti(); toast('今日寶箱打開了！明天再來挑戰！'); }
   });
+  // 點有紅點的入口：紅點「啵」一下消掉、冒小星星，今天就不再出現
+  $app.querySelectorAll('[data-dot], [data-upd]').forEach((el) => el.addEventListener('click', () => {
+    const id = el.dataset.dot;
+    if (id && !s.dots.seen.includes(id)) s.dots.seen.push(id);
+    if (el.dataset.upd) s.notes[el.dataset.upd] = Number(el.dataset.n) || 0;
+    store.save();
+    const d = el.querySelector('.gl-red');
+    if (!d) return;
+    const rc = d.getBoundingClientRect();
+    sparkleAt(rc.left + rc.width / 2, rc.top + rc.height / 2, 6);
+    sfx('tap');
+    d.classList.add('pop');
+    el.removeAttribute('data-dot'); el.removeAttribute('data-upd');
+    setTimeout(() => d.remove(), 450);
+  }, { capture: true }));
   $app.querySelector('#watchDrama').onclick = async () => {
     await openDrama(lesson.lv, lesson.n, { endLabel: '去上今天的課' });
     if (location.hash === '#/home' || location.hash === '') location.hash = '#/talk';
@@ -483,7 +519,7 @@ views.practice = () => {
     ${langGroups(ex, store.get().course?.day || 1).map((g) => langRowHTML(g, '', true)).join('')}
     <h2 class="sec">${ic('map')} 複習</h2>
     <a class="deck" href="#/map"><div class="emoji">${ic('map')}</div><div class="grow"><b>章節地圖・回放</b><small>重看以前的短劇、重演對話（集章）</small></div><div class="chev">›</div></a>
-    <a class="deck" href="#/quiz/daily"><div class="emoji">${ic('star')}</div><div class="grow"><b>打歌任務</b><small>每日 10 題測驗，題目會念給你聽（集章）</small></div><div class="chev">›</div></a>
+    <a class="deck" href="#/quiz/daily"><div class="emoji">${ic('star')}</div><div class="grow"><b>每日 10 題</b><small>錯題＋學過的字混在一起考，題目會念給你聽（集章）</small></div><div class="chev">›</div></a>
     <a class="deck" href="#/wrong"><div class="emoji">${ic('wrong')}</div><div class="grow"><b>錯題本</b><small>${wrongN ? `${wrongN} 題等你複習` : '目前沒有錯題'}</small></div><div class="chev">›</div></a>`;
 };
 
@@ -784,7 +820,7 @@ views.map = () => {
   $app.querySelectorAll('[data-drama]').forEach((b) => { b.onclick = () => { const k = +b.dataset.drama; openDrama(days[k - 1], k, { endLabel: '關閉' }); }; });
 };
 
-views.cards = (arg) => renderBinders($app, arg, { cardHTML });
+views.cards = (arg) => { const s = store.get(); s.notes ??= {}; s.notes.cards = cardsTotal(s); store.save(); refreshNavDots(); renderBinders($app, arg, { cardHTML }); };
 
 views.me = () => {
   const s = store.get();
@@ -993,6 +1029,7 @@ function route() {
     if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current');
   });
   view(arg);
+  refreshNavDots();
   window.scrollTo(0, 0);
   // 換頁動畫：只在剛換頁的短時間內掛著，之後頁面自己重畫（例如領獎）不會再播一次
   $app.classList.remove('view-in'); void $app.offsetWidth; $app.classList.add('view-in');
@@ -1011,6 +1048,9 @@ onChats((sum) => {
   if (tab) tab.dataset.badge = sum.unread ? String(sum.unread) : '';
   const entry = document.querySelector('.fr-entry');
   if (entry) entry.dataset.badge = sum.unread ? String(sum.unread) : '';
+  // 首頁「好友」橫幅：有未讀訊息就掛紅點
+  const bn = document.querySelector('.gl-bn[href="#/friends"]');
+  if (bn) { bn.querySelector('.gl-red')?.remove(); if (sum.unread) bn.insertAdjacentHTML('afterbegin', '<i class="gl-red" aria-hidden="true"></i>'); }
 });
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
