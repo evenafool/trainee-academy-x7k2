@@ -6,7 +6,7 @@ import { LEVELS, WORDS } from './course.js';
 import { rewardForDay, rewardHTML, memberById } from './rewards.js';
 import { claimEgg, secretCard } from './eggs.js';
 import { sfx } from './sound.js';
-import { esc, ic, wic, confetti, speak, speakAsync, shuffle, sttOK, listenOnce, flyText } from './util.js';
+import { esc, ic, wic, confetti, speak, speakAsync, shuffle, sttOK, listenOnce, flyText, ttsOK, voiceFor } from './util.js';
 import { CARD_GROUPS, CARD_BY_ID, STICKERS, CHEERS, KO_ONLY, PATTERNS, PATTERN_BY_ID, isNounish, koSim, koKey, cleanHeard } from './chatcards.js';
 import { currentUser, sendMsg, watchMsgs, markSeen, chatId, publicCard, myUid } from './cloud.js';
 import { friendByUid, saveFriendCard } from './friends.js';
@@ -529,6 +529,7 @@ export async function renderChat($app, arg, toast) {
   });
 
   let lastSay = { key: '', at: 0, slow: false };
+  let noKoTold = false;
   $list.onclick = (e) => {
     const say = e.target.closest('[data-say]');
     if (say) {
@@ -536,6 +537,11 @@ export async function renderChat($app, arg, toast) {
       const slow = key === lastSay.key && Date.now() - lastSay.at < 6000 && !lastSay.slow;
       lastSay = { key, at: Date.now(), slow };
       try { speak(say.dataset.say, 'ko-KR', slow ? 0.5 : 0.8); } catch (err) { /* 沒有語音 */ }
+      // 裝置沒有韓文語音（例如電腦沒裝韓文語言包）：告訴孩子為什麼沒聲音，只提醒一次
+      if (!noKoTold && (!ttsOK || (speechSynthesis.getVoices().length && !voiceFor('ko-KR')))) {
+        noKoTold = true;
+        toast(ttsOK ? '這台裝置沒有韓文語音，請在系統設定加入「韓文」語音後再點一次' : '這個瀏覽器不能念出聲音，換 Chrome、Edge 或 Safari 試試');
+      }
       if (slow) flyText(e.clientX, e.clientY - 10, '慢速');
       say.classList.remove('ct-boing'); void say.offsetWidth; say.classList.add('ct-boing');
       return;

@@ -349,6 +349,10 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
       const gap = root.getBoundingClientRect().bottom - $('#vnBox').getBoundingClientRect().top;
       c.style.bottom = `${Math.round(gap + 8)}px`;
     } else c.style.bottom = '';
+    // 從單字卡拉一條虛線指到台詞裡那個發光的字（讓孩子知道卡片在說哪個字）
+    const relink = () => { if (!c.hidden && !caught.has(id)) linkCatch(c, box.querySelector(`.hlw[data-w="${id}"]`)); };
+    requestAnimationFrame(relink);
+    setTimeout(relink, 500); // 卡片彈出動畫結束後再量一次，線頭才會剛好接在卡片上
     sfx('ding');
     c.querySelector('button').onclick = (e) => { e.stopPropagation(); catchWord(id, e.currentTarget); };
     const hw = box.querySelector(`.hlw[data-w="${id}"]`);
@@ -357,6 +361,23 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
       // 用鍵盤也能收集（Tab 到發光的字、按 Enter 或空白鍵）
       hw.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); catchWord(id, e.currentTarget); } };
     }
+  }
+  function linkCatch(c, hw) {
+    c.querySelector('.catch-link')?.remove();
+    c.classList.remove('linked');
+    const btn = c.querySelector('.catch-btn');
+    if (c.hidden || !hw || !btn) return;
+    const o = c.getBoundingClientRect();
+    const b = btn.getBoundingClientRect();
+    const t = hw.getBoundingClientRect();
+    if (!t.width || t.top < b.bottom) return; // 字不在卡片下面就不畫
+    const tx = t.left + t.width / 2 - o.left, ty = t.top - o.top - 3;
+    // 起點：卡片下緣、盡量對準那個字（但不超出卡片圓角）
+    const sx = Math.max(b.left + 24, Math.min(b.right - 24, t.left + t.width / 2)) - o.left;
+    const sy = b.bottom - o.top - 2;
+    const mx = (sx + tx) / 2, my = sy + (ty - sy) * 0.15;
+    c.classList.add('linked');
+    c.insertAdjacentHTML('beforeend', `<svg class="catch-link" aria-hidden="true"><path d="M${sx.toFixed(1)} ${sy.toFixed(1)} Q${mx.toFixed(1)} ${my.toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)}"/><circle cx="${tx.toFixed(1)}" cy="${(ty - 1).toFixed(1)}" r="4"/></svg>`);
   }
   // 孩子親手點到：爆出星星愛心 → 單字飛進口袋 → 口袋彈跳＋1 → 念發音
   async function catchWord(id, el) {

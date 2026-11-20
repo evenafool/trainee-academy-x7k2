@@ -1,6 +1,6 @@
 // 離線快取：先用網路，失敗時用快取（內容更新時改版本號）
-const CACHE = 'idolstudy-v64';
-const FILES = ['./', './index.html', './css/style.css', './css/talk.css', './css/rewards.css', './css/lobby-pastel.css', './css/pastel-pages.css', './css/names.css', './css/v2.css', './css/drama.css', './js/names.js', './js/rewards.js', './js/app.js', './js/data.js', './js/store.js', './manifest.webmanifest', './icons/icon-192.png', './js/course.js', './js/util.js', './js/talk.js', './js/sound.js', './js/drama.js', './js/games.js', './js/course2.js', './js/course3.js', './js/themes.js', './js/extras.js', './js/bank.js', './js/examdata.js', './js/exam.js', './js/npc.js', './js/hangul.js', './js/hangul-art.js', './js/facemap.js', './js/avatar.js', './js/friends.js', './js/cloud.js', './js/chat.js', './js/chatcards.js', './js/binder.js', './js/eggs.js', './css/exam.css', './css/fx.css', './css/chat.css', './css/me.css', './css/binder.css', './css/home-stage.css', './assets/art/bg-practice.webp', './assets/art/teacher-cut.webp', './assets/art/teacher-face.webp', './assets/art/logo.webp', './assets/art/bn-closet.webp', './assets/art/bn-cards.webp', './assets/art/bn-friends.webp', './assets/art/bn-map.webp', ...['home','wrong','cards','me','mic','speaker','gift','fire','book','chat','star','heart','zh','en','ko','meme','medal','map','trophy'].map((n) => `./assets/art/icons/ui-${n}.webp`)];
+const CACHE = 'idolstudy-v65';
+const FILES = ['./', './index.html', './css/style.css', './css/talk.css', './css/rewards.css', './css/lobby-pastel.css', './css/pastel-pages.css', './css/names.css', './css/v2.css', './css/drama.css', './js/names.js', './js/rewards.js', './js/app.js', './js/data.js', './js/store.js', './manifest.webmanifest', './icons/icon-192.png', './js/course.js', './js/util.js', './js/talk.js', './js/sound.js', './js/drama.js', './js/games.js', './js/course2.js', './js/course3.js', './js/themes.js', './js/extras.js', './js/bank.js', './js/examdata.js', './js/exam.js', './js/npc.js', './js/hangul.js', './js/hangul-art.js', './js/facemap.js', './js/avatar.js', './js/friends.js', './js/cloud.js', './js/chat.js', './js/chatcards.js', './js/binder.js', './js/eggs.js', './css/exam.css', './css/fx.css', './css/chat.css', './css/me.css', './css/binder.css', './css/home-stage.css', './css/hsing.css', './js/hsing.js', './assets/art/bg-practice.webp', './assets/art/teacher-cut.webp', './assets/art/teacher-face.webp', './assets/art/logo.webp', './assets/art/bn-closet.webp', './assets/art/bn-cards.webp', './assets/art/bn-friends.webp', './assets/art/bn-map.webp', ...['home','wrong','cards','me','mic','speaker','gift','fire','book','chat','star','heart','zh','en','ko','meme','medal','map','trophy'].map((n) => `./assets/art/icons/ui-${n}.webp`)];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));
@@ -19,7 +19,7 @@ self.addEventListener('fetch', (e) => {
   if (url.origin !== self.location.origin && url.hostname !== 'www.gstatic.com') return;
   e.respondWith(
     fetch(e.request)
-      .then((res) => { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); return res; })
+      .then((res) => { if (res.status === 200) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)).catch(() => {}); } return res; }) // 音樂分段下載（206）不能存
       .catch(() => caches.match(e.request)),
   );
 });

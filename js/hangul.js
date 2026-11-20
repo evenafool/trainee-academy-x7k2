@@ -6,6 +6,9 @@ import { esc, ic, shuffle, speakAsync, stopSpeaking, toast, confetti, sleep, red
 import { sfx } from './sound.js';
 import { mountHost } from './npc.js';
 import { PICS, SECRETS, VOWELS, letterSVG, morphSVG, spoken } from './hangul-art.js';
+import { renderSing } from './hsing.js';
+import { avatarState, autoOutfit } from './avatar.js';
+const avatarOutfit = () => avatarState().outfit || autoOutfit();
 
 // [字母, 拼音, 注音小撇步, 念的時候用的音節, 例字, 例字意思]
 export const STAGES = [
@@ -77,6 +80,10 @@ function renderHome() {
       <div class="hg-prog"><i style="width:${(p.passed / p.stages) * 100}%"></i></div>
       <small>已過關 ${p.passed}／${p.stages} 關・聽過 ${p.heard}／${TOTAL} 個字母</small>
     </section>
+    <a class="hg-sing-link" href="#/hangul/sing">
+      <img src="assets/art/me-${esc(avatarOutfit())}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/sprite-me.webp'">
+      <span><b>${ic('mic')} 上台唱 40 音</b><small>跟著節拍邊唱邊學，先聽示範、再換你唱</small></span><i class="hg-sing-go">▶</i>
+    </a>
     <div class="hg-stages">
       ${STAGES.map((s, i) => `
         <a class="hg-stage ${h.passed[s.id] ? 'done' : ''} ${nextStage?.id === s.id ? 'tap-hint' : ''}" href="#/hangul/${s.id}">
@@ -121,6 +128,7 @@ function renderStage(id) {
     </div>
     <div class="hg-actions">
       <button type="button" class="btn primary big" id="hgGuide">${ic('speaker')} 全部念一遍</button>
+      <a class="btn big hg-sing-btn" href="#/hangul/sing-${st.id}">${ic('mic')} 上台唱這關</a>
       <button type="button" class="btn big" id="hgQuiz">${ic('star')} 小測驗（8 題，80 分過關）</button>
     </div>
     <div class="hg-guide" id="hgGuideBox" hidden><b id="hgNow"></b><p id="hgSaid">老師念的時候可以小聲跟著念</p><button type="button" class="pill-btn" id="hgStop">停止</button></div>`;
@@ -324,6 +332,8 @@ function renderBuilder() {
 export function renderHangul($root, arg = '') {
   $app = $root;
   stopSpeaking();
+  // 舞台模式全螢幕：不要 NPC 小幫手擋住
+  if (arg.startsWith('sing')) { document.querySelector('.npc-host')?.remove(); return renderSing($root, arg.slice(5) || (STAGES.find((x) => !hState().passed[x.id]) || STAGES[0]).id); }
   host = mountHost('hangul');
   if (arg === 'build') return renderBuilder();
   if (arg) return renderStage(arg);

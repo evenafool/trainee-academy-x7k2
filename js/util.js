@@ -50,10 +50,61 @@ export function splitKo(text, lang) {
   return s.split(KO_RUN).filter((p) => /[\p{L}\p{N}]/u.test(p)).map((p) => (HANGUL.test(p) ? [p, 'ko-KR'] : [p, lang]));
 }
 const koRate = (lang, rate) => (lang === 'ko-KR' && rate == null ? 0.8 : rate);
+// ── 跨瀏覽器的念法（Chrome／Edge／Safari／iPhone、iPad）──
+//  ・Safari（含 iPhone 上所有瀏覽器，都是 WebKit 核心）：cancel() 之後馬上 speak() 會被吃掉 → 有在念才 cancel，並且等一下再念
+//  ・Safari：第一次念必須在「手指點下去」的當下；先在第一次觸碰時偷偷念一個空白句「解鎖」
+//  ・Safari、Chrome：念到一半切到背景會卡在暫停狀態 → 每次念之前 resume()
+//  ・語音清單在 Safari 會晚一點才載入：還沒載入時照樣用語言代碼念，不要直接變成沒聲音
+//  ・念的物件要留著參考，不然有些瀏覽器會在念完前把它回收，結束事件就不會來
+const UA = typeof navigator === 'object' ? navigator.userAgent : '';
+export const WEBKIT_TTS = /iP(hone|ad|od)/.test(UA) || (/Macintosh/.test(UA) && navigator.maxTouchPoints > 1)
+  || (/Safari/.test(UA) && !/Chrome|Chromium|CriOS|Edg|OPR|Android|Firefox|FxiOS/.test(UA));
+const live = new Set();
+function fire(u) {
+  live.add(u);
+  const done = () => live.delete(u);
+  u.addEventListener('end', done);
+  u.addEventListener('error', done);
+  try { if (speechSynthesis.paused) speechSynthesis.resume(); } catch (e) { /* 略過 */ }
+  speechSynthesis.speak(u);
+}
+// 停掉正在念的；回傳「剛剛有沒有在念」
+function hush() {
+  if (!ttsOK) return false;
+  const busy = speechSynthesis.speaking || speechSynthesis.pending;
+  if (busy || speechSynthesis.paused) speechSynthesis.cancel();
+  return busy;
+}
+let queueTimer = 0;
+let lastBatch = [];
+// 正在念的時候又要念新的：先停、隔一下再念（Safari 會吞掉、Chrome 的 Google 韓文語音會卡住，兩個都實測過）
+function play(us) {
+  clearTimeout(queueTimer);
+  lastBatch = us;
+  const go = () => { us.forEach(fire); watchdog(us); };
+  if (hush()) queueTimer = setTimeout(go, 150);
+  else go();
+}
+// 1.6 秒還沒開始念（引擎卡住、整句被吞）→ 重新念一次（只重試一次）
+function watchdog(us) {
+  const u = us[0];
+  if (!u || u.retried) return;
+  let started = false;
+  u.addEventListener('start', () => { started = true; });
+  setTimeout(() => {
+    if (started || lastBatch !== us) return;
+    u.retried = true;
+    u.retrying = true;
+    speechSynthesis.cancel();
+    queueTimer = setTimeout(() => { u.retrying = false; us.forEach(fire); }, 150);
+  }, 1600);
+}
+// 有語音清單、卻完全沒有這個語言的聲音 → 不念（避免用中文聲音亂念韓文）；清單還沒載入 → 照樣念
+const canSay = (lang) => !speechSynthesis.getVoices().length || !!voiceFor(lang);
 export function speak(text, lang, rate) {
   if (!ttsOK || !text) return;
-  speechSynthesis.cancel();
-  for (const [p, l] of splitKo(text, lang)) speechSynthesis.speak(utter(p, l, l === lang ? rate : koRate(l)));
+  // 點了才念的（手指觸發）：就算清單裡找不到這個語言也試著念，有些裝置的清單不完整
+  play(splitKo(text, lang).map(([p, l]) => utter(p, l, l === lang ? rate : koRate(l))));
 }
 // 念完才 resolve；沒有語音時依字數估算時間
 export async function speakAsync(text, lang, rate) {
@@ -67,13 +118,28 @@ export async function speakAsync(text, lang, rate) {
 function speakOne(text, lang, rate) {
   return new Promise((resolve) => {
     const fallback = setTimeout(resolve, (900 + String(text).length * 160) / Math.min(rate || 1, 1));
-    if (!ttsOK || !voiceFor(lang)) return;
-    speechSynthesis.cancel();
+    if (!ttsOK || !canSay(lang)) return;
     const u = utter(text, lang, rate);
-    u.onend = u.onerror = () => { clearTimeout(fallback); resolve(); };
-    speechSynthesis.speak(u);
+    u.onend = () => { clearTimeout(fallback); resolve(); };
+    u.onerror = () => { if (u.retrying) return; clearTimeout(fallback); resolve(); }; // 自己重試造成的中斷不算
+    play([u]);
   });
 }
+// iPhone／iPad／Safari：第一次碰螢幕時念一個聽不到的空白句，之後不管什麼時候念都有聲音
+if (ttsOK && WEBKIT_TTS && typeof document === 'object') {
+  let done = false;
+  const unlock = () => {
+    if (done) return;
+    done = true;
+    const u = new SpeechSynthesisUtterance(' '); u.volume = 0; fire(u);
+    speechSynthesis.getVoices();
+  };
+  for (const ev of ['touchend', 'pointerdown', 'keydown']) document.addEventListener(ev, unlock, { capture: true, once: true, passive: true });
+  // 從背景回來：Safari 會卡在暫停
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { try { speechSynthesis.resume(); } catch (e) { /* 略過 */ } } });
+}
+if (ttsOK) { speechSynthesis.getVoices(); speechSynthesis.addEventListener?.('voiceschanged', () => speechSynthesis.getVoices()); }
+
 // 「換你說」的提示音：叮一聲，提醒孩子現在可以開口
 let actx = null;
 export function chime() {
@@ -85,8 +151,7 @@ export function chime() {
     o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime + 0.3);
   } catch (e) { /* 沒有音效也沒關係 */ }
 }
-export const stopSpeaking = () => ttsOK && speechSynthesis.cancel();
-if (ttsOK) speechSynthesis.getVoices();
+export const stopSpeaking = () => { clearTimeout(queueTimer); return ttsOK && speechSynthesis.cancel(); };
 
 // ───────── 跟讀（語音辨識） ─────────
 const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;

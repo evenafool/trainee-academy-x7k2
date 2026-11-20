@@ -289,3 +289,18 @@
   .drama.strip-mode .vn-end { grid-template-columns: minmax(0, 1fr); padding: 12px; }
   .drama.strip-mode .vn-endcard { width: 100%; min-width: 0; box-sizing: border-box; padding: 18px 14px; }
 }
+
+/* 講話的人名牌：放在對話框「外面上方」、浮在講話的角色身上（可以壓到角色），不碰對話框裡的字；右邊的人講話就靠右 */
+.drama .vn-name { top: auto; bottom: calc(100% + 4px); left: 16px; right: auto; margin: 0; font-size: 14px; line-height: 1.5; padding: 1px 16px; border-width: 2.5px; white-space: nowrap; z-index: 4; }
+.drama .vn-name:empty { display: none; }
+.drama:has(.vn-sp.right.speaking) .vn-box:not(.narr) .vn-name { left: auto; right: 16px; }
+/* 發光單字上的「點我！」拿掉：旁邊的新單字卡已經有「點我收集」，避免疊到名牌或翻譯 */
+.drama .hlw[data-w]::after { display: none; }
+
+/* 單字卡 → 台詞裡那個字：金色虛線＋小圓點，讓孩子一眼看出卡片在說哪個字 */
+.vn-catch .catch-link { position: absolute; left: 0; top: 0; width: 1px; height: 1px; overflow: visible; pointer-events: none; z-index: -1; }
+.vn-catch .catch-link path { fill: none; stroke: #f0b429; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 2 7; filter: drop-shadow(0 0 2px #fff); animation: catchLink .6s linear infinite; }
+.vn-catch .catch-link circle { fill: #f0b429; stroke: #fff; stroke-width: 2; }
+@keyframes catchLink { to { stroke-dashoffset: -9; } }
+.drama.strip-mode .vn-catch.linked .catch-btn::before { display: none; }
+@media (prefers-reduced-motion: reduce) { .vn-catch .catch-link path { animation: none; } }

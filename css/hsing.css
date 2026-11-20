@@ -1,0 +1,141 @@
+/* 40 音舞台：主角站在舞台中間跟著節拍晃，下面是歌詞卡和應援棒 */
+.hg-sing-link { position: relative; display: flex; align-items: center; gap: 12px; margin: 0 0 12px; padding: 10px 14px 10px 8px; border-radius: 22px; background: linear-gradient(160deg, #fff4f7, #f7d3dc); border: 3px solid #fff; color: #4a3728; text-decoration: none; box-shadow: 0 4px 0 #e2aab6; overflow: hidden; }
+.hg-sing-link img { width: 72px; height: 84px; object-fit: cover; object-position: 50% 6%; border-radius: 16px; background: #fde7ee; flex: none; }
+.hg-sing-link span { flex: 1; min-width: 0; }
+.hg-sing-link b { display: flex; align-items: center; gap: 6px; font-size: 18px; color: #b5606d; }
+.hg-sing-link b .ic { width: 26px; height: 26px; }
+.hg-sing-link small { display: block; color: #8a6f62; font-weight: 700; margin-top: 2px; }
+.hg-sing-go { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-style: normal; color: #fff; background: linear-gradient(180deg, #e0a3a9, #c97b84); box-shadow: 0 3px 0 #a9606b; }
+.hg-sing-btn { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+
+.hs { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; align-items: center; overflow: hidden; color: #4a3728; background: #2a1d33; --beat: .79s; padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+.hs-bg { position: absolute; inset: 0; }
+.hs-bg img { width: 100%; height: 100%; object-fit: cover; filter: saturate(1.05) brightness(.8); }
+.hs-bg::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(42, 29, 51, .35), rgba(42, 29, 51, 0) 30%, rgba(42, 29, 51, .1) 60%, rgba(42, 29, 51, .75)); }
+.hs-spot { position: absolute; top: -10%; width: 60%; height: 90%; background: radial-gradient(ellipse at 50% 0, rgba(255, 240, 200, .55), rgba(255, 240, 200, 0) 70%); clip-path: polygon(45% 0, 55% 0, 100% 100%, 0 100%); opacity: .7; transform-origin: 50% 0; }
+.hs-spot.l { left: -5%; rotate: -14deg; }
+.hs-spot.r { right: -5%; rotate: 14deg; }
+.hs.playing .hs-spot.l { animation: hsSweep calc(var(--beat) * 4) ease-in-out infinite alternate; }
+.hs.playing .hs-spot.r { animation: hsSweep calc(var(--beat) * 4) ease-in-out infinite alternate-reverse; }
+@keyframes hsSweep { from { rotate: -22deg; } to { rotate: 10deg; } }
+
+.hs-top { position: relative; z-index: 2; width: min(100%, 520px); display: flex; align-items: center; gap: 10px; padding: 10px 14px 4px; box-sizing: border-box; }
+.hs-top > b { flex: 1; display: flex; align-items: center; gap: 6px; color: #fff; font-size: 18px; text-shadow: 0 2px 6px rgba(0, 0, 0, .4); }
+.hs-top > b .ic { width: 26px; height: 26px; }
+.hs-back { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .9); color: #b5606d; font-size: 26px; font-weight: 900; text-decoration: none; }
+.hs-speed { display: flex; align-items: center; gap: 4px; font: inherit; font-weight: 900; font-size: 13px; color: #b5606d; background: rgba(255, 255, 255, .92); border: 0; border-radius: 999px; padding: 5px 12px 5px 6px; cursor: pointer; }
+.hs-speed .ic { width: 22px; height: 22px; }
+
+.hs-tabs { position: relative; z-index: 2; display: flex; gap: 6px; padding: 4px 14px; width: min(100%, 520px); box-sizing: border-box; }
+.hs-tabs a { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 5px 4px; border-radius: 999px; background: rgba(255, 255, 255, .25); color: #fff; text-decoration: none; font-size: 12px; font-weight: 800; white-space: nowrap; }
+.hs-tabs a b { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .3); font-size: 11px; flex: none; }
+.hs-tabs a span { overflow: hidden; text-overflow: ellipsis; }
+.hs-tabs a.on { background: #fff; color: #b5606d; }
+.hs-tabs a.on b { background: #e0a3a9; color: #fff; }
+
+.hs-floor { position: relative; z-index: 1; flex: 1; width: min(100%, 520px); min-height: 0; display: flex; justify-content: center; align-items: flex-end; }
+.hs-me { position: relative; height: 100%; max-height: 430px; aspect-ratio: 9 / 16; transform-origin: 50% 100%; }
+.hs-me img { width: 100%; height: 100%; object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .35)); }
+.hs.playing .hs-me { animation: hsBob var(--beat) ease-in-out infinite; }
+@keyframes hsBob { 0%, 100% { transform: translateY(0) rotate(-1.2deg); } 50% { transform: translateY(-8px) rotate(1.2deg); } }
+.hs-mic { position: absolute; right: 18%; top: 38%; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: #fff; box-shadow: 0 0 0 3px #f0b429, 0 4px 10px rgba(0, 0, 0, .3); }
+.hs-mic .ic { width: 30px; height: 30px; }
+.hs.your-turn .hs-mic { animation: hsMic calc(var(--beat) / 2) ease-in-out infinite alternate; }
+@keyframes hsMic { to { scale: 1.18; box-shadow: 0 0 0 5px #f0b429, 0 0 22px #ffd36a; } }
+.hs-notes { position: absolute; inset: 0; pointer-events: none; }
+.hs-notes i { position: absolute; bottom: 45%; font-style: normal; font-size: 28px; color: #ffe08a; text-shadow: 0 2px 6px rgba(0, 0, 0, .3); animation: hsNote 1.6s ease-out forwards; }
+@keyframes hsNote { from { transform: translateY(0) scale(.6); opacity: 0; } 20% { opacity: 1; } to { transform: translate(var(--dx, 18px), -150px) scale(1.2); opacity: 0; } }
+
+.hs-card { position: relative; z-index: 3; width: min(calc(100% - 28px), 480px); box-sizing: border-box; margin-top: -40px; padding: 18px 14px 12px; border-radius: 26px; background: #fffaf3; border: 4px solid #fff; box-shadow: 0 0 0 3px #e0a3a9, 0 10px 26px rgba(0, 0, 0, .35); display: grid; justify-items: center; gap: 4px; text-align: center; }
+.hs-card.pop { animation: hsPop .35s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes hsPop { from { transform: scale(.9); } to { transform: scale(1); } }
+.hs-who { position: absolute; top: -16px; left: 50%; translate: -50% 0; padding: 2px 16px; border-radius: 999px; background: #c97b84; color: #fff; font-weight: 900; font-size: 14px; border: 3px solid #fff; white-space: nowrap; }
+.hs-who.you { background: #f0b429; animation: hsPulse var(--beat) ease-in-out infinite; }
+.hs-who.count { background: #7c6bd6; font-size: 16px; }
+@keyframes hsPulse { 50% { scale: 1.12; } }
+.hs-big { font-size: 64px; line-height: 1; font-weight: 900; color: #4a3728; }
+.hs-big.c { color: #4f8fd6; }
+.hs-big.v { color: #d0637a; }
+.hs-lyric { display: flex; align-items: center; justify-content: center; gap: 6px; flex-wrap: wrap; font-size: 26px; font-weight: 900; min-height: 40px; }
+.hs-lyric > i { font-style: normal; color: #d9c7b8; }
+.hs-lyric span { padding: 2px 10px; border-radius: 12px; color: #8a7563; background: #f6ece2; transition: background .1s, color .1s, transform .1s; }
+.hs-lyric span.hit { color: #fff; background: linear-gradient(180deg, #e0a3a9, #c97b84); transform: translateY(-3px) scale(1.08); box-shadow: 0 0 12px rgba(240, 180, 41, .8); }
+.hs.your-turn .hs-lyric span.hit { background: linear-gradient(180deg, #ffd36a, #f0b429); }
+.hs-mean { color: #8a7563; font-weight: 800; font-size: 14px; }
+
+.hs-dots { position: relative; z-index: 3; list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin: 10px 0 0; padding: 0 14px; width: min(100%, 520px); box-sizing: border-box; }
+.hs-dots li { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 900; background: rgba(255, 255, 255, .35); color: #fff; }
+.hs-dots li.done { background: rgba(255, 255, 255, .85); color: #b5606d; }
+.hs-dots li.on { background: #f0b429; color: #fff; scale: 1.2; box-shadow: 0 0 10px #ffd36a; }
+
+.hs-fans { position: relative; z-index: 2; height: 42px; width: min(100%, 520px); display: flex; justify-content: space-around; align-items: flex-end; padding: 0 10px; box-sizing: border-box; }
+.hs-fans i { width: 7px; height: 30px; border-radius: 4px; background: linear-gradient(180deg, #ffe0ea, #e0a3a9); box-shadow: 0 0 10px #f7c6d3; transform-origin: 50% 100%; rotate: calc((var(--i) - 4) * 4deg); }
+.hs.playing .hs-fans i { animation: hsWave var(--beat) ease-in-out infinite alternate; animation-delay: calc(var(--i) * -.09s); }
+.hs.your-turn .hs-fans i { background: linear-gradient(180deg, #fff3c4, #f0b429); box-shadow: 0 0 12px #ffd36a; }
+@keyframes hsWave { from { rotate: -16deg; } to { rotate: 16deg; } }
+
+.hs-go { position: relative; z-index: 3; display: flex; align-items: center; gap: 8px; margin: 6px 0 14px; font: inherit; font-size: 20px; color: #fff; padding: 10px 30px 10px 14px; border-radius: 999px; border: 4px solid #fff; background: linear-gradient(180deg, #e0a3a9, #c97b84); box-shadow: 0 5px 0 #a9606b, 0 10px 20px rgba(0, 0, 0, .3); cursor: pointer; }
+.hs-go .ic { width: 34px; height: 34px; }
+.hs.playing:not(.song) .hs-go { background: linear-gradient(180deg, #b9a8e8, #8b78d6); box-shadow: 0 5px 0 #6a58b8, 0 10px 20px rgba(0, 0, 0, .3); }
+
+@media (max-height: 700px) {
+  .hs-big { font-size: 48px; }
+  .hs-lyric { font-size: 22px; }
+  .hs-card { margin-top: -30px; padding-top: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hs.playing .hs-me, .hs.has-dance.playing .hs-me, .hs.has-dance.playing .hs-spr, .hs.playing .hs-fans i, .hs.playing .hs-spot, .hs.your-turn .hs-mic, .hs-who.you { animation: none; }
+}
+
+/* 唱之前的說明框：主角頭上跳出來，教這首歌怎麼學 */
+.hs-help { width: 34px; height: 34px; border-radius: 50%; border: 0; font: inherit; font-size: 18px; font-weight: 900; color: #b5606d; background: rgba(255, 255, 255, .92); cursor: pointer; }
+.hs-intro { position: absolute; z-index: 4; top: 6px; left: 50%; translate: -50% 0; width: min(calc(100% - 24px), 420px); box-sizing: border-box; padding: 14px 14px 12px; border-radius: 24px; background: #fffaf3; border: 4px solid #fff; box-shadow: 0 0 0 3px #e0a3a9, 0 12px 28px rgba(0, 0, 0, .35); display: grid; gap: 8px; text-align: center; animation: hsPop .4s cubic-bezier(.3, 1.6, .5, 1); }
+.hs-intro[hidden] { display: none; }
+.hs-intro::after { content: ''; position: absolute; left: 50%; bottom: -17px; translate: -50% 0; border: 10px solid transparent; border-top: 14px solid #fff; border-bottom: 0; filter: drop-shadow(0 3px 0 #e0a3a9); }
+.hs.playing .hs-intro { display: none; }
+.hs-in-x { position: absolute; top: 6px; right: 8px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: #f6ece2; color: #8a7563; font: inherit; font-weight: 900; cursor: pointer; }
+.hs-in-k { display: flex; align-items: center; justify-content: center; gap: 4px; color: #c97b84; font-weight: 900; font-size: 12px; }
+.hs-in-k .ic { width: 18px; height: 18px; }
+.hs-in-h { font-size: 19px; color: #4a3728; }
+.hs-in-ex { display: flex; justify-content: center; gap: 6px; }
+.hs-in-ex span { display: grid; gap: 1px; padding: 4px 10px; border-radius: 14px; background: #fde7ee; min-width: 0; }
+.hs-in-ex span b { font-size: 22px; color: #c97b84; }
+.hs-in-ex span.w { background: #fff3c4; }
+.hs-in-ex span.w b { color: #b8860b; }
+.hs-in-ex small { font-size: 11px; color: #8a7563; font-weight: 800; white-space: nowrap; }
+.hs-intro p { margin: 0; font-size: 14px; line-height: 1.55; color: #6b5444; font-weight: 700; text-align: left; }
+.hs-in-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.hs-in-steps li { display: grid; justify-items: center; gap: 3px; font-size: 12px; font-weight: 800; color: #8a7563; }
+.hs-in-steps li b { display: block; color: #4a3728; }
+.hs-in-steps i { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: #f6ece2; }
+.hs-in-steps i.pk { background: linear-gradient(180deg, #e0a3a9, #c97b84); }
+.hs-in-steps i.gd { background: linear-gradient(180deg, #ffd36a, #f0b429); }
+.hs-in-steps i.st { background: #ede7fb; }
+.hs-in-steps .ic { width: 26px; height: 26px; }
+.hs-in-say { justify-self: center; display: flex; align-items: center; gap: 4px; font: inherit; font-size: 13px; font-weight: 900; color: #b5606d; background: #fde7ee; border: 0; border-radius: 999px; padding: 4px 14px 4px 6px; cursor: pointer; }
+.hs-in-say .ic { width: 22px; height: 22px; }
+
+/* 舞步精靈圖：8 格橫排，兩拍跳完一輪（一格＝1/4 拍），換速度時跟著 --beat 自動變快變慢；有圖才啟用 */
+.hs-dance { position: absolute; inset: 0 0 50px; pointer-events: none; display: none; justify-content: center; align-items: flex-end; }
+.hs-spr { position: relative; z-index: 1; display: block; height: min(var(--spr-h, 290px), 100%); max-width: 100%; background: no-repeat 0 0 / calc(var(--n, 8) * 100%) 100%; filter: drop-shadow(0 6px 14px rgba(0, 0, 0, .35)); }
+.hs.has-dance .hs-dance { display: flex; }
+.hs.has-dance .hs-base, .hs.has-dance .hs-mic { display: none; }
+.hs.has-dance.playing .hs-spr { animation: hsSpr calc(var(--beat) * 2) steps(var(--n, 8), jump-none) infinite; }
+.hs.has-dance.playing .hs-me { animation: hsHop var(--beat) ease-out infinite; }
+@keyframes hsSpr { from { background-position-x: 0%; } to { background-position-x: 100%; } }
+@keyframes hsHop { 0% { transform: translateY(0); } 25% { transform: translateY(-6px); } 60%, 100% { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .hs.has-dance.playing .hs-me, .hs.has-dance.playing .hs-spr { animation: none; }
+}
+
+/* 聽原唱（Suno 整首歌）：開始唱旁邊的小按鈕 */
+.hs-acts { position: relative; z-index: 3; display: flex; align-items: center; justify-content: center; gap: 10px; margin: 6px 0 14px; }
+.hs-acts .hs-go { margin: 0; }
+.hs.song .hs-lyric span.hit { font-size: .82em; white-space: normal; }
+
+/* 舞台排版：舞者下面一圈聚光燈地板＋背後柔光，人物大小照原圖解析度，不硬撐滿 */
+.hs-dance::before { content: ''; position: absolute; left: 50%; bottom: -10px; width: min(78%, 260px); height: 46px; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 244, 214, .95), rgba(255, 214, 150, .55) 55%, rgba(255, 214, 150, 0)); box-shadow: 0 0 30px rgba(255, 220, 160, .5); }
+.hs-dance::after { content: ''; position: absolute; left: 50%; bottom: 8px; width: min(92%, 330px); aspect-ratio: 1; transform: translateX(-50%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, .38), rgba(255, 230, 245, .14) 60%, rgba(255, 255, 255, 0)); z-index: 0; }
+.hs.has-dance.playing .hs-dance::before { animation: hsPool var(--beat) ease-in-out infinite; }
+@keyframes hsPool { 0%, 100% { opacity: .85; } 50% { opacity: 1; transform: translateX(-50%) scale(1.06); } }
+@media (prefers-reduced-motion: reduce) { .hs.has-dance.playing .hs-dance::before { animation: none; } }

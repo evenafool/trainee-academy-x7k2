@@ -1,7 +1,7 @@
 import { STAGES, SUBJECTS, DECKS, RANKS, ACCENTS, CHEERS_RIGHT, CHEERS_WRONG } from './data.js';
 import { LEVELS, WORDS, STORIES, TEASERS, CHAPTERS, KEEPSAKES } from './course.js';
 import { applyNames, DEFAULT_NAMES } from './names.js';
-import { dayStr, VOICE_PICKS, ic, wic, listenOnce, speechMatches, splitKo, confetti, initFx, sparkleAt, flyText, reducedMotion } from './util.js';
+import { dayStr, ttsOK, voiceFor, speak as speakTTS, ic, wic, listenOnce, speechMatches, confetti, initFx, sparkleAt, flyText, reducedMotion } from './util.js';
 import { sfx, armAudio, setMusic, setSfx } from './sound.js';
 import { openDrama } from './drama.js';
 import { renderMatch, renderSpeed } from './games.js';
@@ -61,32 +61,12 @@ function currentStreak() {
 const itemFits = (item, stage) => !item.st || item.st.includes(stage);
 const deckIndices = (deck, stage) => deck.items.map((it, i) => (itemFits(it, stage) ? i : -1)).filter((i) => i >= 0);
 
-// ───────── 語音（Web Speech API） ─────────
-const ttsOK = 'speechSynthesis' in window;
-function voiceFor(lang) {
-  if (!ttsOK) return null;
-  // 優先用自然語音（Edge 的 Natural／Online、Chrome 的 Google 語音）
-  const vs = speechSynthesis.getVoices();
-  const nat = (v) => /Natural|Online|Neural|Google/i.test(v.name);
-  const same = vs.filter((v) => v.lang.replace('_', '-') === lang);
-  const near = vs.filter((v) => v.lang.startsWith(lang.slice(0, 2)));
-  const fav = VOICE_PICKS[lang];
-  return (fav && vs.find((v) => fav.test(v.name))) || same.find(nat) || near.find(nat) || same[0] || near[0] || null;
-}
+// ───────── 語音（Web Speech API）：用 util.js 共用的念法（Chrome／Edge／Safari 都處理好了）─────────
+// 外語放慢，韓文最慢；中文裡夾的韓文會換韓文聲音念
 function speak(text, lang) {
   if (!ttsOK || !text) return;
-  speechSynthesis.cancel();
-  // 中文裡夾的韓文換韓文聲音念（splitKo）
-  for (const [p, l] of splitKo(text.replace(/[💀☕✨]/g, ''), lang)) {
-    const u = new SpeechSynthesisUtterance(p);
-    u.lang = l;
-    u.rate = l === 'ko-KR' ? 0.7 : l === 'en-US' ? 0.8 : 1.05; // 外語放慢，韓文最慢
-    const v = voiceFor(l);
-    if (v) u.voice = v;
-    speechSynthesis.speak(u);
-  }
+  speakTTS(String(text).replace(/[💀☕✨]/g, ''), lang, lang === 'ko-KR' ? 0.7 : lang === 'en-US' ? 0.8 : 1.05);
 }
-if (ttsOK) speechSynthesis.getVoices();
 
 function applyAccent() {
   const p = store.get().profile;
@@ -1017,7 +997,7 @@ function route() {
   if (view !== views.talk) stopTalk();
   if (view !== views.chat) stopChat();
   document.body.classList.toggle('is-lobby', view === views.home || view === views.talk);
-  const hideNav = ['onboard', 'quiz', 'flash', 'talk', 'chat'].includes(name) && !(name === 'onboard' && s.profile);
+  const hideNav = (['onboard', 'quiz', 'flash', 'talk', 'chat'].includes(name) && !(name === 'onboard' && s.profile)) || (name === 'hangul' && /^sing/.test(arg || ''));
   $nav.hidden = hideNav;
   // 子頁面也讓所屬的分頁亮著（例如 40 音、小遊戲 → 練習；衣帽間 → 我的）
   const PARENT_TAB = { hangul: 'practice', game: 'practice', subject: 'practice', deck: 'practice', wrong: 'practice', map: 'practice', quiz: 'practice', flash: 'practice', closet: 'me', history: 'me', chat: 'friends', onboard: 'me' };
