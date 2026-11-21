@@ -59,12 +59,15 @@ const TIPS = {
 // 還沒有歌的關卡維持舊的「示範唱／換你唱」合成伴奏
 const SONG_STAGES = new Set(['v1', 'c1', 'c2', 'v2']);
 const SONG_BPM = 90;
+// 原唱也能放慢：播放速度變慢、音高不變；逐字時間跟著歌曲秒數走，所以不用另外對拍
+const SONG_RATES = { normal: { rate: 1, name: '原速' }, slow: { rate: 0.75, name: '慢速' } };
 
 // ───────── 畫面 ─────────
 export function renderSing($app, stageId) {
   const st = STAGES.find((s) => s.id === stageId) || STAGES[0];
   const s = store.get();
   let speed = s.settings?.singSpeed === 'normal' ? 'normal' : 'slow';
+  let songSpeed = s.settings?.songSpeed === 'slow' ? 'slow' : 'normal';
   const outfit = avatarState().outfit || autoOutfit();
   const items = st.items.map((it) => ({ ch: it[0], syl: it[3], word: it[4], mean: it[5] }));
   const lyric = (x) => [x.syl, x.syl, x.word];
@@ -83,13 +86,13 @@ export function renderSing($app, stageId) {
     ? `這首歌這樣學！${tip.head}。${tip.say}像這樣：${x0[3]}、${x0[3]}、${x0[4]}。按開始，跟著原唱一起唱，字卡亮到哪一句就唱哪一句，唱完整首就能拿應援值！`
     : `這首歌這樣學！${tip.head}。${tip.say}像這樣：${x0[3]}、${x0[3]}、${x0[4]}。粉紅色亮的時候先聽我唱，金色亮的時候換你唱！`;
   $app.innerHTML = `
-    <section class="hs${withSong ? ' with-song' : ''}" style="--beat:${60 / (withSong ? SONG_BPM : SPEEDS[speed].bpm)}s">
+    <section class="hs${withSong ? ' with-song' : ''}" style="--beat:${60 / (withSong ? SONG_BPM * SONG_RATES[songSpeed].rate : SPEEDS[speed].bpm)}s">
       <div class="hs-bg" aria-hidden="true"><img src="assets/art/bg-stage.webp" alt=""><i class="hs-spot l"></i><i class="hs-spot r"></i></div>
       <header class="hs-top">
         <a class="hs-back" href="#/hangul" aria-label="回 40 音選單">‹</a>
         <b>${ic('mic')} 40 音舞台</b>
         <button type="button" class="hs-help" id="hsHelp" aria-label="這首歌怎麼學">?</button>
-        ${withSong ? '' : `<button type="button" class="hs-speed" id="hsSpeed">${ic('speaker')}<span>${SPEEDS[speed].name}</span></button>`}
+        <button type="button" class="hs-speed${withSong && songSpeed === 'slow' ? ' on' : ''}" id="hsSpeed">${ic('speaker')}<span>${withSong ? SONG_RATES[songSpeed].name : SPEEDS[speed].name}</span></button>
       </header>
       <nav class="hs-tabs" aria-label="選一首">
         ${STAGES.map((x, i) => `<a class="${x.id === st.id ? 'on' : ''}" href="#/hangul/sing-${x.id}"><b>${i + 1}</b><span>${esc(x.title.split('：')[1])}</span></a>`).join('')}
@@ -371,6 +374,8 @@ export function renderSing($app, stageId) {
       },
       onended: () => reward(),
     });
+    song.preservesPitch = true;
+    song.playbackRate = SONG_RATES[songSpeed].rate;
     stopMusic();
     if (song.ended) song.currentTime = 0;
     showLine.last = null;
@@ -381,6 +386,16 @@ export function renderSing($app, stageId) {
     }).catch(() => {});
   }
   if ($('#hsSpeed')) $('#hsSpeed').onclick = () => {
+    if (withSong) {
+      // 原唱：直接切換播放速度，唱到一半也不用重來
+      songSpeed = songSpeed === 'slow' ? 'normal' : 'slow';
+      store.get().settings.songSpeed = songSpeed; store.save();
+      $('#hsSpeed span').textContent = SONG_RATES[songSpeed].name;
+      $('#hsSpeed').classList.toggle('on', songSpeed === 'slow');
+      root.style.setProperty('--beat', `${60 / (SONG_BPM * SONG_RATES[songSpeed].rate)}s`);
+      if (song) song.playbackRate = SONG_RATES[songSpeed].rate;
+      return;
+    }
     const was = playing;
     if (was) stop();
     speed = speed === 'slow' ? 'normal' : 'slow';

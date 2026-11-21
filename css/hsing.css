@@ -249,3 +249,4 @@
 .hs.with-song .hs-lyric { height: 88px; min-height: 0; align-content: center; } /* 不裁切：放大的字框和光暈要完整露出圓角 */
 .hs.with-song .hs-mean { height: 19px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hs.with-song .hs-who { display: none; } /* 原唱模式不需要「前奏／一起唱」小字 */
+.hs-speed.on { color: #fff; background: linear-gradient(180deg, #8fd3c4, #4fae9b); } /* 慢速開著：換成薄荷色，一眼看得出來 */
