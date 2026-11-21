@@ -57,7 +57,7 @@ const TIPS = {
 
 // 有 Suno 原唱的關卡：主玩法改成「跟原唱一起唱」（assets/audio/song-<關>.mp3＋song-<關>.json 時間軸）
 // 還沒有歌的關卡維持舊的「示範唱／換你唱」合成伴奏
-const SONG_STAGES = new Set(['v1', 'v2']);
+const SONG_STAGES = new Set(['v1', 'c1', 'c2', 'v2']);
 const SONG_BPM = 90;
 
 // ───────── 畫面 ─────────
