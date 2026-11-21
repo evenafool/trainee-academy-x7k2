@@ -70,8 +70,6 @@ const replay = (el) => { if (!el) return; el.classList.remove('play'); void el.g
 // ───────── 總覽：四關＋拼字積木 ─────────
 // 40 音專區首頁：主要任務是「唱 40 音」（4 首原唱歌）；逐字卡片和拼字積木是加練
 const SONGS = { v1: '모음 노래', c1: '자음 노래', c2: '된소리 노래', v2: '이중 모음 노래' };
-// 每首歌裡會唱到的單字（卡片上預告，和歌詞的中文翻譯同一批）
-const WORDS = { v1: ['아이', '우유', '여우'], c1: ['가방', '나비', '바나나'], c2: ['까치', '딸기', '빵'], v2: ['의자', '회사', '귀'] };
 function renderHome() {
   const h = hState();
   const p = hangulProgress();
@@ -96,7 +94,6 @@ function renderHome() {
               <span class="hg-song-no">${i + 1}</span>
             </span>
             ${sung[s.id] ? `<span class="hg-song-badge">${ic('medal')}</span>` : ''}
-            <span class="hg-song-words" lang="ko">${(WORDS[s.id] || []).map((w) => `<i>${w}</i>`).join('')}</span>
             <span class="hg-song-name"><b>${esc(s.title.split('：')[1])}</b></span>
             <em class="hg-song-btn">${ic('mic')}</em>
           </a>`).join('')}
