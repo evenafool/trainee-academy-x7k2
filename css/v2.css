@@ -272,3 +272,4 @@ svg.me-doll { overflow: visible; }
   .dress:has(.dress-drawer.open) .dress-stage { bottom: 222px; }
   .dress-stage { left: 60px; }
 }
+.dress-try { margin-left: 6px; padding: 3px 10px; border-radius: 999px; background: #4fae9b; color: #fff; font-size: 12px; font-weight: 900; white-space: nowrap; } /* 家長驗證用的試穿模式標籤 */

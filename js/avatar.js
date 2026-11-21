@@ -141,7 +141,13 @@ export function avatarState() {
   if (a.acc) { const it = ITEMS.find((x) => x.id === a.acc); if (it) a.wear[it.slot] = it.id; delete a.acc; }
   return a;
 }
-export const isUnlocked = (x) => { try { return !!x.unlock(store.get()); } catch (e) { return false; } };
+// 試穿模式（#/closet/try）：給家長驗證用，全部衣服都能穿、不會保存、不影響「新獲得」
+let tryMode = false;
+let trySt = null;
+const syncTry = () => { tryMode = location.hash === '#/closet/try'; if (!tryMode) trySt = null; };
+syncTry();
+window.addEventListener('hashchange', syncTry);
+export const isUnlocked = (x) => { if (tryMode) return true; try { return !!x.unlock(store.get()); } catch (e) { return false; } };
 // 劇情進度到哪，預設就穿哪一套（沒自己換過的話）
 export function autoOutfit() {
   const got = OUTFITS.filter(isUnlocked);
@@ -222,11 +228,13 @@ const itemsOf = (cat) => [...PIECES, ...ITEMS].filter((x) => cat.slots.includes(
 let cat = 'top';
 let drawer = true;
 export function renderCloset($app, backBar) {
-  const a = avatarState();
+  syncTry();
+  const TRY = tryMode;
+  const a = TRY ? (trySt ??= JSON.parse(JSON.stringify(avatarState()))) : avatarState();
   if (!OUTFITS.find((x) => x.id === a.outfit && isUnlocked(x))) a.outfit = autoOutfit();
   a.looks ??= [];
-  const fresh = new Set(newUnlocks().map((x) => x.id));
-  markSeen();
+  const fresh = new Set(TRY ? [] : newUnlocks().map((x) => x.id));
+  if (!TRY) markSeen();
   const C = CATS.find((c) => c.id === cat) || CATS[0];
   const tile = (x, kind) => {
     const on = isUnlocked(x);
@@ -257,8 +265,9 @@ export function renderCloset($app, backBar) {
       <header class="dress-top">
         <a class="dress-back" href="#/home" aria-label="回首頁">‹</a>
         <b class="dress-title"><img class="ic" src="assets/art/icons/dr-set.webp" alt="">衣帽間</b>
+        ${TRY ? '<span class="dress-try">試穿模式・不會保存</span>' : ''}
       </header>
-      <div class="dress-stage me-stage">${avatarHTML()}</div>
+      <div class="dress-stage me-stage">${TRY ? (a.outfit === 'fan' ? dollSVG({ wear: a.wear }) : `<img class="me-outfit" src="assets/art/me-${a.outfit}.webp" alt="">`) : avatarHTML()}</div>
       <div class="dress-left">
         ${a.outfit === 'fan' ? `<button type="button" class="dress-tool" id="clReset"><img class="ic" src="assets/art/icons/dr-undress.webp" alt=""><small>全部脫掉</small></button>` : ''}
         ${[0, 1, 2].map((k) => `<button type="button" class="dress-tool look ${a.looks[k] ? 'has' : ''}" data-look="${k}" aria-label="我的搭配 ${k + 1}">${a.looks[k] ? dollSVG({ wear: a.looks[k], box: [40, 0, 346, 1000], cls: 'look-pic', alt: '' }) : ic('heart')}<small>搭配 ${k + 1}</small></button>`).join('')}
