@@ -39,7 +39,11 @@ export const OUTFITS = [
 
 // 衣服：每上完一課拿一件（上衣→下身→鞋子輪流），跟著劇情階段換風格：粉絲時期（學生、追星）→ 練習生時期（練習服、宿舍）→ 新人偶像時期（舞台、年末）
 // 圖在 assets/art/doll/<id>.webp（tools/art-jobs/doll-clothes.json 畫的）
+export const STARTER = { top: 'top-startee', bottom: 'skirt-shorts', shoes: 'shoes-slipon' }; // 入學禮物：一開始就有的第二套
 export const PIECES = [
+  { id: 'top-startee', slot: 'top', stage: '入學禮物', name: '薄荷星星T恤', how: '一開始就有', unlock: () => true },
+  { id: 'skirt-shorts', slot: 'bottom', stage: '入學禮物', name: '牛仔短褲', how: '一開始就有', unlock: () => true },
+  { id: 'shoes-slipon', slot: 'shoes', stage: '入學禮物', name: '紫丁香懶人鞋', how: '一開始就有', unlock: () => true },
   { id: 'top-sailor', slot: 'top', stage: '粉絲時期', name: '水手服上衣', how: '上完第 1 課', unlock: cleared('d1') },
   { id: 'skirt-plaid', slot: 'bottom', stage: '粉絲時期', name: '紅格子百褶裙', how: '上完第 2 課', unlock: cleared('d2') },
   { id: 'shoes-loafer', slot: 'shoes', stage: '粉絲時期', name: '黑色樂福鞋', how: '上完第 3 課', unlock: cleared('d3') },
@@ -139,6 +143,15 @@ export function avatarState() {
   a.wear ??= {};
   // 舊版只有一個配件欄位 acc → 搬到對應部位
   if (a.acc) { const it = ITEMS.find((x) => x.id === a.acc); if (it) a.wear[it.slot] = it.id; delete a.acc; }
+  // 一開始就給兩套可以替換：搭配 1＝原本那套、搭配 2＝入學禮物（不算「新獲得」、不自動換上）
+  if (!a.starter) {
+    a.looks ??= [];
+    if (!a.looks[0]) a.looks[0] = {};
+    if (!a.looks[1]) a.looks[1] = { ...STARTER };
+    a.seen.push(...Object.values(STARTER));
+    a.autoWorn = [...(a.autoWorn || []), ...Object.values(STARTER)];
+    a.starter = 1;
+  }
   return a;
 }
 // 試穿模式（#/closet/try）：給家長驗證用，全部衣服都能穿、不會保存、不影響「新獲得」
