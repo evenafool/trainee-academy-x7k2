@@ -286,7 +286,7 @@ export function renderSing($app, stageId) {
     const cur = lines[i]; const nxt = lines[i + 1];
     $('#hsBig').textContent = cur ? (cur.line.match(/[가-힣]/) || ['♪'])[0] : '♪';
     $('#hsBig').className = 'hs-big';
-    $('#hsLyric').innerHTML = cur ? `<span class="hit">${esc(cur.line)}</span>` : '';
+    $('#hsLyric').innerHTML = cur ? `<span class="hit">${esc(cur.line)}</span>${cur.zh ? `<small class="hs-zh">${esc(cur.zh)}</small>` : ''}` : '';
     $('#hsMean').textContent = nxt ? `下一句：${nxt.line}` : '';
     $('#hsWho').textContent = cur ? '一起唱！' : '前奏'; $('#hsWho').className = `hs-who ${cur ? 'you' : ''}`;
     $app.querySelectorAll('#hsDots li').forEach((li, k) => {
