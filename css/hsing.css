@@ -186,7 +186,6 @@
 .hg-song-btn .ic { width: 26px; height: 26px; }
 .hg-song.next { border-color: #ffd36a; box-shadow: 0 4px 0 #d39a1f, 0 0 0 4px rgba(255, 211, 106, .45), 0 0 22px rgba(255, 211, 106, .6); }
 .hg-song.next .hg-song-btn { background: linear-gradient(180deg, #fff0a8, #f0b429); box-shadow: 0 3px 0 #c98f13; animation: hgNext 1.2s ease-in-out infinite; }
-.hg-song.done .hg-song-pic { background: radial-gradient(ellipse at 50% 100%, #fff 0 22%, transparent 60%), linear-gradient(180deg, #fff3c4, #fff); }
 @keyframes hgNext { 50% { transform: scale(1.12); } }
 .hg-extra { display: grid; gap: 8px; padding: 10px 12px 12px; border-radius: 20px; background: rgba(255, 255, 255, .6); border: 2px dashed #e3cbb5; }
 .hg-extra h3 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 16px; color: #6b5444; }
@@ -224,22 +223,19 @@
 .hg-extra .hg-build-tile { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 6px 10px; }
 .hg-extra .hg-build-tile b { font-size: 14px; }
 
-/* 歌曲卡＝字母專輯封面：這首歌會唱到的所有字母排成方塊（子音藍、母音粉），下面是歌裡的單字 */
-.hg-song-pic { height: auto; aspect-ratio: 1 / 1; align-items: center; padding: 30px 8px 8px; }
-.hg-cover { display: grid; gap: 4px; width: 100%; }
-.hg-cover.nfew { grid-template-columns: repeat(3, 1fr); }
-.hg-cover.nmany { grid-template-columns: repeat(4, 1fr); }
-.hg-cover i { font-style: normal; display: grid; place-items: center; aspect-ratio: 1 / 1; border-radius: 9px; font-weight: 900; font-size: 20px; line-height: 1; background: #fff; box-shadow: 0 2px 0 rgba(0, 0, 0, .08); }
-.hg-cover.nmany i { font-size: 16px; border-radius: 7px; }
-.hg-cover i.c { color: #4a7fd6; }
-.hg-cover i.v { color: #d9668a; }
-.hg-song.tone-c2 .hg-cover { grid-template-columns: repeat(3, 1fr); }
-.hg-song.next .hg-cover i { animation: hgPop 2.4s ease-in-out infinite; }
-.hg-song.next .hg-cover i:nth-child(3n+2) { animation-delay: .3s; }
-.hg-song.next .hg-cover i:nth-child(3n) { animation-delay: .6s; }
-@keyframes hgPop { 0%, 70%, 100% { transform: none; } 80% { transform: translateY(-3px) scale(1.08); } }
+/* 歌曲卡封面：漸層底色裡浮現這首歌的字母剪影（大小、角度、深淺錯落），下面是歌裡的單字 */
+.hg-song-pic { height: 124px; min-height: 0; aspect-ratio: auto; padding: 0; background: radial-gradient(circle at 80% 15%, rgba(255, 255, 255, .9), transparent 45%), linear-gradient(150deg, #fff, var(--tone) 55%, var(--deep)); }
+.hg-cover { position: absolute; inset: 0; display: block; }
+.hg-cover i { position: absolute; font-style: normal; font-weight: 900; line-height: 1; color: #fff; text-shadow: 0 2px 10px rgba(0, 0, 0, .06); animation: hgFloat 6s ease-in-out infinite; }
+.hg-cover .g0 { font-size: 86px; left: 34%; top: 20%; color: rgba(255, 255, 255, .95); text-shadow: 0 4px 14px rgba(0, 0, 0, .12); }
+.hg-cover .g1 { font-size: 46px; left: 8%; top: 52%; opacity: .55; transform: rotate(-12deg); animation-delay: -1s; }
+.hg-cover .g2 { font-size: 38px; left: 72%; top: 8%; opacity: .5; transform: rotate(10deg); animation-delay: -2s; }
+.hg-cover .g3 { font-size: 30px; left: 76%; top: 62%; opacity: .45; transform: rotate(-6deg); animation-delay: -3s; }
+.hg-cover .g4 { font-size: 26px; left: 14%; top: 14%; opacity: .4; transform: rotate(14deg); animation-delay: -4s; }
+.hg-cover .g5 { font-size: 22px; left: 52%; top: 74%; opacity: .35; transform: rotate(-16deg); animation-delay: -5s; }
+@keyframes hgFloat { 50% { translate: 0 -4px; } }
+.hg-song:not(.next) .hg-cover i { animation-play-state: paused; }
 .hg-song-words { display: flex; flex-wrap: wrap; gap: 3px; }
 .hg-song-words i { font-style: normal; font-size: 11px; font-weight: 800; color: var(--deep); background: var(--tone); padding: 1px 6px; border-radius: 999px; }
-@media (prefers-reduced-motion: reduce) { .hg-song.next .hg-cover i { animation: none; } }
-.hg-song-pic { aspect-ratio: auto; min-height: 120px; align-items: flex-start; }
+@media (prefers-reduced-motion: reduce) { .hg-cover i { animation: none; } }
 .hg-song .hg-song-badge { position: absolute; top: -10px; right: -8px; z-index: 2; }

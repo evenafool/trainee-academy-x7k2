@@ -92,7 +92,7 @@ function renderHome() {
         ${STAGES.map((s, i) => `
           <a class="hg-song tone-${s.id} ${sung[s.id] ? 'done' : ''} ${nextSong?.id === s.id ? 'next' : ''}" href="#/hangul/sing-${s.id}" aria-label="${esc(s.title)}・${SONGS[s.id] || ''}">
             <span class="hg-song-pic">
-              <span class="hg-cover n${s.items.length > 6 ? 'many' : 'few'}" lang="ko">${s.items.map((it) => `<i class="${VOWELS.has(it[0]) ? 'v' : 'c'}">${esc(it[0])}</i>`).join('')}</span>
+              <span class="hg-cover" lang="ko" aria-hidden="true">${s.items.slice(0, 6).map((it, k) => `<i class="g${k}">${esc(it[0])}</i>`).join('')}</span>
               <span class="hg-song-no">${i + 1}</span>
             </span>
             ${sung[s.id] ? `<span class="hg-song-badge">${ic('medal')}</span>` : ''}
