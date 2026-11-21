@@ -287,7 +287,7 @@ export function renderSing($app, stageId) {
     $('#hsBig').textContent = cur ? (cur.line.match(/[가-힣]/) || ['♪'])[0] : '♪';
     $('#hsBig').className = 'hs-big';
     $('#hsLyric').innerHTML = cur ? lyricHTML(cur) : '';
-    $('#hsMean').textContent = nxt ? `下一句：${nxt.line}` : '';
+    $('#hsMean').textContent = nxt ? `▸ ${nxt.line}` : '';
     $('#hsWho').textContent = cur ? '一起唱！' : '前奏'; $('#hsWho').className = `hs-who ${cur ? 'you' : ''}`;
     $app.querySelectorAll('#hsDots li').forEach((li, k) => {
       const at = dotLine[k];
@@ -296,16 +296,16 @@ export function renderSing($app, stageId) {
     });
     if (cur) { note(); const card = $('#hsCard'); card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop'); }
   };
-  // 歌詞裡的單字換顏色，下面只放中文意思（同色對應）；song-*.json 的 zh 寫成「가방＝書包・나비＝蝴蝶」
+  // 歌詞裡的單字換顏色，中文意思對齊放在那個字的正下方；song-*.json 的 zh 寫成「가방＝書包・나비＝蝴蝶」
   function lyricHTML({ line, zh }) {
     const pairs = (zh || '').split('・').map((x) => x.split('＝')).filter((x) => x.length === 2);
     if (!pairs.length) return `<span class="hit">${esc(line)}</span>${zh ? `<small class="hs-zh">${esc(zh)}</small>` : ''}`;
     let html = esc(line);
     pairs.forEach(([ko], k) => {
       const at = html.lastIndexOf(ko);
-      if (at >= 0) html = `${html.slice(0, at)}<b class="w w${k}">${ko}</b>${html.slice(at + ko.length)}`;
+      if (at >= 0) html = `${html.slice(0, at)}<b class="w w${k}">${ko}<small>${esc(pairs[k][1])}</small></b>${html.slice(at + ko.length)}`;
     });
-    return `<span class="hit">${html}</span><small class="hs-zh">${pairs.map(([, m], k) => `<b class="w${k}">${esc(m)}</b>`).join('　')}</small>`;
+    return `<span class="hit has-w">${html}</span>`;
   }
   function songStop() {
     if (!song || song.paused) return;
@@ -317,7 +317,12 @@ export function renderSing($app, stageId) {
     stopSpeaking();
     if (song && !song.paused) return songStop();
     song ??= Object.assign(new Audio(`assets/audio/song-${st.id}.mp3`), {
-      ontimeupdate: () => showLine(),
+      ontimeupdate: () => {
+        showLine();
+        // 下一句平常藏起來，快唱到前 1.5 秒才淡淡浮出來預告，不干擾閱讀
+        const nxt = lines[(showLine.last ?? -1) + 1];
+        $('#hsMean').classList.toggle('soon', !!nxt && nxt.t - song.currentTime < 1.5);
+      },
       onended: () => reward(),
     });
     stopMusic();
