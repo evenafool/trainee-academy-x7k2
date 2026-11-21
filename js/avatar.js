@@ -178,7 +178,7 @@ const LAYERS = new Set(DOLL_LAYERS);
 // 一件東西在紙娃娃上的樣子（SVG 座標＝底圖像素）
 function layerSVG(it) {
   const sl = SLOTS[it.slot];
-  if (LAYERS.has(it.id)) return `<image href="assets/art/doll/${it.id}.webp" x="0" y="0" width="${DOLL_W}" height="${DOLL_H}"/>`;
+  if (LAYERS.has(it.id) || it.base) return `<image href="assets/art/doll/${it.id}.webp" x="0" y="0" width="${DOLL_W}" height="${DOLL_H}"/>`;
   if (sl.x == null) return '';
   const w = sl.w;
   return `<image href="assets/art/icons/item-${it.id}.webp" x="${sl.x - w / 2}" y="${sl.y - w / 2}" width="${w}" height="${w}" class="doll-ic"/>`;
@@ -186,9 +186,12 @@ function layerSVG(it) {
 // 紙娃娃 SVG：box＝只看某一塊（衣帽間縮圖用）；wear＝要穿的東西（預設＝目前穿的）
 export function dollSVG({ wear = avatarState().wear, box = null, cls = 'me-outfit me-doll', alt = '我的角色' } = {}) {
   const vb = box ? `${box[0]} ${box[1]} ${box[2] - box[0]} ${box[3] - box[1]}` : `0 0 ${DOLL_W} ${DOLL_H}`;
-  const items = Object.values(wear || {}).map(byId).filter((x) => x && hasArt(x) && isUnlocked(x)).sort((p, q) => SLOTS[p.slot].z - SLOTS[q.slot].z);
+  const items = Object.values(wear || {}).map(byId).filter((x) => x && hasArt(x) && isUnlocked(x));
+  // 素體（上衣／下身／鞋子挖空）＋每個部位一定穿一件：沒換的部位就穿原本那套（粉紅連帽衣、白裙、白球鞋）
+  for (const slot of ['shoes', 'bottom', 'top']) if (!items.some((x) => x.slot === slot && LAYERS.has(x.id))) items.push({ id: `base-${slot}`, slot, base: true });
+  items.sort((p, q) => SLOTS[p.slot].z - SLOTS[q.slot].z);
   return `<svg class="${cls}" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" role="img" aria-label="${esc(alt)}">
-    <image href="assets/art/me-fan.webp" x="0" y="0" width="${DOLL_W}" height="${DOLL_H}"/>${items.map(layerSVG).join('')}</svg>`;
+    <image href="assets/art/doll/body.webp" x="0" y="0" width="${DOLL_W}" height="${DOLL_H}"/>${items.map(layerSVG).join('')}</svg>`;
 }
 
 // 主角立繪（含紙娃娃圖層、寵物）；首頁和衣帽間共用
