@@ -68,34 +68,47 @@ const sylOf = (ch) => ALL.find((x) => x.ch === ch)?.syl || ch;
 const replay = (el) => { if (!el) return; el.classList.remove('play'); void el.getBoundingClientRect(); el.classList.add('play'); };
 
 // ───────── 總覽：四關＋拼字積木 ─────────
+// 40 音專區首頁：主要任務是「唱 40 音」（4 首原唱歌）；逐字卡片和拼字積木是加練
+const SONGS = { v1: '모음 노래', c1: '자음 노래', c2: '된소리 노래', v2: '이중 모음 노래' };
 function renderHome() {
   const h = hState();
   const p = hangulProgress();
+  const sung = h.sung || {};
+  const nSung = STAGES.filter((s) => sung[s.id]).length;
+  const nextSong = STAGES.find((s) => !sung[s.id]);
   const nextStage = STAGES.find((s) => !h.passed[s.id]);
   $app.innerHTML = `
     <div class="backbar"><a href="#/home" class="backlink">‹</a><b>${ic('ko')} 第 0 課：韓文 40 音</b></div>
-    <section class="hg-hero">
-      <div class="hg-block"><span class="c">ㅁ</span><span class="plus">＋</span><span class="v">ㅣ</span><span class="eq">＝</span><b>미</b></div>
-      <p>韓文字像<b>積木</b>：<b class="c">子音</b>＋<b class="v">母音</b>拼成一個字。學會這 40 個字母，所有韓文都念得出來！</p>
-      <div class="hg-prog"><i style="width:${(p.passed / p.stages) * 100}%"></i></div>
-      <small>已過關 ${p.passed}／${p.stages} 關・聽過 ${p.heard}／${TOTAL} 個字母</small>
+    <section class="hg-main">
+      <div class="hg-main-head">
+        <img src="assets/art/me-${esc(avatarOutfit())}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/sprite-me.webp'">
+        <div><small class="hg-tag">${ic('star')} 主要任務</small><h2>唱 40 音</h2><p>跟著原唱唱完 4 首歌，40 個字母就記住了！</p></div>
+      </div>
+      <div class="hg-prog"><i style="width:${(nSung / STAGES.length) * 100}%"></i></div>
+      <small class="hg-main-count">唱完 ${nSung}／${STAGES.length} 首</small>
+      <div class="hg-songs">
+        ${STAGES.map((s, i) => `
+          <a class="hg-song ${sung[s.id] ? 'done' : ''} ${nextSong?.id === s.id ? 'next' : ''}" href="#/hangul/sing-${s.id}">
+            <span class="hg-num">${i + 1}</span>
+            <span class="hg-song-txt"><b>${esc(s.title.split('：')[1])}</b><small lang="ko">${SONGS[s.id] || ''}</small><span class="hg-chars">${s.items.slice(0, 5).map((it) => esc(it[0])).join(' ')}${s.items.length > 5 ? ' …' : ''}</span></span>
+            <em>${sung[s.id] ? `${ic('medal')}<i>唱完</i>` : `${ic('mic')}<i>${nextSong?.id === s.id ? '開始唱' : '唱'}</i>`}</em>
+          </a>`).join('')}
+      </div>
     </section>
-    <a class="hg-sing-link" href="#/hangul/sing">
-      <img src="assets/art/me-${esc(avatarOutfit())}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/sprite-me.webp'">
-      <span><b>${ic('mic')} 上台唱 40 音</b><small>跟著節拍邊唱邊學，先聽示範、再換你唱</small></span><i class="hg-sing-go">▶</i>
-    </a>
-    <div class="hg-stages">
-      ${STAGES.map((s, i) => `
-        <a class="hg-stage ${h.passed[s.id] ? 'done' : ''} ${nextStage?.id === s.id ? 'tap-hint' : ''}" href="#/hangul/${s.id}">
-          <span class="hg-num">${i + 1}</span>
-          <span class="hg-chars">${s.items.slice(0, 5).map((it) => esc(it[0])).join(' ')}${s.items.length > 5 ? ' …' : ''}</span>
-          <b>${esc(s.title.split('：')[1])}</b><small>${esc(s.sub)}</small>
-          ${SECRETS[s.id] ? `<i class="hg-secchip">祕密 ${SECRETS[s.id].no}：${esc(SECRETS[s.id].title)}</i>` : ''}
-          <em>${h.passed[s.id] ? `${ic('medal')} 過關` : nextStage?.id === s.id ? '從這裡開始！' : `${s.items.length} 個`}</em>
-          ${nextStage?.id === s.id ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span>' : ''}
-        </a>`).join('')}
-    </div>
-    <a class="hg-builder-link" href="#/hangul/build">${ic('cards')}<b>拼字積木</b><small>選一個子音＋一個母音，拼出韓文字聽聽看</small></a>`;
+    <section class="hg-extra">
+      <h3>${ic('cards')} 加練：逐字練習</h3>
+      <small>點卡片聽發音、翻面看記法，挑戰小測驗・過關 ${p.passed}／${p.stages}・聽過 ${p.heard}／${TOTAL} 個</small>
+      <div class="hg-stages">
+        ${STAGES.map((s, i) => `
+          <a class="hg-stage ${h.passed[s.id] ? 'done' : ''}" href="#/hangul/${s.id}">
+            <span class="hg-num">${i + 1}</span>
+            <b>${esc(s.title.split('：')[1])}</b>
+            ${SECRETS[s.id] ? `<i class="hg-secchip">祕密 ${SECRETS[s.id].no}：${esc(SECRETS[s.id].title)}</i>` : ''}
+            <em>${h.passed[s.id] ? `${ic('medal')} 過關` : nextStage?.id === s.id ? '下一關' : `${s.items.length} 個`}</em>
+          </a>`).join('')}
+      </div>
+      <a class="hg-builder-link" href="#/hangul/build">${ic('cards')}<b>拼字積木</b><small>子音＋母音，拼出字聽聽看</small></a>
+    </section>`;
 }
 
 // ───────── 一關：認識字母（點了會念）→ 小測驗 ─────────

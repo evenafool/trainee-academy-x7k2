@@ -243,6 +243,7 @@ export function renderSing($app, stageId) {
       const h = store.get().hangul ??= { heard: {}, passed: {} };
       h.heard ??= {};
       items.forEach((x) => { h.heard[x.ch] = true; });
+      h.sung = { ...(h.sung || {}), [st.id]: 1 }; // 40 音首頁「主要任務」的唱完記號
       store.addProgress(10, 'game', { title: `40 音舞台・${st.title}` });
       sfx('reward'); confetti(90);
       $app.querySelectorAll('#hsDots li').forEach((li) => { li.classList.remove('on'); li.classList.add('done'); });
