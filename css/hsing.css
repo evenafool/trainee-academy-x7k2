@@ -245,9 +245,7 @@
 /* 大字卡：沒在唱字母（例詞、前奏）時留白，保持版面不跳動 */
 .hs-big.rest { visibility: hidden; }
 
-/* 唱完一首：下一首／回首頁 直接在舞台上 */
-.hs.song .hs-mean.hs-end, .hs-mean.hs-end { opacity: 1; display: grid; justify-items: center; gap: 8px; font-size: 14px; }
-.hs-end-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-.hs-end-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px 6px 8px; border-radius: 999px; border: 2px solid #fff; background: #fff; color: #a3405f; font-weight: 900; font-size: 15px; text-decoration: none; box-shadow: 0 3px 0 #e3cbb5; }
-.hs-end-btn .ic { width: 26px; height: 26px; }
-.hs-end-btn.main { background: linear-gradient(180deg, #ff9fb6, #e86f8e); color: #fff; box-shadow: 0 3px 0 #c9577a; }
+/* 原唱模式：歌詞框固定高度，換句時不會一下變高一下縮起來（短句就留白） */
+.hs.with-song .hs-lyric { height: 80px; min-height: 0; align-content: center; overflow: hidden; }
+.hs.with-song .hs-mean { height: 19px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hs.with-song .hs-who { display: none; } /* 原唱模式不需要「前奏／一起唱」小字 */

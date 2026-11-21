@@ -296,7 +296,8 @@ export function renderSing($app, stageId) {
     const cur = lines[i]; const nxt = lines[i + 1];
     // 換句時：這句有單獨的字母音就先顯示第一個字母，沒有（例詞句、結尾）就保留上一個字母
     $('#hsLyric').innerHTML = cur ? lyricHTML(cur) : '';
-    bigJamo(''); // 換句時先收起來，唱到字母才出現
+    // 唱例詞時保留同一個字母，直到唱到下一個字母；換到不是字母開頭的句子（前奏、結尾、說明句）才收起來
+    if (!$('#hsLyric .k')?.dataset.j) bigJamo('');
     karaoke.n = null;
     $('#hsMean').textContent = nxt ? `▸ ${nxt.line}` : '';
     $('#hsWho').textContent = cur ? '一起唱！' : '前奏'; $('#hsWho').className = `hs-who ${cur ? 'you' : ''}`;
@@ -346,7 +347,7 @@ export function renderSing($app, stageId) {
     ball.classList.toggle('wait', n === 0);
     if (n > 0) {
       ball.classList.remove('hop'); void ball.offsetWidth; ball.classList.add('hop');
-      bigJamo(el.dataset.j || ''); // 只在唱字母本身時顯示大字；唱到例詞就收起來，免得搞混
+      if (el.dataset.j) bigJamo(el.dataset.j); // 唱到字母本身才換大字；例詞期間維持同一個字母
     }
   }
   const tick = () => { if (song && !song.paused) { karaoke(); requestAnimationFrame(tick); } };
