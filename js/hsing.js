@@ -288,6 +288,7 @@ export function renderSing($app, stageId) {
     $('#hsBig').textContent = cur ? (cur.line.match(/[가-힣]/) || ['♪'])[0] : '♪';
     $('#hsBig').className = 'hs-big';
     $('#hsLyric').innerHTML = cur ? lyricHTML(cur) : '';
+    karaoke.n = null;
     $('#hsMean').textContent = nxt ? `▸ ${nxt.line}` : '';
     $('#hsWho').textContent = cur ? '一起唱！' : '前奏'; $('#hsWho').className = `hs-who ${cur ? 'you' : ''}`;
     $app.querySelectorAll('#hsDots li').forEach((li, k) => {
@@ -297,17 +298,46 @@ export function renderSing($app, stageId) {
     });
     if (cur) { note(); const card = $('#hsCard'); card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop'); }
   };
-  // 歌詞裡的單字換顏色，中文意思對齊放在那個字的正下方；song-*.json 的 zh 寫成「가방＝書包・나비＝蝴蝶」
+  // 卡拉 OK 歌詞：每個韓文字一格（唱到就變亮＋上面跳跳球），單字換顏色、中文意思對齊在字正下方
+  // song-*.json：ks＝每個字開始唱的秒數；zh 寫成「가방＝書包・나비＝蝴蝶」
   function lyricHTML({ line, zh }) {
     const pairs = (zh || '').split('・').map((x) => x.split('＝')).filter((x) => x.length === 2);
-    if (!pairs.length) return `<span class="hit">${esc(line)}</span>${zh ? `<small class="hs-zh">${esc(zh)}</small>` : ''}`;
-    let html = esc(line);
-    pairs.forEach(([ko], k) => {
-      const at = html.lastIndexOf(ko);
-      if (at >= 0) html = `${html.slice(0, at)}<b class="w w${k}">${ko}<small>${esc(pairs[k][1])}</small></b>${html.slice(at + ko.length)}`;
+    const open = {}; const close = {};
+    pairs.forEach(([ko, mean], k) => {
+      const at = line.lastIndexOf(ko);
+      if (at >= 0) { open[at] = k; close[at + ko.length - 1] = [k, mean]; }
     });
-    return `<span class="hit has-w">${html}</span>`;
+    let html = ''; let n = 0;
+    [...line].forEach((ch, i) => {
+      if (open[i] !== undefined) html += `<b class="w w${open[i]}"><span>`;
+      html += /[가-힣]/.test(ch) ? `<i class="k" data-k="${n++}">${ch}</i>` : esc(ch);
+      if (close[i]) html += `</span><small>${esc(close[i][1])}</small></b>`;
+    });
+    const plain = !pairs.length && zh;
+    return `<span class="hit ${pairs.length ? 'has-w' : ''}"><i class="hs-ball" hidden></i>${html}</span>${plain ? `<small class="hs-zh">${esc(zh)}</small>` : ''}`;
   }
+  // 依播放秒數把唱過的字點亮、跳跳球移到正在唱的字上；大字卡也跟著換成那個字
+  function karaoke() {
+    const cur = lines[showLine.last];
+    if (!song || !cur?.ks) return;
+    const t = song.currentTime + 0.05;
+    const n = cur.ks.filter((x) => x <= t).length;
+    if (n === karaoke.n) return;
+    karaoke.n = n;
+    const ks = $app.querySelectorAll('#hsLyric .k');
+    ks.forEach((el, i) => { el.classList.toggle('sung', i < n); el.classList.toggle('now', i === n - 1); });
+    const el = ks[Math.max(n - 1, 0)]; const ball = $('#hsLyric .hs-ball');
+    if (!el || !ball) return;
+    ball.hidden = false;
+    ball.style.left = `${el.offsetLeft + el.offsetWidth / 2}px`;
+    ball.style.top = `${el.offsetTop - 4}px`;
+    ball.classList.toggle('wait', n === 0);
+    if (n > 0) {
+      ball.classList.remove('hop'); void ball.offsetWidth; ball.classList.add('hop');
+      $('#hsBig').textContent = el.textContent;
+    }
+  }
+  const tick = () => { if (song && !song.paused) { karaoke(); requestAnimationFrame(tick); } };
   function songStop() {
     if (!song || song.paused) return;
     song.pause();
@@ -319,7 +349,7 @@ export function renderSing($app, stageId) {
     if (song && !song.paused) return songStop();
     song ??= Object.assign(new Audio(`assets/audio/song-${st.id}.mp3`), {
       ontimeupdate: () => {
-        showLine();
+        showLine(); karaoke();
         // 下一句平常藏起來，快唱到前 1.5 秒才淡淡浮出來預告，不干擾閱讀
         const nxt = lines[(showLine.last ?? -1) + 1];
         $('#hsMean').classList.toggle('soon', !!nxt && nxt.t - song.currentTime < 1.5);
@@ -332,7 +362,7 @@ export function renderSing($app, stageId) {
     song.play().then(() => {
       root.classList.add('playing', 'song');
       $('#hsGo').innerHTML = `${ic('star')}<b>暫停</b>`;
-      showLine();
+      showLine(); karaoke(); requestAnimationFrame(tick);
     }).catch(() => {});
   }
   if ($('#hsSpeed')) $('#hsSpeed').onclick = () => {

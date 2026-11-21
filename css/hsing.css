@@ -189,3 +189,16 @@
 .hg-extra .hg-builder-link .ic { width: 30px; height: 30px; }
 @media (prefers-reduced-motion: reduce) { .hg-song.next { animation: none; } }
 .hg-extra .hg-builder-link b { white-space: nowrap; }
+/* 卡拉 OK：還沒唱的字淡淡的，唱到的字變亮＋微微跳起，跳跳球跟著字跑 */
+.hs.song .hs-lyric span.hit { position: relative; padding-top: 14px; }
+.hs-lyric .k { font-style: normal; display: inline-block; opacity: .5; transition: opacity .12s, transform .12s; }
+.hs-lyric .k.sung { opacity: 1; }
+.hs-lyric .k.now { transform: translateY(-2px) scale(1.12); text-shadow: 0 0 10px rgba(255, 240, 170, .95); }
+.hs-ball { position: absolute; left: 0; top: 0; width: 13px; height: 13px; margin: -12px 0 0 -6.5px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fffbe0, #ffd36a 55%, #f0b429); box-shadow: 0 0 8px rgba(255, 211, 106, .9); transition: left .16s ease-out, top .16s ease-out; pointer-events: none; }
+.hs-ball[hidden] { display: none; }
+.hs-ball.wait { opacity: .6; }
+.hs-ball.hop { animation: hsBall .32s ease-out; }
+@keyframes hsBall { 0% { transform: translateY(-10px); } 55% { transform: translateY(0) scaleY(.8) scaleX(1.15); } 75% { transform: translateY(-3px); } 100% { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .hs-ball.hop { animation: none; } .hs-ball { transition: none; } }
+.hs-lyric span.hit b.w > span { white-space: nowrap; }
+.hs-lyric span.hit b.w > span { background: none; padding: 0; border-radius: 0; color: inherit; transform: none; box-shadow: none; transition: none; }
