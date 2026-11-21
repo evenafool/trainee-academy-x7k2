@@ -77,38 +77,55 @@ function renderHome() {
   const nSung = STAGES.filter((s) => sung[s.id]).length;
   const nextSong = STAGES.find((s) => !sung[s.id]);
   const nextStage = STAGES.find((s) => !h.passed[s.id]);
+  const outfit = avatarOutfit();
+  const glyphs = (s, n) => s.items.slice(0, n).map((it) => esc(it[0])).join('');
   $app.innerHTML = `
     <div class="backbar"><a href="#/home" class="backlink">‹</a><b>${ic('ko')} 第 0 課：韓文 40 音</b></div>
     <section class="hg-main">
-      <div class="hg-main-head">
-        <img src="assets/art/me-${esc(avatarOutfit())}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/sprite-me.webp'">
-        <div><small class="hg-tag">${ic('star')} 主要任務</small><h2>唱 40 音</h2><p>跟著原唱唱完 4 首歌，40 個字母就記住了！</p></div>
-      </div>
-      <div class="hg-prog"><i style="width:${(nSung / STAGES.length) * 100}%"></i></div>
-      <small class="hg-main-count">唱完 ${nSung}／${STAGES.length} 首</small>
+      <header class="hg-main-head">
+        <span class="hg-tag">${ic('star')} 主要任務</span>
+        <h2>${ic('mic')}唱 40 音</h2>
+        <div class="hg-stars" aria-label="唱完 ${nSung}／${STAGES.length} 首">${STAGES.map((s) => `<i class="${sung[s.id] ? 'on' : ''}">★</i>`).join('')}</div>
+      </header>
       <div class="hg-songs">
         ${STAGES.map((s, i) => `
-          <a class="hg-song ${sung[s.id] ? 'done' : ''} ${nextSong?.id === s.id ? 'next' : ''}" href="#/hangul/sing-${s.id}">
-            <span class="hg-num">${i + 1}</span>
-            <span class="hg-song-txt"><b>${esc(s.title.split('：')[1])}</b><small lang="ko">${SONGS[s.id] || ''}</small><span class="hg-chars">${s.items.slice(0, 5).map((it) => esc(it[0])).join(' ')}${s.items.length > 5 ? ' …' : ''}</span></span>
-            <em>${sung[s.id] ? `${ic('medal')}<i>唱完</i>` : `${ic('mic')}<i>${nextSong?.id === s.id ? '開始唱' : '唱'}</i>`}</em>
+          <a class="hg-song tone-${s.id} ${sung[s.id] ? 'done' : ''} ${nextSong?.id === s.id ? 'next' : ''}" href="#/hangul/sing-${s.id}" aria-label="${esc(s.title)}・${SONGS[s.id] || ''}">
+            <span class="hg-song-pic">
+              <span class="hg-song-glyph" lang="ko">${glyphs(s, 3)}</span>
+              <i class="hg-spr" data-spr="assets/art/dance/${esc(outfit)}-${s.id}.webp"></i>
+              <span class="hg-song-no">${i + 1}</span>
+              ${sung[s.id] ? `<span class="hg-song-badge">${ic('medal')}</span>` : ''}
+            </span>
+            <span class="hg-song-name"><b>${esc(s.title.split('：')[1])}</b><small lang="ko">${SONGS[s.id] || ''}</small></span>
+            <em class="hg-song-btn">${ic('mic')}</em>
           </a>`).join('')}
       </div>
     </section>
     <section class="hg-extra">
-      <h3>${ic('cards')} 加練：逐字練習</h3>
-      <small>點卡片聽發音、翻面看記法，挑戰小測驗・過關 ${p.passed}／${p.stages}・聽過 ${p.heard}／${TOTAL} 個</small>
+      <h3><img src="assets/art/icons/deck-ko-hangul.webp" alt="">加練<small>逐字聽發音・小測驗</small></h3>
       <div class="hg-stages">
-        ${STAGES.map((s, i) => `
-          <a class="hg-stage ${h.passed[s.id] ? 'done' : ''}" href="#/hangul/${s.id}">
-            <span class="hg-num">${i + 1}</span>
+        ${STAGES.map((s) => `
+          <a class="hg-stage tone-${s.id} ${h.passed[s.id] ? 'done' : ''} ${nextStage?.id === s.id ? 'next' : ''}" href="#/hangul/${s.id}" aria-label="${esc(s.title)}">
+            <span class="hg-stage-glyph" lang="ko">${esc(s.items[0][0])}</span>
             <b>${esc(s.title.split('：')[1])}</b>
-            ${SECRETS[s.id] ? `<i class="hg-secchip">祕密 ${SECRETS[s.id].no}：${esc(SECRETS[s.id].title)}</i>` : ''}
-            <em>${h.passed[s.id] ? `${ic('medal')} 過關` : nextStage?.id === s.id ? '下一關' : `${s.items.length} 個`}</em>
+            ${h.passed[s.id] ? `<i class="hg-stage-ok">${ic('medal')}</i>` : ''}
           </a>`).join('')}
+        <a class="hg-stage hg-build-tile" href="#/hangul/build" aria-label="拼字積木">
+          <span class="hg-stage-glyph"><i class="c">ㅁ</i><i class="v">ㅣ</i></span><b>拼字積木</b>
+        </a>
       </div>
-      <a class="hg-builder-link" href="#/hangul/build">${ic('cards')}<b>拼字積木</b><small>子音＋母音，拼出字聽聽看</small></a>
+      <small class="hg-extra-meta">過關 ${p.passed}／${p.stages}・聽過 ${p.heard}／${TOTAL} 個字母</small>
     </section>`;
+  // 每首歌的卡片用該關的跳舞精靈圖：先顯示第一格，「下一首」那張會一直跳
+  $app.querySelectorAll('.hg-spr').forEach((el) => {
+    const im = new Image();
+    im.onload = () => {
+      el.style.backgroundImage = `url("${im.src}")`;
+      el.style.aspectRatio = `${im.naturalWidth / 8} / ${im.naturalHeight}`;
+      el.classList.add('ok');
+    };
+    im.src = el.dataset.spr;
+  });
 }
 
 // ───────── 一關：認識字母（點了會念）→ 小測驗 ─────────

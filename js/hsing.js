@@ -341,6 +341,7 @@ export function renderSing($app, stageId) {
   function songStop() {
     if (!song || song.paused) return;
     song.pause();
+    if (!document.body.contains(root)) return; // 已經離開舞台頁：只要把歌停掉
     root.classList.remove('playing', 'song');
     $('#hsGo').innerHTML = `${ic('mic')}<b>繼續唱</b>`;
   }
@@ -349,6 +350,7 @@ export function renderSing($app, stageId) {
     if (song && !song.paused) return songStop();
     song ??= Object.assign(new Audio(`assets/audio/song-${st.id}.mp3`), {
       ontimeupdate: () => {
+        if (!document.body.contains(root)) { song.pause(); return; }
         showLine(); karaoke();
         // 下一句平常藏起來，快唱到前 1.5 秒才淡淡浮出來預告，不干擾閱讀
         const nxt = lines[(showLine.last ?? -1) + 1];

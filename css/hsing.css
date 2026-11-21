@@ -153,42 +153,60 @@
 .hs.song .hs-mean { opacity: 0; font-size: 13px; transition: opacity .35s; }
 .hs.song .hs-mean.soon { opacity: .5; }
 
-/* ───── 40 音專區首頁：主要任務「唱 40 音」＋加練區 ───── */
-.hg-main { display: grid; gap: 10px; margin: 0 0 18px; padding: 14px; border-radius: 24px; background: linear-gradient(165deg, #fff4f7, #f7d3dc 70%, #f3c4d0); border: 3px solid #fff; box-shadow: 0 5px 0 #e2aab6, 0 12px 24px rgba(160, 90, 105, .18); color: #4a3728; }
-.hg-main-head { display: flex; align-items: center; gap: 12px; }
-.hg-main-head img { width: 84px; height: 98px; object-fit: cover; object-position: 50% 6%; border-radius: 18px; background: #fde7ee; border: 3px solid #fff; flex: none; }
-.hg-main-head h2 { margin: 2px 0 2px; font-size: 30px; line-height: 1.1; color: #b5606d; letter-spacing: 2px; }
-.hg-main-head p { margin: 0; font-weight: 700; font-size: 14px; color: #7d5f58; line-height: 1.45; }
-.hg-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 900; color: #fff; padding: 2px 10px 2px 4px; border-radius: 999px; background: linear-gradient(180deg, #ffd36a, #f0b429); box-shadow: 0 2px 0 #c98f13; }
+/* ───── 40 音專區首頁：主要任務「唱 40 音」（舞台圖＋4 張跳舞卡）＋加練（大字小方塊） ───── */
+.hg-main { position: relative; margin: 0 0 16px; padding: 12px; border-radius: 26px; border: 3px solid #fff; background: #2b1d3d url("../assets/art/bg-stage.webp") center 30% / cover; box-shadow: 0 6px 0 #c98fa0, 0 14px 26px rgba(90, 50, 80, .28); overflow: hidden; }
+.hg-main::before { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(40, 20, 60, .15), rgba(40, 20, 60, .55)); pointer-events: none; }
+.hg-main > * { position: relative; }
+.hg-main-head { display: grid; justify-items: center; gap: 2px; margin: 2px 0 10px; }
+.hg-main-head h2 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 34px; line-height: 1.1; color: #fff; letter-spacing: 3px; text-shadow: 0 3px 0 #b5606d, 0 0 18px rgba(255, 190, 210, .9); }
+.hg-main-head h2 .ic { width: 40px; height: 40px; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, .25)); }
+.hg-tag { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 900; color: #6b4600; padding: 2px 10px 2px 4px; border-radius: 999px; background: linear-gradient(180deg, #fff0a8, #f0b429); box-shadow: 0 2px 0 #c98f13; }
 .hg-tag .ic { width: 18px; height: 18px; }
-.hg-main .hg-prog { margin: 2px 0 0; }
-.hg-main-count { text-align: right; font-weight: 800; color: #9a6f72; font-size: 12px; margin-top: -6px; }
-.hg-songs { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
-.hg-song { position: relative; display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 12px; border-radius: 18px; background: #fff; border: 3px solid #fff; color: #4a3728; text-decoration: none; box-shadow: 0 4px 0 #e3bfc6; }
-.hg-song .hg-num { flex: none; }
-.hg-song-txt { flex: 1; min-width: 0; display: grid; gap: 1px; }
-.hg-song-txt b { font-size: 17px; }
-.hg-song-txt small { font-weight: 800; color: #b5606d; }
-.hg-song-txt .hg-chars { font-size: 13px; color: #9a8577; letter-spacing: 1px; }
-.hg-song em { flex: none; display: grid; justify-items: center; gap: 1px; font-style: normal; font-size: 12px; font-weight: 900; color: #fff; width: 58px; padding: 6px 0 5px; border-radius: 16px; background: linear-gradient(180deg, #e0a3a9, #c97b84); box-shadow: 0 3px 0 #a9606b; }
-.hg-song em i { font-style: normal; }
-.hg-song em .ic { width: 26px; height: 26px; }
-.hg-song.next { border-color: #f0b429; box-shadow: 0 4px 0 #d39a1f, 0 0 0 4px rgba(240, 180, 41, .25); animation: hgNext 1.6s ease-in-out infinite; }
-.hg-song.next em { background: linear-gradient(180deg, #ffd36a, #f0b429); box-shadow: 0 3px 0 #c98f13; }
-.hg-song.done em { background: #fff6dc; color: #b8860b; box-shadow: 0 3px 0 #ecd9a6; }
-@keyframes hgNext { 50% { transform: translateY(-2px); } }
-.hg-extra { display: grid; gap: 8px; padding: 12px; border-radius: 20px; background: rgba(255, 255, 255, .55); border: 2px dashed #e3cbb5; }
+.hg-stars { display: flex; gap: 6px; }
+.hg-stars i { font-style: normal; font-size: 22px; line-height: 1; color: rgba(255, 255, 255, .35); text-shadow: 0 1px 0 rgba(0, 0, 0, .2); }
+.hg-stars i.on { color: #ffd36a; text-shadow: 0 0 10px rgba(255, 211, 106, .9), 0 1px 0 #b07a10; }
+.hg-songs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+@media (min-width: 640px) { .hg-songs { grid-template-columns: repeat(4, 1fr); } }
+.hg-song { --tone: #f3c4d0; --deep: #c97b84; position: relative; display: grid; gap: 6px; padding: 8px; border-radius: 20px; background: #fffdfa; border: 3px solid #fff; color: #4a3728; text-decoration: none; box-shadow: 0 4px 0 var(--deep); }
+.hg-song.tone-c1 { --tone: #cfe3fb; --deep: #6f9fd8; }
+.hg-song.tone-c2 { --tone: #e0d3f6; --deep: #9a7fd0; }
+.hg-song.tone-v2 { --tone: #cdeedf; --deep: #5fb391; }
+.hg-song-pic { position: relative; display: flex; justify-content: center; align-items: flex-end; height: 128px; border-radius: 14px; overflow: hidden; background: radial-gradient(ellipse at 50% 100%, #fff 0 22%, transparent 60%), linear-gradient(180deg, var(--tone), #fff); }
+.hg-song-glyph { position: absolute; top: 4px; left: 0; right: 0; text-align: center; font-size: 34px; font-weight: 900; letter-spacing: 4px; color: var(--deep); opacity: .35; line-height: 1; }
+.hg-spr { position: relative; height: 100%; display: block; background: no-repeat 0 0 / 800% 100%; }
+.hg-spr:not(.ok) { width: 60%; }
+.hg-song.next .hg-spr { animation: hsSpr 1.4s steps(8, jump-none) infinite; }
+.hg-song-no { position: absolute; top: 6px; left: 6px; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 900; color: #fff; background: var(--deep); box-shadow: 0 2px 0 rgba(0, 0, 0, .15); }
+.hg-song-badge { position: absolute; top: 2px; right: 2px; }
+.hg-song-badge .ic { width: 34px; height: 34px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .25)); }
+.hg-song-name { display: grid; padding-right: 40px; line-height: 1.25; }
+.hg-song-name b { font-size: 15px; }
+.hg-song-name small { font-size: 12px; font-weight: 800; color: var(--deep); }
+.hg-song-btn { position: absolute; right: 8px; bottom: 8px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: linear-gradient(180deg, #fff, var(--tone)); border: 2px solid #fff; box-shadow: 0 3px 0 var(--deep); }
+.hg-song-btn .ic { width: 26px; height: 26px; }
+.hg-song.next { border-color: #ffd36a; box-shadow: 0 4px 0 #d39a1f, 0 0 0 4px rgba(255, 211, 106, .45), 0 0 22px rgba(255, 211, 106, .6); }
+.hg-song.next .hg-song-btn { background: linear-gradient(180deg, #fff0a8, #f0b429); box-shadow: 0 3px 0 #c98f13; animation: hgNext 1.2s ease-in-out infinite; }
+.hg-song.done .hg-song-pic { background: radial-gradient(ellipse at 50% 100%, #fff 0 22%, transparent 60%), linear-gradient(180deg, #fff3c4, #fff); }
+@keyframes hgNext { 50% { transform: scale(1.12); } }
+.hg-extra { display: grid; gap: 8px; padding: 10px 12px 12px; border-radius: 20px; background: rgba(255, 255, 255, .6); border: 2px dashed #e3cbb5; }
 .hg-extra h3 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 16px; color: #6b5444; }
-.hg-extra h3 .ic { width: 24px; height: 24px; }
-.hg-extra > small { color: #8a7563; font-weight: 700; font-size: 12px; margin-top: -4px; }
-.hg-extra .hg-stages { grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 0; }
-.hg-extra .hg-stage { padding: 8px 4px; gap: 2px; border-radius: 14px; box-shadow: 0 3px 0 #e3cbb5; }
-.hg-extra .hg-stage b { font-size: 13px; }
-.hg-extra .hg-secchip { display: none; }
-.hg-extra .hg-builder-link { padding: 10px; }
-.hg-extra .hg-builder-link .ic { width: 30px; height: 30px; }
-@media (prefers-reduced-motion: reduce) { .hg-song.next { animation: none; } }
-.hg-extra .hg-builder-link b { white-space: nowrap; }
+.hg-extra h3 img { width: 30px; height: 30px; object-fit: contain; }
+.hg-extra h3 small { font-size: 12px; font-weight: 700; color: #9a8577; }
+.hg-extra .hg-stages { grid-template-columns: repeat(5, 1fr); gap: 6px; margin: 0; }
+.hg-extra .hg-stage { --deep: #c97b84; position: relative; padding: 6px 2px 6px; gap: 0; border-radius: 14px; box-shadow: 0 3px 0 #e3cbb5; }
+.hg-extra .hg-stage.tone-c1 { --deep: #6f9fd8; }
+.hg-extra .hg-stage.tone-c2 { --deep: #9a7fd0; }
+.hg-extra .hg-stage.tone-v2 { --deep: #5fb391; }
+.hg-extra .hg-stage.next { box-shadow: 0 3px 0 #d39a1f, 0 0 0 3px rgba(255, 211, 106, .5); }
+.hg-stage-glyph { font-size: 28px; font-weight: 900; line-height: 1.1; color: var(--deep); }
+.hg-build-tile .hg-stage-glyph i { font-style: normal; }
+.hg-build-tile .hg-stage-glyph .c { color: #4a7fd6; }
+.hg-build-tile .hg-stage-glyph .v { color: #d9668a; }
+.hg-extra .hg-stage b { font-size: 11px; white-space: nowrap; }
+.hg-stage-ok { position: absolute; top: -6px; right: -4px; }
+.hg-stage-ok .ic { width: 22px; height: 22px; }
+.hg-extra-meta { text-align: right; font-size: 11px; font-weight: 700; color: #9a8577; }
+@media (prefers-reduced-motion: reduce) { .hg-song.next .hg-spr, .hg-song.next .hg-song-btn { animation: none; } }
 /* 卡拉 OK：還沒唱的字淡淡的，唱到的字變亮＋微微跳起，跳跳球跟著字跑 */
 .hs.song .hs-lyric span.hit { position: relative; padding-top: 14px; }
 .hs-lyric .k { font-style: normal; display: inline-block; opacity: .5; transition: opacity .12s, transform .12s; }
@@ -202,3 +220,6 @@
 @media (prefers-reduced-motion: reduce) { .hs-ball.hop { animation: none; } .hs-ball { transition: none; } }
 .hs-lyric span.hit b.w > span { white-space: nowrap; }
 .hs-lyric span.hit b.w > span { background: none; padding: 0; border-radius: 0; color: inherit; transform: none; box-shadow: none; transition: none; }
+.hg-extra .hg-stages { grid-template-columns: repeat(4, 1fr); }
+.hg-extra .hg-build-tile { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 6px 10px; }
+.hg-extra .hg-build-tile b { font-size: 14px; }
