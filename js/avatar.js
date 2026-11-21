@@ -6,6 +6,7 @@
 import * as store from './store.js';
 import { esc, ic } from './util.js';
 import { DOLL_LAYERS } from './doll-index.js';
+import { ACC_IDS, accSVG } from './doll-acc.js';
 
 const cleared = (id) => (s) => !!s.course?.cleared?.[id];
 const cert = (id) => (s) => !!s.exam?.certs?.[id];
@@ -26,8 +27,8 @@ export const SLOTS = {
   ear: { name: '耳環', z: 5, box: [170, 80, 290, 200], x: 232, y: 146, w: 18 },
   face: { name: '臉頰', z: 5, box: [110, 60, 280, 200], x: 152, y: 150, w: 22 },
   hair: { name: '髮飾', z: 6, box: [50, 0, 250, 160], x: 116, y: 66, w: 46 },
-  head: { name: '頭飾', z: 7, box: [60, 0, 320, 180], x: 190, y: 26, w: 140 },
-  hand: { name: '手上', z: 8, box: [240, 360, 386, 580], x: 350, y: 455, w: 80 },
+  head: { name: '頭飾', z: 7, box: [50, -40, 320, 190], x: 190, y: 26, w: 140 },
+  hand: { name: '手上', z: 8, box: [236, 380, 396, 580], x: 350, y: 455, w: 80 },
 };
 
 export const OUTFITS = [
@@ -41,7 +42,7 @@ export const OUTFITS = [
 // 圖在 assets/art/doll/<id>.webp（tools/art-jobs/doll-clothes.json 畫的）
 export const STARTER = { top: 'top-startee', bottom: 'skirt-shorts', shoes: 'shoes-slipon' }; // 入學禮物：一開始就有的第二套
 export const PIECES = [
-  { id: 'top-startee', slot: 'top', stage: '入學禮物', name: '薄荷星星T恤', how: '一開始就有', unlock: () => true },
+  { id: 'top-startee', slot: 'top', stage: '入學禮物', name: '蜜桃星星T恤', how: '一開始就有', unlock: () => true },
   { id: 'skirt-shorts', slot: 'bottom', stage: '入學禮物', name: '牛仔短褲', how: '一開始就有', unlock: () => true },
   { id: 'shoes-slipon', slot: 'shoes', stage: '入學禮物', name: '紫丁香懶人鞋', how: '一開始就有', unlock: () => true },
   { id: 'top-sailor', slot: 'top', stage: '粉絲時期', name: '水手服上衣', how: '上完第 1 課', unlock: cleared('d1') },
@@ -63,13 +64,13 @@ export const PIECES = [
   { id: 'pants-black', slot: 'bottom', stage: '練習生時期', name: '黑色練習長褲', how: '上完第 17 課', unlock: cleared('d17') },
   { id: 'shoes-high', slot: 'shoes', stage: '練習生時期', name: '高筒球鞋', how: '上完第 18 課', unlock: cleared('d18') },
   { id: 'top-bear', slot: 'top', stage: '練習生時期', name: '小熊連帽衫', how: '上完第 19 課', unlock: cleared('d19') },
-  { id: 'pants-overall', slot: 'bottom', stage: '練習生時期', name: '吊帶褲', how: '上完第 20 課', unlock: cleared('d20') },
+  { id: 'pants-overall', slot: 'bottom', stage: '練習生時期', name: '水洗工作褲', how: '上完第 20 課', unlock: cleared('d20') },
   { id: 'shoes-slipper', slot: 'shoes', stage: '練習生時期', name: '兔兔室內鞋', how: '上完第 21 課', unlock: cleared('d21') },
   { id: 'top-blazer', slot: 'top', stage: '練習生時期', name: '月末評價外套', how: '上完第 22 課', unlock: cleared('d22') },
   { id: 'skirt-navy', slot: 'bottom', stage: '練習生時期', name: '海軍藍百褶裙', how: '上完第 23 課', unlock: cleared('d23') },
   { id: 'shoes-ballet', slot: 'shoes', stage: '練習生時期', name: '芭蕾平底鞋', how: '上完第 24 課', unlock: cleared('d24') },
   { id: 'top-sweater', slot: 'top', stage: '練習生時期', name: '薰衣草毛衣', how: '上完第 25 課', unlock: cleared('d25') },
-  { id: 'pants-wide', slot: 'bottom', stage: '練習生時期', name: '米色寬褲', how: '上完第 26 課', unlock: cleared('d26') },
+  { id: 'pants-wide', slot: 'bottom', stage: '練習生時期', name: '卡其寬褲', how: '上完第 26 課', unlock: cleared('d26') },
   { id: 'shoes-boots', slot: 'shoes', stage: '練習生時期', name: '咖啡短靴', how: '上完第 27 課', unlock: cleared('d27') },
   { id: 'top-denimjk', slot: 'top', stage: '練習生時期', name: '牛仔外套', how: '上完第 28 課', unlock: cleared('d28') },
   { id: 'pants-check', slot: 'bottom', stage: '練習生時期', name: '格紋長褲', how: '上完第 29 課', unlock: cleared('d29') },
@@ -87,7 +88,7 @@ export const PIECES = [
   { id: 'skirt-hanbok', slot: 'bottom', stage: '新人偶像時期', name: '韓服長裙', how: '上完第 41 課', unlock: cleared('d41') },
   { id: 'shoes-flower', slot: 'shoes', stage: '新人偶像時期', name: '韓服繡花鞋', how: '上完第 42 課', unlock: cleared('d42') },
   { id: 'top-puffer', slot: 'top', stage: '新人偶像時期', name: '初雪羽絨外套', how: '上完第 43 課', unlock: cleared('d43') },
-  { id: 'pants-white', slot: 'bottom', stage: '新人偶像時期', name: '白色長褲', how: '上完第 44 課', unlock: cleared('d44') },
+  { id: 'pants-white', slot: 'bottom', stage: '新人偶像時期', name: '薄荷長褲', how: '上完第 44 課', unlock: cleared('d44') },
   { id: 'shoes-snow', slot: 'shoes', stage: '新人偶像時期', name: '毛毛雪靴', how: '上完第 45 課', unlock: cleared('d45') },
   { id: 'top-gown', slot: 'top', stage: '新人偶像時期', name: '頒獎典禮上衣', how: '上完第 46 課', unlock: cleared('d46') },
   { id: 'skirt-lavender', slot: 'bottom', stage: '新人偶像時期', name: '薰衣草長裙', how: '上完第 47 課', unlock: cleared('d47') },
@@ -188,7 +189,7 @@ export function markSeen() {
   store.save();
 }
 
-export const itemIcon = (it, cls = '') => `<img class="item-ic ${cls}" src="assets/art/icons/item-${it.id}.webp" alt="" onerror="this.outerHTML='<span class=&quot;item-ic item-fb ${cls}&quot;>${it.emoji}</span>'">`;
+export const itemIcon = (it, cls = '') => `<img class="item-ic ${cls}" src="assets/art/doll/acc/${it.id}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/icons/item-${it.id}.webp'">`;
 export const mascotImg = (mood = 'happy', cls = '') => `<img class="mascot ${cls}" src="assets/art/icons/mascot-${mood}.webp" alt="吉祥物露露" onerror="this.remove()">`;
 
 // 已經畫好紙娃娃圖層的 id（tools/doll-layer.py 產生 doll-index.js；沒有的配飾用小圖貼在 anchor 上）
@@ -198,6 +199,7 @@ const LAYERS = new Set(DOLL_LAYERS);
 function layerSVG(it) {
   const sl = SLOTS[it.slot];
   if (LAYERS.has(it.id) || it.base) return `<image href="assets/art/doll/${it.id}.webp" x="0" y="0" width="${DOLL_W}" height="${DOLL_H}"/>`;
+  if (ACCS.has(it.id)) return accSVG(it.id);
   if (sl.x == null) return '';
   const w = sl.w;
   return `<image href="assets/art/icons/item-${it.id}.webp" x="${sl.x - w / 2}" y="${sl.y - w / 2}" width="${w}" height="${w}" class="doll-ic"/>`;
@@ -236,7 +238,8 @@ const CATS = [
 ];
 // 還沒畫好圖的衣服／配飾先不顯示（有紙娃娃圖層，或有舊的小圖示才列出來）
 const ICONED = new Set(['starclip', 'ribbon', 'headset', 'crown', 'moon', 'lightstick', 'photocard', 'trophy']);
-const hasArt = (x) => LAYERS.has(x.id) || ICONED.has(x.id);
+const ACCS = new Set(ACC_IDS);
+const hasArt = (x) => LAYERS.has(x.id) || ACCS.has(x.id) || ICONED.has(x.id);
 const itemsOf = (cat) => [...PIECES, ...ITEMS].filter((x) => cat.slots.includes(x.slot) && hasArt(x));
 let cat = 'top';
 let drawer = true;

@@ -1,0 +1,2 @@
+// 自動產生（tools/doll-acc-cut.py）：配飾圖的高寬比（高÷寬）
+export const ACC_RATIO = {"beret": 0.725, "bunnyclip": 0.817, "catband": 0.762, "cheek": 0.929, "cheekstar": 0.97, "choker": 0.604, "crown": 0.683, "flowerclip": 0.75, "headset": 0.938, "heartclip": 0.646, "heartlace": 0.903, "lightstick": 1.574, "mic": 1.976, "moon": 1.734, "notelace": 0.921, "pearl": 2.0, "photocard": 1.302, "ribbon": 0.908, "starclip": 0.708, "starear": 1.609, "trophy": 0.991};
