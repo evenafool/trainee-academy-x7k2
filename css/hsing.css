@@ -23,6 +23,7 @@
 .hs-top > b { flex: 1; display: flex; align-items: center; gap: 6px; color: #fff; font-size: 18px; text-shadow: 0 2px 6px rgba(0, 0, 0, .4); }
 .hs-top > b .ic { width: 26px; height: 26px; }
 .hs-back { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .9); color: #b5606d; font-size: 26px; font-weight: 900; text-decoration: none; }
+.hs-back svg, .hs-back img { width: 22px; height: 22px; }
 .hs-speed { display: flex; align-items: center; gap: 4px; font: inherit; font-weight: 900; font-size: 13px; color: #b5606d; background: rgba(255, 255, 255, .92); border: 0; border-radius: 999px; padding: 5px 12px 5px 6px; cursor: pointer; }
 .hs-speed .ic { width: 22px; height: 22px; }
 
@@ -240,3 +241,13 @@
 @media (prefers-reduced-motion: reduce) { .hg-cover i { animation: none; } }
 .hg-song .hg-song-badge { position: absolute; top: -10px; right: -8px; z-index: 2; }
 .hg-song-name { align-self: center; min-height: 38px; align-content: center; }
+
+/* 大字卡：沒在唱字母（例詞、前奏）時留白，保持版面不跳動 */
+.hs-big.rest { visibility: hidden; }
+
+/* 唱完一首：下一首／回首頁 直接在舞台上 */
+.hs.song .hs-mean.hs-end, .hs-mean.hs-end { opacity: 1; display: grid; justify-items: center; gap: 8px; font-size: 14px; }
+.hs-end-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.hs-end-btn { display: inline-flex; align-items: center; gap: 4px; padding: 6px 14px 6px 8px; border-radius: 999px; border: 2px solid #fff; background: #fff; color: #a3405f; font-weight: 900; font-size: 15px; text-decoration: none; box-shadow: 0 3px 0 #e3cbb5; }
+.hs-end-btn .ic { width: 26px; height: 26px; }
+.hs-end-btn.main { background: linear-gradient(180deg, #ff9fb6, #e86f8e); color: #fff; box-shadow: 0 3px 0 #c9577a; }

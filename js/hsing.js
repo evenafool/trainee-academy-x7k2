@@ -68,6 +68,11 @@ export function renderSing($app, stageId) {
   const outfit = avatarState().outfit || autoOutfit();
   const items = st.items.map((it) => ({ ch: it[0], syl: it[3], word: it[4], mean: it[5] }));
   const lyric = (x) => [x.syl, x.syl, x.word];
+  const SYL2JAMO = Object.fromEntries(items.map((x) => [x.syl, x.ch]));
+  const bigJamo = (j) => {
+    const b = $('#hsBig'); if (!b || b.textContent === j) return;
+    b.textContent = j; b.className = `hs-big ${j ? (VOWELS.has(j) ? 'v' : 'c') : 'rest'}`;
+  };
   const tip = TIPS[st.id] || TIPS.v1;
   const withSong = SONG_STAGES.has(st.id);
   const x0 = st.items[0];
@@ -81,7 +86,7 @@ export function renderSing($app, stageId) {
     <section class="hs${withSong ? ' with-song' : ''}" style="--beat:${60 / (withSong ? SONG_BPM : SPEEDS[speed].bpm)}s">
       <div class="hs-bg" aria-hidden="true"><img src="assets/art/bg-stage.webp" alt=""><i class="hs-spot l"></i><i class="hs-spot r"></i></div>
       <header class="hs-top">
-        <a class="hs-back" href="#/hangul" aria-label="回 40 音">‹</a>
+        <a class="hs-back" href="#/hangul" aria-label="回 40 音選單">‹</a>
         <b>${ic('mic')} 40 音舞台</b>
         <button type="button" class="hs-help" id="hsHelp" aria-label="這首歌怎麼學">?</button>
         ${withSong ? '' : `<button type="button" class="hs-speed" id="hsSpeed">${ic('speaker')}<span>${SPEEDS[speed].name}</span></button>`}
@@ -250,9 +255,10 @@ export function renderSing($app, stageId) {
       $('#hsWho').textContent = '安可！'; $('#hsWho').className = 'hs-who count';
       $('#hsBig').textContent = '♪'; $('#hsBig').className = 'hs-big';
       $('#hsLyric').innerHTML = `<span class="hit">${items.length} 個字母唱完了！</span>`;
-      $('#hsMean').textContent = '+10 應援值・再唱一次會更熟喔';
       idx = 0;
       $('#hsGo').innerHTML = `${ic('mic')}<b>再唱一次</b>`;
+      const sungAll = STAGES.every((x) => h.sung[x.id]);
+      $('#hsMean').textContent = `+10 應援值${sungAll ? '・40 音歌全部唱完了！' : ''}`;
     }
   }
   // 說明框：一進來就打開並念出來；開始唱就收起來，按「?」可以再打開
@@ -263,6 +269,9 @@ export function renderSing($app, stageId) {
   };
   $('#hsInX').onclick = () => showIntro(false);
   $('#hsInSay').onclick = () => speak(introVoice, 'zh-TW');
+  // 換歌不堆疊瀏覽紀錄：手機滑「上一頁」一次就離開舞台，不會一首一首倒回去
+  $('.hs-back').onclick = (e) => { e.preventDefault(); if (window.__fromHash === '#/hangul') history.back(); else location.replace('#/hangul'); };
+  $app.querySelectorAll('.hs-tabs a').forEach((a) => { a.onclick = (e) => { e.preventDefault(); location.replace(a.getAttribute('href')); }; });
   $('#hsHelp').onclick = () => { if (playing) stop(); songStop(); showIntro($('#hsIntro').hidden); };
   if (firstTime) setTimeout(() => { if (!playing && !$('#hsIntro').hidden && document.body.contains(root)) speak(introVoice, 'zh-TW'); }, 400);
   $('#hsGo').onclick = () => { $('#hsIntro').hidden = true; if (withSong) return songToggle(); return playing ? stop() : start(); };
@@ -285,9 +294,9 @@ export function renderSing($app, stageId) {
     if (i === showLine.last) return;
     showLine.last = i;
     const cur = lines[i]; const nxt = lines[i + 1];
-    $('#hsBig').textContent = cur ? (cur.line.match(/[가-힣]/) || ['♪'])[0] : '♪';
-    $('#hsBig').className = 'hs-big';
+    // 換句時：這句有單獨的字母音就先顯示第一個字母，沒有（例詞句、結尾）就保留上一個字母
     $('#hsLyric').innerHTML = cur ? lyricHTML(cur) : '';
+    bigJamo(''); // 換句時先收起來，唱到字母才出現
     karaoke.n = null;
     $('#hsMean').textContent = nxt ? `▸ ${nxt.line}` : '';
     $('#hsWho').textContent = cur ? '一起唱！' : '前奏'; $('#hsWho').className = `hs-who ${cur ? 'you' : ''}`;
@@ -307,10 +316,13 @@ export function renderSing($app, stageId) {
       const at = line.lastIndexOf(ko);
       if (at >= 0) { open[at] = k; close[at + ko.length - 1] = [k, mean]; }
     });
+    // 單獨唱的字母音（例如「아 아 아이」前面兩個 아）標上它的字母，大字卡只跟著這些換；例詞跳過
+    const jamoAt = {};
+    for (const m of line.matchAll(/[가-힣]+/g)) if (m[0].length === 1 && SYL2JAMO[m[0]]) jamoAt[m.index] = SYL2JAMO[m[0]];
     let html = ''; let n = 0;
     [...line].forEach((ch, i) => {
       if (open[i] !== undefined) html += `<b class="w w${open[i]}"><span>`;
-      html += /[가-힣]/.test(ch) ? `<i class="k" data-k="${n++}">${ch}</i>` : esc(ch);
+      html += /[가-힣]/.test(ch) ? `<i class="k" data-k="${n++}"${jamoAt[i] ? ` data-j="${jamoAt[i]}"` : ''}>${ch}</i>` : esc(ch);
       if (close[i]) html += `</span><small>${esc(close[i][1])}</small></b>`;
     });
     const plain = !pairs.length && zh;
@@ -334,7 +346,7 @@ export function renderSing($app, stageId) {
     ball.classList.toggle('wait', n === 0);
     if (n > 0) {
       ball.classList.remove('hop'); void ball.offsetWidth; ball.classList.add('hop');
-      $('#hsBig').textContent = el.textContent;
+      bigJamo(el.dataset.j || ''); // 只在唱字母本身時顯示大字；唱到例詞就收起來，免得搞混
     }
   }
   const tick = () => { if (song && !song.paused) { karaoke(); requestAnimationFrame(tick); } };

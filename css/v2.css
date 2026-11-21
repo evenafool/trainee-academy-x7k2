@@ -185,3 +185,90 @@ body .teacher.me-stage img.item-ic, body .teacher.me-stage img.mascot, body.is-l
 /* 露露、配件也做成跟單字圖示一樣的「白邊貼紙」感 */
 .me-stage .item-ic, .me-stage .mascot, .cl-pic .item-ic, .cl-pic .mascot, .npc-mascot { filter: drop-shadow(2px 0 0 #fff) drop-shadow(-2px 0 0 #fff) drop-shadow(0 2px 0 #fff) drop-shadow(0 -2px 0 #fff) drop-shadow(0 4px 5px rgba(120, 85, 55, .25)); }
 .closet-link .ic, .cl-tile small .ic { width: 1.2em; height: 1.2em; vertical-align: -.25em; }
+
+/* ───── 紙娃娃衣帽間：分頁＋每件衣服只看身上那一塊的縮圖 ───── */
+svg.me-doll { overflow: visible; }
+.me-doll .doll-ic { filter: drop-shadow(1.5px 0 0 #fff) drop-shadow(-1.5px 0 0 #fff) drop-shadow(0 1.5px 0 #fff) drop-shadow(0 -1.5px 0 #fff); }
+.cl-tabs { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin: 0 0 10px; }
+.cl-tab { display: grid; justify-items: center; gap: 0; padding: 6px 2px; border-radius: 16px; border: 3px solid #fff; background: #fff; box-shadow: 0 3px 0 #e3cbb5; font: inherit; color: #6b5444; cursor: pointer; }
+.cl-tab .ic { width: 28px; height: 28px; }
+.cl-tab b { font-size: 13px; }
+.cl-tab small { font-size: 10.5px; font-weight: 800; color: #a08a79; }
+.cl-tab.on { background: linear-gradient(180deg, #fff0f4, #ffd9e3); border-color: #f3a9bd; box-shadow: 0 3px 0 #d98aa0; color: #a3405f; }
+.cl-grid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); }
+.cl-tile { padding: 8px 6px; }
+.cl-tile .cl-pic { width: 100%; height: 100px; border-radius: 14px; background: radial-gradient(circle at 50% 40%, #fff, #fbefe6); }
+.cl-doll { width: 100%; height: 100%; }
+.cl-pic .cl-outfit { height: 100px; }
+.cl-lock .ic { width: 34px; height: 34px; opacity: .6; }
+.cl-tile.locked .cl-pic { filter: none; background: #efe4da; }
+.cl-tile.locked small { font-size: 10.5px; }
+.cl-on { position: absolute; top: -6px; right: -6px; z-index: 1; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 900; color: #fff; background: #f0b429; box-shadow: 0 2px 0 #c98f13; }
+#clReset { margin-top: 6px; }
+@media (max-width: 760px) { .cl-tabs { grid-template-columns: repeat(3, 1fr); } }
+
+/* ───── 衣帽間＝換裝遊戲版面（參考少女換裝遊戲）：房間全螢幕、角色站中間、右邊直排分類鈕＋滑出抽屜 ───── */
+.dress { position: fixed; inset: 0; z-index: 30; overflow: hidden; display: block; color: #6b4a52; }
+.dress-bg { position: absolute; inset: 0; background: #f7e6e9 url("../assets/art/bg-room.webp") center / cover; }
+.dress-bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255, 240, 245, .25), rgba(255, 228, 236, .45)); }
+.dress-top { position: absolute; top: 10px; left: 10px; right: 10px; z-index: 3; display: flex; align-items: center; gap: 10px; pointer-events: none; }
+.dress-back { pointer-events: auto; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-size: 34px; font-weight: 900; line-height: 1; color: #fff; text-decoration: none; background: linear-gradient(180deg, #ff9fb6, #e86f8e); border: 3px solid #fff; box-shadow: 0 3px 0 #c9577a, 0 4px 10px rgba(200, 90, 120, .3); }
+.dress-title { display: inline-flex; align-items: center; gap: 4px; padding: 4px 16px 4px 8px; border-radius: 999px; background: rgba(255, 255, 255, .85); border: 2px solid #fff; font-size: 17px; box-shadow: 0 2px 8px rgba(200, 120, 140, .25); }
+.dress-title .ic { width: 28px; height: 28px; }
+.dress-stage { position: absolute; left: 0; right: 96px; top: 54px; bottom: 64px; z-index: 1; display: flex; justify-content: center; align-items: flex-end; }
+.dress-stage .me-outfit { height: 100%; width: auto; max-width: 100%; filter: drop-shadow(0 10px 18px rgba(150, 80, 100, .3)); }
+.dress-stage .me-mascot { position: absolute; left: calc(50% + 40px); bottom: 0; }
+.dress-left { position: absolute; left: 10px; top: 70px; z-index: 2; display: grid; gap: 8px; }
+.dress-tool { display: grid; justify-items: center; gap: 0; width: 58px; padding: 4px 2px; border-radius: 16px; border: 2px solid #fff; background: rgba(255, 255, 255, .82); box-shadow: 0 2px 0 #e8b9c6; font: inherit; color: #a3405f; cursor: pointer; }
+.dress-tool .ic { width: 30px; height: 30px; }
+.dress-tool small { font-size: 10.5px; font-weight: 900; }
+.dress-tool.look .look-pic { width: 34px; height: 44px; }
+.dress-tool.look:not(.has) { opacity: .7; }
+.dress-cats { position: absolute; right: 8px; top: 62px; bottom: 70px; z-index: 3; width: 84px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; scrollbar-width: none; padding: 2px; }
+.dr-cat { position: relative; flex: none; display: grid; grid-template-columns: 1fr; justify-items: center; gap: 0; padding: 4px 2px 3px; border-radius: 18px 6px 6px 18px; border: 2px solid #fff; background: linear-gradient(180deg, #fff, #fff3f6); box-shadow: 0 2px 0 #e8b9c6; font: inherit; color: #a3405f; cursor: pointer; }
+.dr-cat b { font-size: 14px; letter-spacing: 2px; }
+.dr-cat small { font-size: 10px; font-weight: 800; color: #c48a9a; }
+.dr-cat.on { background: linear-gradient(180deg, #ffb3c6, #f0819f); color: #fff; border-color: #fff; box-shadow: 0 2px 0 #c9577a; }
+.dr-cat.on small { color: #fff; }
+.dr-cat-ic { position: relative; width: 50px; height: 44px; display: grid; place-items: center; }
+.dr-cat-pic { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 1px 0 #fff); }
+.dr-cat.on .dr-cat-pic { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 2px #fff); }
+.dr-cat-ic .mascot { width: 36px; height: 36px; }
+.dr-dot { position: absolute; top: 2px; right: 2px; width: 9px; height: 9px; border-radius: 50%; background: #ff4d6d; box-shadow: 0 0 0 1.5px #fff; }
+.dress-drawer { position: absolute; right: 98px; top: 62px; bottom: 70px; z-index: 3; width: min(250px, calc(100vw - 120px)); display: flex; flex-direction: column; border-radius: 22px; background: rgba(255, 250, 252, .94); border: 3px solid #fff; box-shadow: 0 8px 24px rgba(170, 80, 110, .25); transform: translateX(calc(100% + 120px)); transition: transform .25s ease; }
+.dress-drawer.open { transform: none; }
+.dr-head { display: flex; align-items: center; justify-content: space-between; padding: 8px 10px 4px 14px; }
+.dr-head b { font-size: 16px; color: #a3405f; }
+.dr-close { width: 30px; height: 30px; border-radius: 50%; border: 0; background: #ffe1ea; color: #a3405f; font-size: 22px; font-weight: 900; line-height: 1; cursor: pointer; }
+.dr-grid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(2, 1fr); align-content: start; gap: 8px; padding: 4px 10px 12px; }
+.dr-item { position: relative; display: grid; justify-items: center; gap: 2px; padding: 6px 4px; border-radius: 16px; border: 2px solid #fff; background: #fff; box-shadow: 0 2px 0 #f0cdd7; font: inherit; color: #6b4a52; cursor: pointer; }
+.dr-item b { font-size: 12px; line-height: 1.2; text-align: center; }
+.dr-item small { font-size: 10px; color: #a08a79; line-height: 1.25; text-align: center; }
+.dr-pic { width: 100%; height: 86px; display: grid; place-items: center; border-radius: 12px; background: radial-gradient(circle at 50% 40%, #fff, #fdeef2); overflow: hidden; }
+.dr-pic .cl-doll, .dr-pic .cl-outfit { width: 100%; height: 100%; object-fit: contain; }
+.dr-pic .item-ic.big, .dr-pic .mascot { width: 66px; height: 66px; }
+.dr-item.locked { background: #f6eef0; }
+.dr-item.locked .dr-pic { background: #efe2e6; }
+.dr-item.locked .dr-pic .ic { width: 30px; height: 30px; opacity: .5; }
+.dr-item.on { border-color: #f0b429; box-shadow: 0 0 0 2px #ffd56b, 0 2px 0 #f0cdd7; }
+.dr-empty { grid-column: 1 / -1; text-align: center; font-size: 13px; color: #a08a79; }
+.dress-save { position: absolute; left: 12px; bottom: 14px; z-index: 3; display: inline-flex; align-items: center; gap: 4px; padding: 8px 18px 8px 10px; border-radius: 999px; border: 3px solid #fff; background: linear-gradient(180deg, #ff9fb6, #e86f8e); color: #fff; font: inherit; font-size: 16px; font-weight: 900; box-shadow: 0 3px 0 #c9577a, 0 6px 14px rgba(200, 90, 120, .3); cursor: pointer; }
+.dress-save .ic { width: 26px; height: 26px; }
+.dress-tip { position: absolute; left: 12px; right: 100px; bottom: 10px; z-index: 3; margin: 0; padding: 6px 10px; border-radius: 12px; background: rgba(255, 255, 255, .85); font-size: 12px; }
+@media (min-width: 900px) { .dress-stage { right: 360px; } .dress-drawer { width: 250px; } }
+@media (prefers-reduced-motion: reduce) { .dress-drawer { transition: none; } }
+/* 衣服的劇情階段標籤 */
+.dr-stage { grid-column: 1 / -1; justify-self: start; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 900; color: #fff; background: linear-gradient(180deg, #f7a8bd, #e57d9b); box-shadow: 0 2px 0 #c9577a; }
+/* 手機：抽屜改成底部橫向滑動的一排，角色保持大大的 */
+@media (max-width: 640px) {
+  .dress-drawer { left: 8px; right: 96px; top: auto; bottom: 66px; width: auto; height: 156px; transform: translateY(calc(100% + 80px)); }
+  .dr-head { padding: 4px 8px 0 12px; }
+  .dr-grid { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 92px; overflow-x: auto; overflow-y: hidden; padding: 2px 8px 8px; }
+  .dr-pic { height: 74px; }
+  .dr-item small { display: none; }
+  .dr-stage { grid-column: auto; align-self: center; writing-mode: vertical-rl; padding: 8px 3px; letter-spacing: 2px; }
+  .dr-grid { grid-auto-columns: auto; }
+  .dr-item { width: 92px; }
+  .dress:has(.dress-drawer.open) .dress-stage { bottom: 222px; }
+  .dress-stage { left: 60px; }
+}

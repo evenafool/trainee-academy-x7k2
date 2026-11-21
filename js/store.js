@@ -162,6 +162,10 @@ export function claimTask(id) {
   if (d.claimed.includes(id)) return 0;
   const xp = id === 'chest' ? 30 : 10;
   d.claimed.push(id);
+  // 小任務累積次數（衣帽間的小配飾用）：claim＝領任何一步的獎勵、chest＝開每日寶箱
+  state.tally ??= {};
+  state.tally.claim = (state.tally.claim || 0) + 1;
+  if (id === 'chest') state.tally.chest = (state.tally.chest || 0) + 1;
   state.xp += xp;
   d.xp += xp;
   save();

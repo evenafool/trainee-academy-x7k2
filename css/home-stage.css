@@ -215,3 +215,15 @@ body.is-lobby:has(.gl) #app { padding: 0; max-width: none; }
 /* 下方導覽列：有新東西的分頁掛同款小紅點 */
 .nav a.has-red { position: relative; }
 .nav a.has-red::after { content: ''; position: absolute; top: 3px; left: calc(50% + 7px); width: 12px; height: 12px; border-radius: 50%; background: radial-gradient(circle at 34% 30%, #ffd0d8 0 14%, #ff7a92 34%, #ec4566 70%, #cf2f52); border: 2px solid #fff; box-shadow: 0 2px 5px rgba(236, 69, 102, .45); animation: redBeat 1.8s ease-in-out infinite; filter: none; }
+
+/* 首頁「唱 40 音」：黑膠唱片按鈕＋飄出來的音符，一眼看出裡面有歌 */
+.gl-song .gl-ic-b { background: radial-gradient(circle at 35% 30%, #fff, #ffe3ec); border-color: #fff; box-shadow: 0 4px 0 #e7a9bb, 0 0 0 3px rgba(255, 170, 200, .55), 0 6px 14px rgba(201, 123, 132, .35); }
+.gl-disc { position: relative; width: 78%; height: 78%; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle, transparent 0 34%, rgba(255, 255, 255, .14) 35% 36%, transparent 37% 47%, rgba(255, 255, 255, .12) 48% 49%, transparent 50% 60%, rgba(255, 255, 255, .1) 61% 62%, transparent 63%), conic-gradient(from 20deg, #2b2233, #4a3b55 12%, #2b2233 25%, #43354f 50%, #2b2233 62%, #4a3b55 75%, #2b2233); box-shadow: inset 0 0 0 1.5px #1c1522; animation: glSpin 4s linear infinite; }
+.gl-disc b { width: 46%; height: 46%; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 12px; font-weight: 900; line-height: 1; color: #fff; background: radial-gradient(circle at 40% 35%, #ffb3c8, #e06f92); box-shadow: 0 0 0 1.5px #fff; }
+.gl-note { position: absolute; width: 18px; height: 18px; fill: #e06f92; stroke: #e06f92; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 0 #fff) drop-shadow(0 0 2px #fff); animation: glNote 2.4s ease-in-out infinite; pointer-events: none; }
+.gl-note path { fill: none; }
+.gl-note.n1 { right: -11px; bottom: -3px; }
+.gl-note.n2 { left: -10px; top: -5px; width: 14px; height: 14px; fill: #8f7ad8; stroke: #8f7ad8; animation-delay: -1.2s; }
+@keyframes glSpin { to { transform: rotate(360deg); } }
+@keyframes glNote { 0%, 100% { transform: translateY(0) rotate(-8deg); opacity: 1; } 50% { transform: translateY(-5px) rotate(8deg); opacity: .75; } }
+@media (prefers-reduced-motion: reduce) { .gl-disc, .gl-note { animation: none; } }

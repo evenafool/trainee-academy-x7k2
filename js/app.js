@@ -299,11 +299,13 @@ views.home = () => {
   const newWrong = upd('wrong', wrongN);
   const newCloset = upd('closet', 0, fresh > 0);
   const side = (o) => `<${o.href ? `a href="${o.href}"${o.ext ? ' target="_blank" rel="noopener"' : ''}` : `button type="button"`} class="gl-ic ${o.cls || ''}" ${o.id ? `id="${o.id}"` : ''} ${o.dot ? `data-dot="${o.dot}"` : ''} ${o.upd ? `data-upd="${o.upd.key}" data-n="${o.upd.n}"` : ''} aria-label="${o.name}">
-      <span class="gl-ic-b">${red(o.dot || o.upd?.key)}${ic(o.icon)}${o.badge ? `<i class="gl-dot">${o.badge}</i>` : ''}${o.tag ? `<em class="gl-tag">${o.tag}</em>` : ''}</span><small>${o.name}</small></${o.href ? 'a' : 'button'}>`;
+      <span class="gl-ic-b">${red(o.dot || o.upd?.key)}${o.html || ic(o.icon)}${o.badge ? `<i class="gl-dot">${o.badge}</i>` : ''}${o.tag ? `<em class="gl-tag">${o.tag}</em>` : ''}</span><small>${o.name}</small></${o.href ? 'a' : 'button'}>`;
   // 左邊：每天都會用到的通用入口（各語言的練習都收在「練習區」）
   const LEFT = [
     { id: 'glTasks', icon: 'gift', name: '任務', badge: pending || '', cls: pending ? 'hot' : '', dot: dot('tasks', !pending && !allDone) },
-    ...(hp.done ? [] : [{ href: '#/hangul', icon: 'ko', name: '40 音', badge: `${hp.passed}/${hp.stages}`, dot: dot('hangul', !(dd.tasks || []).includes('hangul')) }]),
+    // 40 音＝唱歌專區：黑膠唱片按鈕（中間是韓文字、旁邊飄音符），一看就知道裡面有歌
+    ...(hp.done && hp.sung === hp.stages ? [] : [{ href: '#/hangul', cls: 'gl-song', name: '唱 40 音', badge: `${hp.sung}/${hp.stages}`, dot: dot('hangul', !(dd.tasks || []).includes('hangul')),
+      html: `<i class="gl-disc"><b lang="ko">가</b></i><svg class="gl-note n1" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V5l10-2v12"/><circle cx="6.5" cy="17.5" r="2.8"/><circle cx="16.5" cy="15" r="2.8"/></svg><svg class="gl-note n2" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17V4l6 3"/><circle cx="9.5" cy="17" r="2.8"/></svg>` }]),
     { href: '#/quiz/daily', icon: 'star', name: '每日10題', dot: dot('daily10', !did10) },
     wrongN ? { href: '#/quiz/review', icon: 'wrong', name: '錯題本', badge: wrongN > 99 ? '99+' : wrongN, upd: newWrong } : { href: '#/exam/bank', icon: 'book', name: '單字庫' },
     { href: '#/practice', icon: 'cards', name: '練習區' },
@@ -997,7 +999,7 @@ function route() {
   if (view !== views.talk) stopTalk();
   if (view !== views.chat) stopChat();
   document.body.classList.toggle('is-lobby', view === views.home || view === views.talk);
-  const hideNav = (['onboard', 'quiz', 'flash', 'talk', 'chat'].includes(name) && !(name === 'onboard' && s.profile)) || (name === 'hangul' && /^sing/.test(arg || ''));
+  const hideNav = (['onboard', 'quiz', 'flash', 'talk', 'chat', 'closet'].includes(name) && !(name === 'onboard' && s.profile)) || (name === 'hangul' && /^sing/.test(arg || ''));
   $nav.hidden = hideNav;
   // 子頁面也讓所屬的分頁亮著（例如 40 音、小遊戲 → 練習；衣帽間 → 我的）
   const PARENT_TAB = { hangul: 'practice', game: 'practice', subject: 'practice', deck: 'practice', wrong: 'practice', map: 'practice', quiz: 'practice', flash: 'practice', closet: 'me', history: 'me', chat: 'friends', onboard: 'me' };
@@ -1016,6 +1018,11 @@ function route() {
   clearTimeout(route.t); route.t = setTimeout(() => $app.classList.remove('view-in'), 900);
 }
 
+// 記住從哪一頁來的：返回箭頭如果回的是上一頁，就用瀏覽器的上一頁（不堆疊紀錄，跟手機滑回去一致）
+window.addEventListener('hashchange', (e) => {
+  const o = new URL(e.oldURL).hash;
+  if (!(o.startsWith('#/hangul/sing') && location.hash.startsWith('#/hangul/sing'))) window.__fromHash = o; // 舞台裡換歌不算
+});
 window.addEventListener('hashchange', route);
 applyAccent();
 armAudio();

@@ -56,7 +56,8 @@ export function hangulProgress() {
   const h = hState();
   const heard = ALL.filter((x) => h.heard[x.ch]).length;
   const passed = STAGES.filter((s) => h.passed[s.id]).length;
-  return { heard, passed, stages: STAGES.length, done: passed === STAGES.length };
+  const sung = STAGES.filter((s) => h.sung?.[s.id]).length;
+  return { heard, passed, sung, stages: STAGES.length, done: passed === STAGES.length };
 }
 
 let $app = null;
