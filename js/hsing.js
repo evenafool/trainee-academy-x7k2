@@ -286,7 +286,7 @@ export function renderSing($app, stageId) {
     const cur = lines[i]; const nxt = lines[i + 1];
     $('#hsBig').textContent = cur ? (cur.line.match(/[가-힣]/) || ['♪'])[0] : '♪';
     $('#hsBig').className = 'hs-big';
-    $('#hsLyric').innerHTML = cur ? `<span class="hit">${esc(cur.line)}</span>${cur.zh ? `<small class="hs-zh">${esc(cur.zh)}</small>` : ''}` : '';
+    $('#hsLyric').innerHTML = cur ? lyricHTML(cur) : '';
     $('#hsMean').textContent = nxt ? `下一句：${nxt.line}` : '';
     $('#hsWho').textContent = cur ? '一起唱！' : '前奏'; $('#hsWho').className = `hs-who ${cur ? 'you' : ''}`;
     $app.querySelectorAll('#hsDots li').forEach((li, k) => {
@@ -296,6 +296,17 @@ export function renderSing($app, stageId) {
     });
     if (cur) { note(); const card = $('#hsCard'); card.classList.remove('pop'); void card.offsetWidth; card.classList.add('pop'); }
   };
+  // 歌詞裡的單字換顏色，下面只放中文意思（同色對應）；song-*.json 的 zh 寫成「가방＝書包・나비＝蝴蝶」
+  function lyricHTML({ line, zh }) {
+    const pairs = (zh || '').split('・').map((x) => x.split('＝')).filter((x) => x.length === 2);
+    if (!pairs.length) return `<span class="hit">${esc(line)}</span>${zh ? `<small class="hs-zh">${esc(zh)}</small>` : ''}`;
+    let html = esc(line);
+    pairs.forEach(([ko], k) => {
+      const at = html.lastIndexOf(ko);
+      if (at >= 0) html = `${html.slice(0, at)}<b class="w w${k}">${ko}</b>${html.slice(at + ko.length)}`;
+    });
+    return `<span class="hit">${html}</span><small class="hs-zh">${pairs.map(([, m], k) => `<b class="w${k}">${esc(m)}</b>`).join('　')}</small>`;
+  }
   function songStop() {
     if (!song || song.paused) return;
     song.pause();

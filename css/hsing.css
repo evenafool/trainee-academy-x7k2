@@ -141,3 +141,10 @@
 @media (prefers-reduced-motion: reduce) { .hs.has-dance.playing .hs-dance::before { animation: none; } }
 /* 歌詞下面的中文翻譯（單字＝意思） */
 .hs-lyric .hs-zh { flex-basis: 100%; text-align: center; font-size: 15px; font-weight: 800; color: #9b6f78; line-height: 1.3; margin-top: 2px; }
+/* 單字上色：第 1 個單字亮黃、第 2 個薄荷綠，下面的中文意思用同一個顏色對應 */
+.hs-lyric span.hit b.w { font-weight: 900; padding: 0 2px; border-radius: 6px; }
+.hs-lyric span.hit b.w0 { color: #fff3a8; text-shadow: 0 1px 0 #b0656e; }
+.hs-lyric span.hit b.w1 { color: #c8ffe8; text-shadow: 0 1px 0 #b0656e; }
+.hs-lyric .hs-zh b { font-weight: 900; padding: 1px 8px; border-radius: 999px; }
+.hs-lyric .hs-zh b.w0 { color: #8a5a00; background: #fff1b0; }
+.hs-lyric .hs-zh b.w1 { color: #1f6b52; background: #cff5e4; }
