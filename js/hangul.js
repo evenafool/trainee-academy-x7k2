@@ -97,7 +97,7 @@ function renderHome() {
             </span>
             ${sung[s.id] ? `<span class="hg-song-badge">${ic('medal')}</span>` : ''}
             <span class="hg-song-words" lang="ko">${(WORDS[s.id] || []).map((w) => `<i>${w}</i>`).join('')}</span>
-            <span class="hg-song-name"><b>${esc(s.title.split('：')[1])}</b><small lang="ko">${SONGS[s.id] || ''}</small></span>
+            <span class="hg-song-name"><b>${esc(s.title.split('：')[1])}</b></span>
             <em class="hg-song-btn">${ic('mic')}</em>
           </a>`).join('')}
       </div>
