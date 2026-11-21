@@ -223,3 +223,23 @@
 .hg-extra .hg-stages { grid-template-columns: repeat(4, 1fr); }
 .hg-extra .hg-build-tile { grid-column: 1 / -1; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 6px 10px; }
 .hg-extra .hg-build-tile b { font-size: 14px; }
+
+/* 歌曲卡＝字母專輯封面：這首歌會唱到的所有字母排成方塊（子音藍、母音粉），下面是歌裡的單字 */
+.hg-song-pic { height: auto; aspect-ratio: 1 / 1; align-items: center; padding: 30px 8px 8px; }
+.hg-cover { display: grid; gap: 4px; width: 100%; }
+.hg-cover.nfew { grid-template-columns: repeat(3, 1fr); }
+.hg-cover.nmany { grid-template-columns: repeat(4, 1fr); }
+.hg-cover i { font-style: normal; display: grid; place-items: center; aspect-ratio: 1 / 1; border-radius: 9px; font-weight: 900; font-size: 20px; line-height: 1; background: #fff; box-shadow: 0 2px 0 rgba(0, 0, 0, .08); }
+.hg-cover.nmany i { font-size: 16px; border-radius: 7px; }
+.hg-cover i.c { color: #4a7fd6; }
+.hg-cover i.v { color: #d9668a; }
+.hg-song.tone-c2 .hg-cover { grid-template-columns: repeat(3, 1fr); }
+.hg-song.next .hg-cover i { animation: hgPop 2.4s ease-in-out infinite; }
+.hg-song.next .hg-cover i:nth-child(3n+2) { animation-delay: .3s; }
+.hg-song.next .hg-cover i:nth-child(3n) { animation-delay: .6s; }
+@keyframes hgPop { 0%, 70%, 100% { transform: none; } 80% { transform: translateY(-3px) scale(1.08); } }
+.hg-song-words { display: flex; flex-wrap: wrap; gap: 3px; }
+.hg-song-words i { font-style: normal; font-size: 11px; font-weight: 800; color: var(--deep); background: var(--tone); padding: 1px 6px; border-radius: 999px; }
+@media (prefers-reduced-motion: reduce) { .hg-song.next .hg-cover i { animation: none; } }
+.hg-song-pic { aspect-ratio: auto; min-height: 120px; align-items: flex-start; }
+.hg-song .hg-song-badge { position: absolute; top: -10px; right: -8px; z-index: 2; }

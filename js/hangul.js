@@ -70,6 +70,8 @@ const replay = (el) => { if (!el) return; el.classList.remove('play'); void el.g
 // ───────── 總覽：四關＋拼字積木 ─────────
 // 40 音專區首頁：主要任務是「唱 40 音」（4 首原唱歌）；逐字卡片和拼字積木是加練
 const SONGS = { v1: '모음 노래', c1: '자음 노래', c2: '된소리 노래', v2: '이중 모음 노래' };
+// 每首歌裡會唱到的單字（卡片上預告，和歌詞的中文翻譯同一批）
+const WORDS = { v1: ['아이', '우유', '여우'], c1: ['가방', '나비', '바나나'], c2: ['까치', '딸기', '빵'], v2: ['의자', '회사', '귀'] };
 function renderHome() {
   const h = hState();
   const p = hangulProgress();
@@ -77,7 +79,6 @@ function renderHome() {
   const nSung = STAGES.filter((s) => sung[s.id]).length;
   const nextSong = STAGES.find((s) => !sung[s.id]);
   const nextStage = STAGES.find((s) => !h.passed[s.id]);
-  const outfit = avatarOutfit();
   const glyphs = (s, n) => s.items.slice(0, n).map((it) => esc(it[0])).join('');
   $app.innerHTML = `
     <div class="backbar"><a href="#/home" class="backlink">‹</a><b>${ic('ko')} 第 0 課：韓文 40 音</b></div>
@@ -91,11 +92,11 @@ function renderHome() {
         ${STAGES.map((s, i) => `
           <a class="hg-song tone-${s.id} ${sung[s.id] ? 'done' : ''} ${nextSong?.id === s.id ? 'next' : ''}" href="#/hangul/sing-${s.id}" aria-label="${esc(s.title)}・${SONGS[s.id] || ''}">
             <span class="hg-song-pic">
-              <span class="hg-song-glyph" lang="ko">${glyphs(s, 3)}</span>
-              <i class="hg-spr" data-spr="assets/art/dance/${esc(outfit)}-${s.id}.webp"></i>
+              <span class="hg-cover n${s.items.length > 6 ? 'many' : 'few'}" lang="ko">${s.items.map((it) => `<i class="${VOWELS.has(it[0]) ? 'v' : 'c'}">${esc(it[0])}</i>`).join('')}</span>
               <span class="hg-song-no">${i + 1}</span>
-              ${sung[s.id] ? `<span class="hg-song-badge">${ic('medal')}</span>` : ''}
             </span>
+            ${sung[s.id] ? `<span class="hg-song-badge">${ic('medal')}</span>` : ''}
+            <span class="hg-song-words" lang="ko">${(WORDS[s.id] || []).map((w) => `<i>${w}</i>`).join('')}</span>
             <span class="hg-song-name"><b>${esc(s.title.split('：')[1])}</b><small lang="ko">${SONGS[s.id] || ''}</small></span>
             <em class="hg-song-btn">${ic('mic')}</em>
           </a>`).join('')}
@@ -116,16 +117,6 @@ function renderHome() {
       </div>
       <small class="hg-extra-meta">過關 ${p.passed}／${p.stages}・聽過 ${p.heard}／${TOTAL} 個字母</small>
     </section>`;
-  // 每首歌的卡片用該關的跳舞精靈圖：先顯示第一格，「下一首」那張會一直跳
-  $app.querySelectorAll('.hg-spr').forEach((el) => {
-    const im = new Image();
-    im.onload = () => {
-      el.style.backgroundImage = `url("${im.src}")`;
-      el.style.aspectRatio = `${im.naturalWidth / 8} / ${im.naturalHeight}`;
-      el.classList.add('ok');
-    };
-    im.src = el.dataset.spr;
-  });
 }
 
 // ───────── 一關：認識字母（點了會念）→ 小測驗 ─────────
