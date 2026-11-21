@@ -169,7 +169,7 @@ views.hangul = (arg) => renderHangul($app, arg);
 views.game = (arg = 'match-ko') => (arg.startsWith('speed') ? renderSpeed : renderMatch)($app, arg.endsWith('en') ? 'en' : 'ko');
 
 // 版權標示（我的、歡迎頁、首頁底部）
-const COPYRIGHT = `<p class="copyright">© ${new Date().getFullYear()} 蟻葷腹人<br>IG：<a href="https://www.instagram.com/even.a.fool/" target="_blank" rel="noopener">@even.a.fool</a>・Threads：<a href="https://www.threads.net/@even.a.fool" target="_blank" rel="noopener">@even.a.fool</a><br>Email：<a href="mailto:evenafool@gmail.com">evenafool@gmail.com</a></p>`;
+const COPYRIGHT = `<p class="copyright">© ${new Date().getFullYear()} 蟻葷腹人<br>IG：<a href="https://www.instagram.com/even.a.fool/" target="_blank" rel="noopener">@even.a.fool</a>・Threads：<a href="https://www.threads.net/@even.a.fool" target="_blank" rel="noopener">@even.a.fool</a><br>Email：<a href="mailto:evenafool@gmail.com">evenafool@gmail.com</a><br>Powered by Generative AI</p>`;
 
 views.onboard = () => {
   const p = store.get().profile || {};
