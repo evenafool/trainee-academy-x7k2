@@ -43,7 +43,12 @@ export const OUTFITS = [
 // 衣服：每上完一課拿一件（上衣→下身→鞋子輪流），跟著劇情階段換風格：粉絲時期（學生、追星）→ 練習生時期（練習服、宿舍）→ 新人偶像時期（舞台、年末）
 // 圖在 assets/art/doll/<id>.webp（tools/art-jobs/doll-clothes.json 畫的）
 export const STARTER = { top: 'top-startee', bottom: 'skirt-shorts', shoes: 'shoes-slipon' }; // 入學禮物：一開始就有的第二套
+// 初始造型＝劇照裡的樣子（招牌黑長直＋粉紅連帽衣＋白色百褶裙＋白色球鞋）：哪個部位沒穿東西，就穿這套的那一件
+export const DEFAULT_WEAR = { top: 'top-hoodie', bottom: 'skirt-pleat', shoes: 'shoes-sneaker', hairdo: 'hair-black' };
 export const PIECES = [
+  { id: 'top-hoodie', slot: 'top', stage: '初始造型', name: '粉紅連帽衣', how: '一開始就有', unlock: () => true },
+  { id: 'skirt-pleat', slot: 'bottom', stage: '初始造型', name: '白色百褶裙', how: '一開始就有', unlock: () => true },
+  { id: 'shoes-sneaker', slot: 'shoes', stage: '初始造型', name: '白色球鞋', how: '一開始就有', unlock: () => true },
   { id: 'top-startee', slot: 'top', stage: '入學禮物', name: '蜜桃星星T恤', how: '一開始就有', unlock: () => true },
   { id: 'skirt-shorts', slot: 'bottom', stage: '入學禮物', name: '牛仔短褲', how: '一開始就有', unlock: () => true },
   { id: 'shoes-slipon', slot: 'shoes', stage: '入學禮物', name: '紫丁香懶人鞋', how: '一開始就有', unlock: () => true },
@@ -136,11 +141,12 @@ export const PIECES = [
   { id: 'shoes-whitehigh', slot: 'shoes', stage: '白色街舞', name: '白色高筒鞋', how: '領 60 次任務獎勵', unlock: tally('claim', 60) },
 ];
 
-// 髮型庫：預設長直髮；玩家自己在衣帽間「髮型」挑，App 不會自動幫她換
+// 髮型庫：預設＝劇照的招牌黑長直；玩家自己在衣帽間「髮型」挑，App 不會自動幫她換
 // 每款兩層：hair-x.webp（蓋在肩膀、胸前，畫在衣服上面）＋ hair-x-back.webp（身體外面、背後，畫在身體下面）
-export const DEFAULT_HAIR = 'hair-long';
+export const DEFAULT_HAIR = DEFAULT_WEAR.hairdo;
 export const HAIRS = [
-  { id: 'hair-long', slot: 'hairdo', name: '長直髮', how: '一開始就有', unlock: () => true },
+  { id: 'hair-black', slot: 'hairdo', name: '招牌黑長直', how: '一開始就有', unlock: () => true },
+  { id: 'hair-long', slot: 'hairdo', name: '棕色長直髮', how: '一開始就有', unlock: () => true },
   { id: 'hair-layer', slot: 'hairdo', name: '修臉層次長髮', how: '一開始就有', unlock: () => true },
   { id: 'hair-pony', slot: 'hairdo', name: '高馬尾', how: '一開始就有', unlock: () => true },
   { id: 'hair-twin', slot: 'hairdo', name: '雙馬尾', how: '一開始就有', unlock: () => true },
@@ -210,10 +216,14 @@ export function avatarState() {
     a.autoWorn = [...(a.autoWorn || []), ...Object.values(STARTER)];
     a.starter = 1;
   }
-  // 換成新素體（白背心＋白短褲）那一版：舊素體會自動穿粉紅連帽衣、白裙，新的沒有 → 空著的部位一次補上入學禮物那套
-  if (!a.dollV2) {
-    for (const [slot, id] of Object.entries(STARTER)) a.wear[slot] ??= id;
-    a.dollV2 = 1;
+  // 換成新素體那一版（v90 → v91）
+  if ((a.dollV2 || 0) < 2) {
+    // v90 把空著的部位補成了入學禮物那套；v91 起空著的部位就是劇照的初始造型，v90 補上去的那套拿掉
+    if (a.dollV2 === 1 && ['top', 'bottom', 'shoes'].every((s) => a.wear[s] === STARTER[s])) for (const s of ['top', 'bottom', 'shoes']) delete a.wear[s];
+    // 這次一口氣多了很多新衣服：已經拿得到的只在衣帽間亮 NEW，不會每回首頁就自動換掉一件
+    a.autoWorn = [...new Set([...(a.autoWorn || []), ...PIECES.filter((x) => { try { return !!x.unlock(store.get()); } catch (e) { return false; } }).map((x) => x.id)])];
+    a.seen.push(...Object.values(DEFAULT_WEAR));
+    a.dollV2 = 2;
   }
   return a;
 }
@@ -271,8 +281,8 @@ function layerSVG(it) {
 export function dollSVG({ wear = avatarState().wear, box = null, cls = 'me-outfit me-doll', alt = '我的角色', trust = false } = {}) {
   const vb = box ? `${box[0]} ${box[1]} ${box[2] - box[0]} ${box[3] - box[1]}` : `0 0 ${DOLL_W} ${DOLL_H}`;
   const items = Object.values(wear || {}).map(byId).filter((x) => x && hasArt(x) && (trust || isUnlocked(x)));
-  // 素體＝白背心、白短褲、白襪子：沒穿的部位就是這樣。頭髮一定有：沒選就是長直髮
-  if (!items.some((x) => x.slot === 'hairdo')) items.push(HAIRS[0]);
+  // 每個部位一定有東西：沒選的部位穿初始造型（劇照的招牌黑長直、粉紅連帽衣、白色百褶裙、白色球鞋）
+  for (const [slot, id] of Object.entries(DEFAULT_WEAR)) if (!items.some((x) => x.slot === slot)) items.push(byId(id));
   items.sort((p, q) => SLOTS[p.slot].z - SLOTS[q.slot].z);
   const hair = items.find((x) => x.slot === 'hairdo');
   const full = (src) => `<image href="assets/art/doll/${src}.webp" x="0" y="0" width="${DOLL_W}" height="${DOLL_H}"/>`;
@@ -360,7 +370,7 @@ export function renderCloset($app, backBar) {
   const C = CATS.find((c) => c.id === cat) || CATS[0];
   const tile = (x, kind) => {
     const on = isUnlocked(x);
-    const eq = kind === 'set' ? a.outfit === x.id : kind === 'pet' ? a.mascot === x.id : a.outfit === 'fan' && (a.wear[x.slot] || (x.slot === 'hairdo' ? DEFAULT_HAIR : '')) === x.id;
+    const eq = kind === 'set' ? a.outfit === x.id : kind === 'pet' ? a.mascot === x.id : a.outfit === 'fan' && (a.wear[x.slot] || DEFAULT_WEAR[x.slot] || '') === x.id;
     const pic = kind === 'set'
       ? (x.id === 'fan' ? dollSVG({ cls: 'cl-outfit' }) : `<img class="cl-outfit" src="assets/art/me-${x.id}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/sprite-me.webp'">`)
       : kind === 'pet' ? mascotImg(x.id, 'big')
