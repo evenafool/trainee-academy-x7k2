@@ -987,7 +987,8 @@ function route() {
   const [name = 'home', ...rest] = location.hash.replace(/^#\/?/, '').split('/');
   const arg = rest.length ? rest.join('/') : undefined;
   const s = store.get();
-  if (!s.profile && name !== 'onboard') { location.hash = '#/onboard'; return; }
+  // 試穿模式（#/closet/try）給家長在任何裝置驗收，不用先取藝名
+  if (!s.profile && name !== 'onboard' && !(name === 'closet' && arg === 'try')) { location.hash = '#/onboard'; return; }
   if (name !== 'quiz') quiz = null;
   if (name !== 'flash') flash = null;
   const view = views[name] || views.home;
