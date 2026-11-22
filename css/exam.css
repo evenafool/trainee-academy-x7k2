@@ -568,3 +568,19 @@ p.route-chest { background: #f1faf5; color: #3f9a78; cursor: default; }
 .ex-cert b { font-size: 11.5px; line-height: 1.25; }
 .ex-cert small { font-size: 10.5px; }
 .ex-cert:not(.done):not(.ready) .cert-medal { filter: grayscale(1); opacity: .5; }
+
+/* 單字庫：英文回合／韓文回合 */
+.lang-pill { display: inline-block; margin-left: 6px; padding: 1px 9px; border-radius: 99px; font-size: 12px; font-weight: 800; color: #fff; vertical-align: 1px; }
+.lang-pill.en { background: #6aa6d8; }
+.lang-pill.ko { background: #e0899a; }
+.ex-round { display: grid; justify-items: center; gap: 10px; text-align: center; padding: 30px 18px 22px; margin: 18px 0; border-radius: 26px; background: #fff; border: 5px solid #fff; box-shadow: 0 10px 24px rgba(120, 85, 55, .16); animation: erIn .35s ease-out; }
+.ex-round.en { background: linear-gradient(#eef6fd, #fff); }
+.ex-round.ko { background: linear-gradient(#fdeef1, #fff); }
+.ex-round .er-ic { width: 76px; height: 76px; display: grid; place-items: center; border-radius: 50%; background: #fff; box-shadow: 0 4px 12px rgba(120, 85, 55, .15); }
+.ex-round .er-ic svg, .ex-round .er-ic img { width: 46px; height: 46px; }
+.ex-round h2 { margin: 4px 0 0; font-size: 26px; }
+.ex-round.en h2 { color: #3f7fb8; }
+.ex-round.ko h2 { color: #c4566c; }
+.ex-round p { margin: 0 0 6px; color: #7a6a62; }
+.ex-newly span small { display: block; font-size: 12px; color: #c4566c; }
+@keyframes erIn { from { transform: scale(.9); opacity: 0; } }

@@ -10,11 +10,12 @@ import { esc, ic, wic, confetti, speak, speakAsync, shuffle, sttOK, listenOnce, 
 import { CARD_GROUPS, CARD_BY_ID, STICKERS, CHEERS, KO_ONLY, PATTERNS, PATTERN_BY_ID, isNounish, koSim, koKey, cleanHeard } from './chatcards.js';
 import { currentUser, sendMsg, watchMsgs, markSeen, chatId, publicCard, myUid } from './cloud.js';
 import { friendByUid, saveFriendCard } from './friends.js';
+import { lookSVG, BUST_BOX } from './avatar.js';
 
 const DAYS = () => LEVELS.filter((l) => !l.boss);
 const LV = (id) => LEVELS.find((l) => l.id === id);
 const sayKo = (t) => { try { speak(t, 'ko-KR', 0.8); } catch (e) { /* 沒有語音就算了 */ } };
-const avatar = (o) => `<img class="ct-av" src="assets/art/me-${esc(o || 'fan')}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/sprite-me.webp'">`;
+const avatar = (o) => `<span class="ct-av">${lookSVG(o, { box: BUST_BOX, cls: 'face-svg' })}</span>`; // 朋友現在穿的樣子
 // 用訊息 id 當種子，兩邊看到的選項順序一樣
 const seeded = (seed) => { let h = 0; for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) | 0; return () => ((h = (h * 1103515245 + 12345) | 0) >>> 0) / 4294967296; };
 function quizChoices(wordId, seed) {

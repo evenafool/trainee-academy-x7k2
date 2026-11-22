@@ -14,7 +14,7 @@ const MOE_URL = encodeURI('https://www.naer.edu.tw/upload/1/16/doc/812/(發布�
 const NIKL_URL = 'https://www.korean.go.kr/front_eng/down/down_02V.do?etc_seq=70';
 const PASS = 0.8; // 模擬考 80 分過關
 const fmt = (n) => Number(n).toLocaleString('en-US');
-const BATCH = 8; // 單字庫一次學幾個新字
+const BATCH = 6; // 單字庫一次學幾個新字（一回學太多記不住：業界多半一課 5～7 個新字）
 
 // ───────── 認證等級（自家認證） ─────────
 export const CERTS = [
@@ -158,6 +158,24 @@ function buildQs(words, plan) {
 }
 const rep = (type, n) => Array(n).fill(type);
 const EN_PLAN = (n) => shuffle([...rep('zh2en', Math.round(n * 0.3)), ...rep('listen', Math.round(n * 0.25)), ...rep('spell', Math.round(n * 0.25)), ...rep('cloze', n - Math.round(n * 0.3) - Math.round(n * 0.25) * 2)]);
+// 由易到難排：先「聽了選意思」（認得），再「看中文選字」（想得起來），最後才拼字（寫得出來）
+const EASY = { listen: 0, kolisten: 0, ko2zh: 1, zh2en: 1, zh2ko: 1, cloze: 2, spell: 3 };
+const byEase = (plan) => plan.sort((a, b) => EASY[a] - EASY[b]);
+// 複習：英文一回合、韓文一回合（不交錯，比較不會亂）；拼字只在複習出（已經學會的字才拼）
+const TRI_PLAN = (n) => [...byEase(EN_PLAN(Math.ceil(n / 2))), ...byEase(KO_PLAN(Math.floor(n / 2)))];
+const isKo = (type) => type === 'zh2ko' || type === 'kolisten' || type === 'ko2zh';
+// 語言換了就插一張「回合卡」：英文回合 → 韓文回合
+function withRounds(qs) {
+  const out = [];
+  for (const q of qs) {
+    const lang = isKo(q.type) ? 'ko' : 'en';
+    if (out.at(-1)?.lang !== lang && !out.some((x) => x.type === 'round' && x.lang === lang)) out.push({ type: 'round', lang, n: qs.filter((x) => (isKo(x.type) ? 'ko' : 'en') === lang).length });
+    q.lang = lang;
+    out.push(q);
+  }
+  return out;
+}
+const realQs = (qs) => qs.filter((q) => q.type !== 'round');
 const KO_PLAN = (n) => shuffle([...rep('zh2ko', Math.round(n * 0.4)), ...rep('kolisten', Math.round(n * 0.4)), ...rep('ko2zh', n - Math.round(n * 0.4) * 2)]);
 
 // ───────── 進行中的測驗／學習 ─────────
@@ -184,14 +202,30 @@ function drawRun() {
   if (run.i >= run.qs.length) return finishRun();
   const q = run.qs[run.i];
   const done = q.done;
+  const all = realQs(run.qs).length;
+  const at = realQs(run.qs.slice(0, run.i)).length;
   const top = `
     <div class="quiz-top">
       <a class="x" href="${run.back}" id="exExit" aria-label="離開">✕</a>
-      <div class="qbar"><i style="width:${(run.i / run.qs.length) * 100}%"></i></div>
-      <div class="combo ${run.combo >= 2 ? 'hot' : ''}">${run.combo >= 2 ? `COMBO ×${run.combo} ${ic('fire')}` : `${run.i + 1}/${run.qs.length}`}</div>
+      <div class="qbar"><i style="width:${(at / all) * 100}%"></i></div>
+      <div class="combo ${run.combo >= 2 ? 'hot' : ''}">${run.combo >= 2 ? `COMBO ×${run.combo} ${ic('fire')}` : `${Math.min(at + 1, all)}/${all}`}</div>
     </div>
-    <div class="q-deck muted small">${esc(run.title)}</div>`;
+    <div class="q-deck muted small">${esc(run.title)}${q.lang ? `<span class="lang-pill ${q.lang}">${q.lang === 'ko' ? '韓文' : '英文'}</span>` : ''}</div>`;
   let body = '';
+  if (q.type === 'round') {
+    q.done = true; // 按 Enter 也能開始
+    const first = run.qs[0] === q;
+    body = `
+      <div class="ex-round ${q.lang}">
+        <div class="er-ic">${ic(q.lang)}</div>
+        <h2>${q.lang === 'ko' ? (first ? '韓文回合' : '換韓文囉！') : '英文回合'}</h2>
+        <p>${q.n} 題・${first || q.lang === 'en' ? '先聽聲音選意思，再看中文選單字' : '一樣先聽、再選，剛剛學的字用韓文再認一次'}</p>
+        <button type="button" class="btn primary big" id="exNext">開始 ›</button>
+      </div>`;
+    $app.innerHTML = `<section class="exam-run">${top}${body}</section>`;
+    wireRun(q);
+    return;
+  }
   if (q.type === 'spell') {
     const ans = q.w.en.toLowerCase();
     const slots = ans.split('').map((ch, k) => {
@@ -240,6 +274,7 @@ function drawRun() {
 function wireRun(q) {
   const $ = (s) => $app.querySelector(s);
   $('#exExit').onclick = () => { run = null; stopSpeaking(); };
+  if (q.type === 'round') { $('#exNext').onclick = () => { run.i++; drawRun(); window.scrollTo(0, 0); }; return; }
   if (q.audio) {
     const play = () => speak(q.audio[0], q.audio[1]);
     $('#exListen').onclick = play;
@@ -307,7 +342,10 @@ function answer(q, ok, picked) {
   if (q.type === 'spell' && ok) ex.spelled[q.w.id] = (ex.spelled[q.w.id] || 0) + 1;
   if (run.mode === 'bank') {
     if (ok) { if (learn(q.w.id)) run.newly.push(q.w.id); }
-    else if (!q.retry) run.qs.push({ ...makeQ(q.type, q.w), retry: true }); // 答錯的字最後再考一次
+    else if (!q.retry) { // 答錯的字在這一回合最後再考一次
+      const nx = run.qs.findIndex((x, k) => k > run.i && x.type === 'round');
+      run.qs.splice(nx < 0 ? run.qs.length : nx, 0, { ...makeQ(q.type, q.w), retry: true, lang: q.lang });
+    }
   } else if (store.get().course.learned[q.w.id]) {
     store.reviewWord(q.w.id, ok);
   }
@@ -323,8 +361,8 @@ function answer(q, ok, picked) {
 function finishRun() {
   const r = run;
   host?.end();
-  const total = r.qs.length;
-  const firstTry = r.qs.filter((q) => !q.retry);
+  const total = realQs(r.qs).length;
+  const firstTry = realQs(r.qs).filter((q) => !q.retry);
   const score = firstTry.length ? firstTry.filter((q) => q.ok).length / firstTry.length : 0;
   let xp = 0;
   let cert = null;
@@ -350,7 +388,7 @@ function finishRun() {
       <h1>${esc(head)}</h1>
       <div class="xp-gain">+${xp} 應援值</div>
       <div class="muted">測驗蓋章 ✓ 今日集章 ${Math.min(prog.daily.stamps.length, store.DAILY_GOAL)}/${store.DAILY_GOAL}${prog.goalJustMet ? '　★ 今日目標達成！' : ''}</div>
-      ${r.mode === 'bank' && r.newly.length ? `<div class="ex-newly">${r.newly.map((id) => `<span>${wic(WORDS[id])}<b>${esc(WORDS[id].en)}</b></span>`).join('')}</div>` : ''}
+      ${r.mode === 'bank' && r.newly.length ? `<div class="ex-newly">${r.newly.map((id) => `<span>${wic(WORDS[id])}<b>${esc(WORDS[id].en)}</b>${hasKo(WORDS[id]) ? `<small>${esc(WORDS[id].ko)}</small>` : ''}</span>`).join('')}</div>` : ''}
       ${cert ? certHTML(cert, examState().certs[cert.id]) : ''}
       <p class="muted">英文基本字 ${st.enB}／${fmt(EXAM_TOTAL.enBasic)}　韓文 A 級 ${st.koA}／${EXAM_TOTAL.koA}　會拼 ${st.spelled} 字</p>
       <div class="actions">
@@ -479,8 +517,8 @@ function renderBankList() {
       <span class="bk-prog"><i style="width:${pct}%"></i></span><em>${full ? '✓ 學完' : `${have}／${all}`}</em></a>`;
   };
   $app.innerHTML = `
-    <div class="backbar"><a href="#/exam" class="backlink">‹</a><b>${ic('book')} 國中 1,200 單字庫</b></div>
-    <p class="ex-intro">照教育部字表的主題分好了。每次學 ${BATCH} 個新字：<b>先看卡片 → 小測驗答對</b>，就收進你的單字本。已學 ${got}／${total} 字（主線課程教過的字不會重複）。</p>
+    <div class="backbar"><a href="#/exam" class="backlink">‹</a><b>${ic('book')} 三語單字庫</b></div>
+    <p class="ex-intro">照教育部字表的主題分好了。每次學 ${BATCH} 個新字，一個字同時學<b>中・英・韓</b>：<b>看卡片 → 英文回合 → 韓文回合</b>，先會認、再會選；學會的字複習時才拼字，就收進你的單字本。已學 ${got}／${total} 字（主線課程教過的字不會重複）。</p>
     <div class="bk-grid">
       ${cu.length ? card('catchup', '⭐', '延伸字補課', `${cu.length} 個以前的延伸字`, 0, cu.length) : ''}
       ${BANK.map((t) => card(t.id, t.emoji, t.zh, t.en, t.words.filter((w) => L[w.id]).length, t.words.length)).join('')}
@@ -501,15 +539,20 @@ function startBank(themeId) {
         ${learned.length >= 4 ? `<button type="button" class="btn primary big" id="bkReview">${ic('star')} 複習這個主題（${Math.min(10, learned.length)} 題）</button>` : ''}
         <a class="btn big" href="#/exam/bank">看其他主題</a></div>`;
     $app.querySelector('#bkReview')?.addEventListener('click', () => {
-      run = { mode: 'quiz', route: `bank/${th.id}`, title: `複習・${th.zh}`, back: '#/exam/bank', phase: 'quiz', qs: buildQs(learned, EN_PLAN(Math.min(10, learned.length))), i: 0, correct: 0, combo: 0, maxCombo: 0, newly: [] };
+      run = { mode: 'quiz', route: `bank/${th.id}`, title: `複習・${th.zh}`, back: '#/exam/bank', phase: 'quiz', qs: withRounds(buildQs(learned, TRI_PLAN(Math.min(10, learned.length)))), i: 0, correct: 0, combo: 0, maxCombo: 0, newly: [] };
       drawRun();
     });
     return;
   }
-  const plan = fresh.map((w, k) => (spellable(w) && k % 3 === 1 ? 'spell' : k % 3 === 2 ? 'listen' : 'zh2en'));
+  // 學新字：英文回合（前半聽了選意思、後半看中文選英文）→ 韓文回合（同樣先聽再選）
+  // 第一次學只考「認得」和「想得起來」，拼字等到複習才出
+  const half = Math.ceil(fresh.length / 2);
+  const enQs = shuffle(fresh).map((w, k) => makeQ(k < half ? 'listen' : 'zh2en', w));
+  const koW = shuffle(fresh.filter(hasKo));
+  const koQs = koW.map((w, k) => makeQ(k < Math.ceil(koW.length / 2) ? 'kolisten' : 'zh2ko', w));
   run = {
     mode: 'bank', theme: th.id, route: `bank/${th.id}`, title: `單字庫・${th.zh}`, back: '#/exam/bank', phase: 'intro', k: 0,
-    words: fresh, qs: fresh.map((w, k) => makeQ(plan[k], w)), i: 0, correct: 0, combo: 0, maxCombo: 0, newly: [],
+    words: fresh, qs: withRounds([...enQs, ...koQs]), i: 0, correct: 0, combo: 0, maxCombo: 0, newly: [],
   };
   drawRun();
 }
@@ -538,7 +581,7 @@ function drawIntro() {
   setTimeout(() => sayBoth(w), 250);
   $app.querySelector('#bkNext').onclick = () => {
     if (run.k < run.words.length - 1) run.k++;
-    else { run.phase = 'quiz'; run.qs = shuffle(run.qs); }
+    else run.phase = 'quiz';
     drawRun();
   };
 }

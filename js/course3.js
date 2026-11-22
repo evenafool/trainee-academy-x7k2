@@ -2,6 +2,8 @@
 // 主線：第一次上音樂節目 → 第一個一位 → 電台與綜藝 → 粉絲簽名會 → 亞洲巡演・台北場 → 年末頒獎典禮（新人賞）
 // 都市傳說穿插：電視台的도깨비（韓國民間傳說）、九份・金瓜石的黃金傳說（台灣歷史）
 // 健康的偶像夢：睡飽、吃好、線上課照上、對粉絲溫柔、不用為了追星花大錢
+// 旅遊篇（第 17、18 章，第 49～54 天）也寫在這個檔案：新人賞後放一週假，家人來首爾，主角用韓文當全家導遊
+// 旅遊篇原則：只換需要的錢、禮物只買一件、家人只出現在旁白（cap），不在 CAST 裡
 
 const S = (who, en, ko, kr, zh, bg) => ({ who, en, ko, kr, zh, bg });
 const L = (c, en, ko, kr, zh) => ({ c, en, ko, kr, zh });
@@ -15,6 +17,8 @@ export const CHAPTERS3 = [
   { id: 14, title: '粉絲簽名會', emoji: '✍️', bg: 'cafe', desc: '第一次簽名會、讀粉絲的信、幫徐允過生日' },
   { id: 15, title: '亞洲巡演・台北場', emoji: '✈️', bg: 'airport', desc: '巡演最後一站是台北，家人就在台下' },
   { id: 16, title: '年末頒獎典禮', emoji: '🏅', bg: 'stage', desc: '首爾的初雪、紅毯，還有一生只有一次的新人賞' },
+  { id: 17, title: '首爾自由行：吃住篇', emoji: '🏨', bg: 'room', desc: '新人賞後放一週假，換你用韓文帶全家住飯店、點餐、逛景福宮' },
+  { id: 18, title: '首爾自由行：交通購物篇', emoji: '🚌', bg: 'street', desc: '搭公車上南山、逛明洞，最後全家一起回台灣過年' },
 ];
 
 export const WORDS3 = {
@@ -186,6 +190,62 @@ export const WORDS3 = {
   start: W('🚦', '開始', 'start', '시작해요', 'sijakhaeyo', '漢字詞「始作」→ 시작；開始！＝시작!', [
     S('coach', "Let's start!", '시작해요!', 'Sijakhaeyo!', '開始吧！', 'practice'),
     S('me', 'A new year is starting.', '새해가 시작돼요.', 'Saehaega sijakdwaeyo.', '新的一年要開始了。', 'night')]),
+  // ── 第十七章 首爾自由行：吃住篇（旅遊篇）──
+  hotel: W('🏨', '飯店', 'hotel', '호텔', 'hotel', '外來語 hotel → 호텔，念法幾乎跟英文一樣', [
+    S('mina', 'Our hotel is near the station.', '호텔이 역에서 가까워요.', 'Hoteri yeogeseo gakkawoyo.', '飯店離車站很近。', 'street'),
+    S('me', 'This hotel is so pretty!', '이 호텔 정말 예뻐요!', 'I hotel jeongmal yeppeoyo!', '這間飯店好漂亮！', 'room')]),
+  booking: W('📅', '預約', 'booking', '예약', 'yeyak', '漢字詞「豫約」＝預約；訂房、訂位都說 예약', [
+    S('me', 'I made a booking.', '예약했어요.', 'Yeyakhaesseoyo.', '我有預約。', 'room'),
+    S('mina', 'What name is the booking under?', '예약 이름이 뭐예요?', 'Yeyak ireumi mwoyeyo?', '預約的名字是什麼？', 'room')]),
+  roomkey: W('🔑', '鑰匙', 'key', '열쇠', 'yeolsoe', '열쇠＝鑰匙；飯店的房卡也可以叫 카드 키（card key）', [
+    S('mina', 'Here is your key.', '여기 열쇠요.', 'Yeogi yeolsoeyo.', '鑰匙給你。', 'room'),
+    S('me', 'Where is my key?', '제 열쇠 어디 있어요?', 'Je yeolsoe eodi isseoyo?', '我的鑰匙在哪裡？', 'room')]),
+  menu: W('📋', '菜單', 'menu', '메뉴', 'menyu', '外來語 menu → 메뉴；看菜單＝메뉴를 봐요', [
+    S('leo', 'Can I see the menu?', '메뉴 좀 볼 수 있어요?', 'Menyu jom bol su isseoyo?', '可以看一下菜單嗎？', 'cafe'),
+    S('me', 'The menu is all in Korean.', '메뉴가 다 한국어예요.', 'Menyuga da hangugeoyeyo.', '菜單全是韓文。', 'cafe')]),
+  order: W('🛎️', '點餐', 'order', '주문해요', 'jumunhaeyo', '漢字詞「注文」＝點、訂；我要點餐＝주문할게요！', [
+    S('me', 'Can I order now?', '지금 주문해도 돼요?', 'Jigeum jumunhaedo dwaeyo?', '現在可以點餐嗎？', 'cafe'),
+    S('leo', "I'll order for you.", '제가 주문해 줄게요.', 'Jega jumunhae julgeyo.', '我幫你點。', 'cafe')]),
+  bill: W('🧮', '結帳', 'bill', '계산', 'gyesan', '漢字詞「計算」＝結帳；請幫我結帳＝계산해 주세요', [
+    S('me', 'The bill, please!', '계산해 주세요!', 'Gyesanhae juseyo!', '請幫我結帳！', 'cafe'),
+    S('leo', 'We pay the bill at the counter.', '계산은 카운터에서 해요.', 'Gyesaneun kaunteoeseo haeyo.', '要到櫃檯結帳。', 'cafe')]),
+  restroom: W('🚻', '洗手間', 'restroom', '화장실', 'hwajangsil', '漢字詞「化粧室」，跟台灣說的「化妝室」一樣！', [
+    S('me', 'Where is the restroom?', '화장실이 어디예요?', 'Hwajangsiri eodiyeyo?', '洗手間在哪裡？', 'street'),
+    S('mina', 'The restroom is over there.', '화장실은 저기 있어요.', 'Hwajangsireun jeogi isseoyo.', '洗手間在那邊。', 'street')]),
+  way: W('🛣️', '路', 'way', '길', 'gil', '길＝路；迷路＝길을 잃었어요', [
+    S('me', 'I lost my way.', '길을 잃었어요.', 'Gireul ireosseoyo.', '我迷路了。', 'street'),
+    S('mina', 'Come this way.', '이 길로 오세요.', 'I gillo oseyo.', '走這條路過來。', 'street')]),
+  straight: W('⬆️', '直走', 'go straight', '쭉 가요', 'jjuk gayo', '쭉＝一直；左轉、右轉是 왼쪽으로、오른쪽으로 가요', [
+    S('mina', 'Go straight.', '쭉 가요.', 'Jjuk gayo.', '直走。', 'street'),
+    S('me', 'Go straight, then left?', '쭉 가서 왼쪽이에요?', 'Jjuk gaseo oenjjogieyo?', '直走然後左轉嗎？', 'street')]),
+  // ── 第十八章 首爾自由行：交通購物篇（旅遊篇）──
+  tcard: W('💳', '交通卡', 'transit card', '교통카드', 'gyotongkadeu', '漢字「交通」＋外來語 card；首爾的公車、地鐵都能刷', [
+    S('leo', 'Tap your transit card.', '교통카드를 찍어요.', 'Gyotongkadeureul jjigeoyo.', '刷交通卡。', 'street'),
+    S('me', 'I lost my transit card!', '교통카드를 잃어버렸어요!', 'Gyotongkadeureul ireobeoryeosseoyo!', '我的交通卡不見了！', 'street')]),
+  busstop: W('🚏', '公車站', 'bus stop', '정류장', 'jeongnyujang', '漢字詞「停留場」；ㄹ 接在 ㅇ 後面會念成 ㄴ，所以念 jeongnyujang', [
+    S('me', 'Where is the bus stop?', '정류장이 어디예요?', 'Jeongnyujangi eodiyeyo?', '公車站在哪裡？', 'street'),
+    S('leo', 'The bus stop is right there.', '정류장은 바로 저기예요.', 'Jeongnyujangeun baro jeogiyeyo.', '公車站就在那裡。', 'street')]),
+  getoff: W('🚌', '下車', 'get off', '내려요', 'naeryeoyo', '내리다＝下（車）；上車是 타요，兩個一起記！', [
+    S('leo', 'We get off here.', '여기서 내려요.', 'Yeogiseo naeryeoyo.', '我們在這裡下車。', 'street'),
+    S('me', 'Where do we get off?', '어디서 내려요?', 'Eodiseo naeryeoyo?', '我們在哪裡下車？', 'street')]),
+  exchange: W('💱', '換錢', 'exchange', '환전', 'hwanjeon', '漢字詞「換錢」，跟中文一模一樣！換錢所＝환전소', [
+    S('seoyun', 'Where can we exchange money?', '어디서 환전해요?', 'Eodiseo hwanjeonhaeyo?', '要在哪裡換錢？', 'street'),
+    S('me', 'I exchanged a little money.', '돈을 조금 환전했어요.', 'Doneul jogeum hwanjeonhaesseoyo.', '我換了一點點錢。', 'street')]),
+  size: W('📏', '尺寸', 'size', '사이즈', 'saijeu', '外來語 size → 사이즈；S、M、L 也是直接用英文念', [
+    S('seoyun', 'What size do you wear?', '사이즈가 뭐예요?', 'Saijeuga mwoyeyo?', '你穿什麼尺寸？', 'street'),
+    S('me', 'Do you have a bigger size?', '더 큰 사이즈 있어요?', 'Deo keun saijeu isseoyo?', '有大一點的尺寸嗎？', 'street')]),
+  tryon: W('🪞', '試穿', 'try on', '입어 봐요', 'ibeo bwayo', '입어요（穿）＋봐요（看看）＝穿穿看；可以試穿嗎？＝입어 봐도 돼요?', [
+    S('me', 'Can I try this on?', '이거 입어 봐도 돼요?', 'Igeo ibeo bwado dwaeyo?', '這件可以試穿嗎？', 'street'),
+    S('seoyun', 'Try it on!', '한번 입어 봐요!', 'Hanbeon ibeo bwayo!', '穿穿看嘛！', 'street')]),
+  souvenir: W('🗼', '紀念品', 'souvenir', '기념품', 'ginyeompum', '漢字詞「紀念品」，跟中文一模一樣！', [
+    S('leo', 'I bought a souvenir.', '기념품을 샀어요.', 'Ginyeompumeul sasseoyo.', '我買了紀念品。', 'airport'),
+    S('me', 'This souvenir is for my grandma.', '이 기념품은 할머니 거예요.', 'I ginyeompumeun halmeoni geoyeyo.', '這個紀念品是給阿嬤的。', 'airport')]),
+  luggage: W('🧳', '行李', 'luggage', '짐', 'jim', '짐＝行李；打包行李＝짐을 싸요', [
+    S('leo', 'Your luggage is heavy!', '짐이 무거워요!', 'Jimi mugeowoyo!', '你的行李好重！', 'airport'),
+    S('me', 'I packed my luggage.', '짐을 쌌어요.', 'Jimeul ssasseoyo.', '我把行李打包好了。', 'room')]),
+  seeyou: W('👋', '再見', 'see you', '또 봐요', 'tto bwayo', '또＝又、再，봐요＝見面；朋友之間輕鬆說的「再見」', [
+    S('leo', 'See you tomorrow!', '내일 또 봐요!', 'Naeil tto bwayo!', '明天見！', 'street'),
+    S('me', 'See you soon, Leo!', '레오, 곧 또 봐요!', 'Reo, got tto bwayo!', 'Leo，很快再見！', 'airport')]),
 };
 export const LEVELS3 = [
   { id: 'd31', ch: 11, title: '第一次音樂節目', words: ['music', 'camera', 'photo'], bg: 'stage', with: 'mina',
@@ -284,6 +344,46 @@ export const LEVELS3 = [
       L('seoyun', 'This year is coming to an end…', '올해도 이제 끝나요…', 'Olhaedo ije kkeunnayo…', '今年也快要結束了…'),
       L('me', "It's not the end. Our story starts now!", '끝이 아니에요. 우리 이야기는 이제 시작이에요!', 'Kkeuchi anieyo. Uri iyagineun ije sijagieyo!', '這不是結束，我們的故事現在才開始！')] },
   { id: 'b16', ch: 16, boss: true, title: '第三季最終 BOSS：年末舞台' },
+  // ── 旅遊篇：第十七章 首爾自由行：吃住篇 ──
+  { id: 'd49', ch: 17, title: '飯店入住', words: ['hotel', 'booking', 'roomkey'], bg: 'room', with: 'mina',
+    dialogue: [L('mina', 'This is our hotel!', '여기가 우리 호텔이에요!', 'Yeogiga uri hoterieyo!', '這裡就是我們的飯店！'),
+      L('me', 'I made a booking for my family.', '가족 방을 예약했어요.', 'Gajok bangeul yeyakhaesseoyo.', '我幫家人訂好房間了。'),
+      L('mina', 'Here is your room key.', '여기 방 열쇠예요.', 'Yeogi bang yeolsoeyeyo.', '這是你們的房間鑰匙。'),
+      L('me', "Room 1004? It's the angel room!", '1004호요? 천사 방이에요!', 'Cheonsahoyo? Cheonsa bangieyo!', '1004 號房？是天使房耶！'),
+      L('mina', 'Your family will love it!', '가족들이 정말 좋아할 거예요!', 'Gajokdeuri jeongmal joahal geoyeyo!', '家人一定會很喜歡！')] },
+  { id: 'd50', ch: 17, title: '第一次自己點餐', words: ['menu', 'order', 'bill'], bg: 'cafe', with: 'leo',
+    dialogue: [L('leo', "Here's the menu. What do you want?", '여기 메뉴예요. 뭐 먹을래요?', 'Yeogi menyuyeyo. Mwo meogeullaeyo?', '菜單在這裡。你想吃什麼？'),
+      L('me', "I'll order for everyone!", '제가 주문할게요!', 'Jega jumunhalgeyo!', '我來幫大家點！'),
+      L('me', 'Excuse me! Five bibimbaps, please.', '저기요! 비빔밥 다섯 개 주세요.', 'Jeogiyo! Bibimbap daseot gae juseyo.', '不好意思！請給我五份拌飯。'),
+      L('leo', 'The side dishes are free!', '반찬은 무료예요!', 'Banchaneun muryoyeyo!', '小菜是免費的喔！'),
+      L('me', 'The bill, please!', '계산해 주세요!', 'Gyesanhae juseyo!', '請幫我結帳！')] },
+  { id: 'd51', ch: 17, title: '洗手間在哪裡', words: ['restroom', 'way', 'straight'], bg: 'street', with: 'mina',
+    dialogue: [L('me', 'Where is the restroom?', '화장실이 어디예요?', 'Hwajangsiri eodiyeyo?', '洗手間在哪裡？'),
+      L('mina', 'Go straight this way.', '이 길로 쭉 가요.', 'I gillo jjuk gayo.', '沿著這條路直走。'),
+      L('me', 'Oh no, I got lost.', '아, 길을 잃었어요.', 'A, gireul ireosseoyo.', '啊，我迷路了。'),
+      L('mina', "It's okay. Come with me.", '괜찮아요. 저랑 같이 가요.', 'Gwaenchanayo. Jeorang gachi gayo.', '沒關係，跟我一起走。'),
+      L('me', 'Thank you! I can see the restroom!', '고마워요! 화장실이 보여요!', 'Gomawoyo! Hwajangsiri boyeoyo!', '謝謝！我看到洗手間了！')] },
+  { id: 'b17', ch: 17, boss: true, title: '第十七章 BOSS：飯店和餐廳' },
+  // ── 旅遊篇：第十八章 首爾自由行：交通購物篇 ──
+  { id: 'd52', ch: 18, title: '搭公車', words: ['tcard', 'busstop', 'getoff'], bg: 'street', with: 'leo',
+    dialogue: [L('leo', 'Does everyone have a transit card?', '다들 교통카드 있어요?', 'Dadeul gyotongkadeu isseoyo?', '大家都有交通卡嗎？'),
+      L('me', 'Yes! Where is the bus stop?', '네! 정류장이 어디예요?', 'Ne! Jeongnyujangi eodiyeyo?', '有！公車站在哪裡？'),
+      L('leo', "Over there! Let's take the Namsan bus.", '저기예요! 남산 버스 타요.', 'Jeogiyeyo! Namsan beoseu tayo.', '在那裡！我們搭去南山的公車。'),
+      L('me', 'Do we get off here?', '여기서 내려요?', 'Yeogiseo naeryeoyo?', '我們在這裡下車嗎？'),
+      L('leo', 'Yes! Tap your card when you get off, too.', '네! 내릴 때도 카드 찍어요.', 'Ne! Naeril ttaedo kadeu jjigeoyo.', '對！下車的時候也要刷卡。')] },
+  { id: 'd53', ch: 18, title: '換錢和逛街', words: ['exchange', 'size', 'tryon'], bg: 'street', with: 'seoyun',
+    dialogue: [L('seoyun', 'Where do we exchange money?', '환전은 어디서 해요?', 'Hwanjeoneun eodiseo haeyo?', '要在哪裡換錢？'),
+      L('me', "Over there! I'll exchange only a little.", '저기예요! 조금만 환전해요.', 'Jeogiyeyo! Jogeumman hwanjeonhaeyo.', '在那邊！只換一點點就好。'),
+      L('me', 'Grandma, try on this sweater!', '할머니, 이 스웨터 입어 보세요!', 'Halmeoni, i seuweteo ibeo boseyo!', '阿嬤，試穿這件毛衣看看！'),
+      L('seoyun', 'Is the size okay?', '사이즈 괜찮아요?', 'Saijeu gwaenchanayo?', '尺寸還可以嗎？'),
+      L('me', "Yes, it's perfect!", '네, 딱 맞아요!', 'Ne, ttak majayo!', '對，剛剛好！')] },
+  { id: 'd54', ch: 18, title: '回台灣過年', words: ['souvenir', 'luggage', 'seeyou'], bg: 'airport', with: 'leo',
+    dialogue: [L('leo', 'Is this all your luggage?', '짐이 이게 다예요?', 'Jimi ige dayeyo?', '行李就這些嗎？'),
+      L('me', 'Yes! Just one bag.', '네! 가방 하나예요.', 'Ne! Gabang hanayeyo.', '對！只有一個包包。'),
+      L('leo', 'This souvenir is for your grandma.', '할머니 드릴 기념품이에요.', 'Halmeoni deuril ginyeompumieyo.', '這是要送阿嬤的紀念品。'),
+      L('me', 'Thank you! Happy New Year!', '고마워요! 새해 복 많이 받으세요!', 'Gomawoyo! Saehae bok mani badeuseyo!', '謝謝你！新年快樂！'),
+      L('leo', 'See you after the holiday!', '설날 지나고 또 봐요!', 'Seollal jinago tto bwayo!', '過完年再見！')] },
+  { id: 'b18', ch: 18, boss: true, title: '旅遊篇最終 BOSS：首爾自由行' },
 ];
 
 export const STORIES3 = {
@@ -377,6 +477,37 @@ export const STORIES3 = {
       P('burst', [['me', 'cry'], ['seoyun', 'cry']], [['me', '팬 여러분, 감사합니다.', '粉絲們，謝謝大家。'], ['me', '이건 끝이 아니에요.', '這不是結束。', { w: 'end', hl: '끝' }], ['me', '우리 이야기는 지금부터 시작이에요!', '我們的故事，從現在才開始！', { shout: true, w: 'start', hl: '시작' }]], { cap: '得獎感言' }),
       P('stage', [['mina', 'cry'], ['coach', 'smile']], [['mina', '우리 애들이 신인상을 받았어요…!', '我們家的孩子拿到新人賞了…！'], ['coach', '이제부터가 진짜 시작이에요.', '從現在起，才是真正的開始。']], { cap: '台下的敏雅和姜教練；台灣的家裡，爸爸、媽媽和阿嬤也在看直播' })],
     fact: '「신인상（新人賞）」只頒給剛出道的新人，所以偶像們常說它是「一生只有一次的獎」。拿到新人賞不是終點，而是代表：從今天開始，大家都記住你們的名字了！' },
+  // ── 旅遊篇（第 49～54 天）──
+  d49: { kind: '旅遊篇・數字玄學', title: '1004 號房的天使',
+    panels: [P('room', [['me', 'happy', 'wave'], ['mina', 'happy']], [['me', '엄마, 아빠, 할머니!', '媽媽、爸爸、阿嬤！'], ['me', '여기가 우리 호텔이에요!', '這裡就是我們的飯店！', { w: 'hotel', hl: '호텔' }]], { cap: '新人賞後放一週假，爸媽和阿嬤從台灣飛來首爾' }),
+      P('burst', [['me', 'shock'], ['mina', 'think']], [['me', '예약이 없어요?!', '查不到訂房？！', { shout: true, w: 'booking', hl: '예약' }], ['mina', '영어 이름으로 찾아 봐요!', '用英文名字找找看！']], { cap: '櫃檯人員說：「查不到這個名字的訂房…」', fx: '咦？！' }),
+      P('room', [['mina', 'happy'], ['me', 'love']], [['mina', '찾았어요! 여기 열쇠요.', '找到了！鑰匙給你。', { w: 'roomkey', hl: '열쇠' }], ['me', '1004호… 천사 방이에요!', '1004 號…是天使房耶！']], { cap: '原來訂房用的是護照上的英文名字' })],
+    fact: '韓國人很喜歡數字「1004」：1000 念「천」、4 念「사」，合起來「천사」剛好跟「天使」同音！所以韓國人常在訊息裡寫 1004，意思是「你是我的天使」。不過數字本身不會帶來好運或壞運，這只是有趣的諧音哏。另外，在國外訂飯店時，名字要跟護照上的英文拼法一模一樣，櫃檯才查得到喔！' },
+  d50: { kind: '旅遊篇', title: '小菜可以再加！',
+    panels: [P('cafe', [['leo', 'happy', 'point'], ['me', 'think']], [['leo', '메뉴가 다 한국어예요.', '菜單全部都是韓文喔。', { w: 'menu', hl: '메뉴' }], ['me', '괜찮아요. 제가 읽을게요!', '沒關係，我來念！']], { cap: '晚上，Leo 帶你們全家去一間韓式小餐館' }),
+      P('cafe', [['me', 'cool', 'cheer'], ['leo', 'shock']], [['me', '저기요! 주문할게요!', '不好意思！我要點餐！', { shout: true, w: 'order', hl: '주문' }]], { cap: '阿嬤小聲說：「你什麼時候變這麼厲害了？」' }),
+      P('cafe', [['leo', 'love'], ['me', 'happy']], [['me', '반찬을 더 주셨어요!', '老闆又多送了小菜！'], ['leo', '계산은 카운터에서 해요.', '結帳要到櫃檯喔。', { w: 'bill', hl: '계산' }]], { cap: '阿嬤的小菜盤一下子就空了，老闆笑著又端來一盤' })],
+    fact: '在韓國餐廳，泡菜、豆芽這些「반찬（小菜）」通常是免費的，吃完還可以請店家再加一點（吃多少加多少，不要浪費）。想叫店員時，可以舉手說「저기요！」（不好意思～）；吃完飯，大多是拿著帳單到門口的櫃檯「계산（結帳）」。台灣的小菜常常要另外付錢，這點跟韓國很不一樣！' },
+  d51: { kind: '旅遊篇', title: '景福宮迷路記',
+    panels: [P('street', [['mina', 'happy'], ['me', 'think']], [['me', '아빠가 화장실을 찾아요!', '爸爸在找洗手間！', { w: 'restroom', hl: '화장실' }]], { cap: '第三天，敏雅陪你們全家穿韓服逛景福宮' }),
+      P('burst', [['me', 'shock'], ['mina', 'think']], [['me', '길을 잃었어요!', '我們迷路了！', { shout: true, w: 'way', hl: '길' }]], { cap: '宮殿好大，每一座門看起來都好像', fx: '迷路！' }),
+      P('street', [['mina', 'smile', 'point'], ['me', 'happy']], [['mina', '저 문으로 쭉 가요!', '往那個門一直走！', { w: 'straight', hl: '쭉 가요' }], ['me', '찾았어요! 고마워요!', '找到了！謝謝！']], { cap: '看懂地圖上的標誌，洗手間就在出口旁邊' })],
+    fact: '景福宮是朝鮮王朝最大的宮殿，穿韓服去參觀還可以免費入場！首爾的地鐵站和觀光景點幾乎都有免費的公共廁所，找不到的時候就問：「화장실이 어디예요?」（洗手間在哪裡？）。韓文的「화장실」就是漢字「化粧室」，跟台灣說的「化妝室」一樣喔！' },
+  d52: { kind: '旅遊篇', title: '下車也要嗶一下',
+    panels: [P('street', [['leo', 'happy', 'point'], ['me', 'think']], [['leo', '교통카드 다 있어요?', '交通卡都有了嗎？', { w: 'tcard', hl: '교통카드' }], ['me', '네! 할머니 카드도 있어요.', '有！阿嬤的卡也有。']], { cap: '第四天要去南山塔，Leo 教全家搭公車' }),
+      P('street', [['me', 'happy'], ['leo', 'smile']], [['me', '정류장에 버스가 와요!', '公車進站了！', { w: 'busstop', hl: '정류장' }]], { cap: '公車站的螢幕寫著：「南山方向，3 分鐘後到站」' }),
+      P('burst', [['leo', 'shock'], ['me', 'shock']], [['leo', '잠깐! 내릴 때도 찍어요!', '等一下！下車也要刷！', { shout: true, w: 'getoff', hl: '내릴' }]], { cap: '到站了，爸爸差點直接走下車', fx: '嗶！' })],
+    fact: '在首爾搭公車，上車、下車都要刷交通卡。下車有刷卡，30 分鐘內轉搭下一班公車或地鐵，就有轉乘優惠，可以省下不少車資。南山上的首爾塔是首爾最有名的地標之一，天氣好的時候可以看到整個首爾！' },
+  d53: { kind: '旅遊篇', title: '明洞的一件毛衣',
+    panels: [P('street', [['seoyun', 'happy'], ['me', 'shock']], [['me', '환전소가 정말 많아요!', '換錢所好多喔！', { w: 'exchange', hl: '환전' }], ['seoyun', '필요한 만큼만 바꿔요.', '只換需要的就好。']], { cap: '第五天，徐允陪你們逛明洞' }),
+      P('street', [['me', 'happy', 'point'], ['seoyun', 'smile']], [['me', '할머니, 이거 입어 보세요!', '阿嬤，試穿這件看看！', { w: 'tryon', hl: '입어' }]], { cap: '逛了一整條街，你只挑了一件——要送給阿嬤的毛衣' }),
+      P('street', [['seoyun', 'love'], ['me', 'love']], [['seoyun', '사이즈가 딱 맞아요!', '尺寸剛剛好！', { w: 'size', hl: '사이즈' }], ['me', '모아 둔 용돈으로 샀어요.', '是用我存下來的零用錢買的。']])],
+    fact: '明洞是首爾最熱鬧的購物街，有很多「환전소（換錢所）」。出國換錢前，先想好要買什麼、只換需要的金額就好。韓國還有一個溫暖的傳統：年輕人拿到第一份薪水時，會買紅色的保暖內衣送給爸媽，祝他們身體健康。禮物不用多、不用貴，有心意最重要！' },
+  d54: { kind: '旅遊篇', title: '一起回家過年',
+    panels: [P('airport', [['leo', 'happy', 'wave'], ['me', 'happy']], [['leo', '짐 다 챙겼어요?', '行李都帶齊了嗎？', { w: 'luggage', hl: '짐' }], ['me', '네! 여권도 있어요!', '有！護照也在！']], { cap: '一週的假期結束，全家要一起回台灣過年' }),
+      P('airport', [['leo', 'smile'], ['me', 'shock']], [['leo', '할머니 드릴 기념품이에요.', '這是要送阿嬤的紀念品。', { w: 'souvenir', hl: '기념품' }]], { cap: 'Leo 遞來一個小紙袋，裡面是兩個南山塔鑰匙圈——一個給阿嬤，一個給你' }),
+      P('airport', [['me', 'love', 'wave'], ['leo', 'love']], [['me', '안녕히 계세요! 또 봐요!', '請保重！我們再見！', { w: 'seeyou', hl: '또 봐요' }], ['leo', '새해 복 많이 받으세요!', '新年快樂！']], { cap: '登機門前，你們約好過完年要一起練新舞' })],
+    fact: '「설날」是韓國的農曆新年，跟台灣的春節是同一天！韓國人會向長輩「세배（拜年）」、吃年糕湯「떡국」，傳統上說吃了떡국就長大一歲。道別的時候也要注意：留下來的人說「안녕히 가세요（請慢走）」，要離開的人說「안녕히 계세요（請留步）」。' },
 };
 
 export const TEASERS3 = {
@@ -402,8 +533,16 @@ export const TEASERS3 = {
   b15: '第十六章：年末頒獎典禮！入圍名單上，出現了你們的名字…',
   d46: '頒獎典禮當天，紅毯的另一頭，有個熟悉的身影在對你揮手…',
   d47: '新人賞的頒獎人走上台——竟然是露娜！她慢慢打開信封…',
-  d48: '第三季完結！下一季：新的一年、第一次回歸，還有一首新歌的祕密…',
-  b16: '第四季即將開始：拿到新人賞的你們，第一次「回歸」會是什麼樣子？',
+  d48: '新人賞的隔天，敏雅宣布：「放你們一週假！」這時你的手機響了——媽媽傳來一張機票的照片…',
+  b16: '第十七章：首爾自由行！這一次，換你用韓文帶全家逛首爾。',
+  d49: '放好行李，Leo 傳訊息來：「晚餐我帶你們去一間超好吃的小餐館！」',
+  d50: '吃飽飯，阿嬤說明天想穿韓服去景福宮——可是那座宮殿，大得像迷宮一樣…',
+  d51: '走出景福宮，阿嬤指著山上的一座高塔：「那是什麼？我們要怎麼去？」',
+  b17: '第十八章：搭公車上南山、逛明洞！你還偷偷計畫要送阿嬤一份禮物…',
+  d52: '從南山下來，徐允傳訊息：「明天我陪你們去明洞！」',
+  d53: '假期的最後一天，Leo 一大早就出現在飯店大廳，手上拿著一個小紙袋…',
+  d54: '過完年回到首爾，敏雅拿著一張世界地圖走進練習室，上面畫了好多個圈圈…',
+  b18: '旅遊篇完結！敏雅的世界地圖上，第一個圈圈畫在哪裡呢？',
 };
 
 export const INTROS3 = {
@@ -425,6 +564,12 @@ export const INTROS3 = {
   d46: '走出公司大樓，敏雅突然停下腳步，指著天空。',
   d47: '紅毯走完，露娜前輩在後台走廊等著你。',
   d48: '走下舞台，徐允緊緊抱著獎盃，聲音還在發抖。',
+  d49: '飯店大廳裡，敏雅拿著訂房單走過來。',
+  d50: '小餐館裡坐滿了人，Leo 把菜單推到你面前。',
+  d51: '逛到一半，你突然停下來東張西望。',
+  d52: '飯店門口，Leo 從口袋裡拿出好幾張交通卡。',
+  d53: '明洞的街上人好多，徐允拉住你的手。',
+  d54: '機場的報到櫃檯前，Leo 幫你把行李推過來。',
 };
 
 export const KEEPSAKES3 = {
@@ -446,4 +591,10 @@ export const KEEPSAKES3 = {
   d46: { kind: 'item', name: '奶茶色圍巾', emoji: '🧣', desc: '敏雅送的，跟出道服一樣是奶茶色', rarity: 'R' },
   d47: { kind: 'scene', name: '劇照・紅毯上的星海', rarity: 'SR' },
   d48: { kind: 'scene', name: '劇照・新人賞', rarity: 'SSR' },
+  d49: { kind: 'item', name: '1004 號房卡套', emoji: '😇', desc: '天使房的房卡套，上面印著「1004」', rarity: 'R' },
+  d50: { kind: 'item', name: '小餐館的菜單', emoji: '📋', desc: '你第一次用韓文幫全家點餐的菜單', rarity: 'R' },
+  d51: { kind: 'item', name: '韓服髮帶', emoji: '🎀', desc: '穿韓服逛景福宮時綁的紅色髮帶（댕기）', rarity: 'R' },
+  d52: { kind: 'item', name: '小老虎交通卡', emoji: '💳', desc: '上車、下車都要「嗶」一下的交通卡', rarity: 'R' },
+  d53: { kind: 'item', name: '送阿嬤的毛衣', emoji: '🧶', desc: '用存下來的零用錢買的，只買一件，剛剛好', rarity: 'SR' },
+  d54: { kind: 'item', name: '南山塔鑰匙圈', emoji: '🗼', desc: '「過完年再見！」——Leo', rarity: 'SR' },
 };

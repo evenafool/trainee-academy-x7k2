@@ -35,8 +35,41 @@ const PLACE = {
 
 export const ACC_IDS = Object.keys(PLACE).filter((id) => ACC_RATIO[id]);
 
+// 項鍊：鍊子自己畫（沿著脖子兩側往下垂到胸口，兩端藏在脖子後面），只用 GPT 畫的墜子／蝴蝶結（acc/<id>-p.webp）
+const chainPath = 'M168,177 Q171,198 193,202 Q206,198 203,175';
+const goldChain = `<path d="${chainPath}" fill="none" stroke="#8a5a1a" stroke-width="2.2" stroke-linecap="round" opacity=".75"/>
+  <path d="${chainPath}" fill="none" stroke="#f3cf5a" stroke-width="1.3" stroke-dasharray="2.2 1" stroke-linecap="round"/>`;
+const pend = (id, x, y, w, ratio) => `<image href="assets/art/doll/acc/${id}-p.webp" x="${x - w / 2}" y="${y}" width="${w}" height="${(w * ratio).toFixed(1)}"/>`;
+const NECK = {
+  notelace: () => `${goldChain}${pend('notelace', 193, 199, 17, 109 / 102)}`,
+  heartlace: () => `${goldChain}${pend('heartlace', 193, 199, 16, 103 / 96)}`,
+  // 頸鍊：緞帶繞脖子一圈（貼著脖子、兩端到脖子邊緣），正中間蝴蝶結
+  choker: () => `<path d="M167,175 Q185,186 204,172" fill="none" stroke="#a8546a" stroke-width="6" stroke-linecap="round"/>
+    <path d="M167,175 Q185,186 204,172" fill="none" stroke="#ffb3c8" stroke-width="4.2" stroke-linecap="round"/>
+    <path d="M168,174.5 Q185,184 203,172" fill="none" stroke="#ffd9e4" stroke-width="1" stroke-linecap="round"/>
+    ${pend('choker', 186, 174, 20, 100 / 105)}`,
+};
+
+// 新素體（GPT 畫、手垂下）：頭比舊素體低、小一點。上面的座標是舊素體量的，頭上、脖子的配飾整組換算過去
+// 舊兩眼中點 (171,104) → 新 (171,139)，大小 ×0.91
+const HEAD_T = 'translate(171 139) scale(0.91) translate(-171 -104)';
+// 手上的東西：新素體的右手垂在身體旁邊 (326,545)，東西握在手心、斜斜地往外
+const HAND = {
+  lightstick: { x: 334, y: 552, w: 40, r: -18 },
+  mic: { x: 334, y: 552, w: 32, r: -20 },
+  photocard: { x: 338, y: 556, w: 38, r: -10 },
+  trophy: { x: 334, y: 560, w: 50, r: 0 },
+};
+
 export function accSVG(id) {
-  const p = PLACE[id];
+  if (NECK[id]) return `<g transform="${HEAD_T}">${NECK[id]()}</g>`;
+  const p = HAND[id] || PLACE[id];
+  const ratio0 = ACC_RATIO[id];
+  if (!p || !ratio0) return '';
+  if (HAND[id]) { const h = p.w * ratio0; return `<g transform="translate(${p.x} ${p.y}) rotate(${p.r})"><image href="assets/art/doll/acc/${id}.webp" x="${(-p.w / 2).toFixed(1)}" y="${(-h / 2).toFixed(1)}" width="${p.w}" height="${h.toFixed(1)}"/></g>`; }
+  return `<g transform="${HEAD_T}">${oldAcc(id, p)}</g>`;
+}
+function oldAcc(id, p) {
   const ratio = ACC_RATIO[id];
   if (!p || !ratio) return '';
   const h = p.w * ratio;

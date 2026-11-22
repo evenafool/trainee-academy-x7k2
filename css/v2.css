@@ -102,6 +102,14 @@
 .mface b { color: #4a3728; font-size: clamp(14px, 3.4vw, 22px); }
 .mface b.ko { color: #7a3f4a; font-size: clamp(16px, 4vw, 26px); }
 .mface b.en { color: #4c3f86; }
+/* 三語卡：英文＋韓文同一張，字小一點才放得下 */
+.mface.tri { gap: 2px; }
+.mface.tri b.en { font-size: clamp(13px, 3vw, 19px); }
+.mface.tri b.ko { font-size: clamp(14px, 3.4vw, 21px); }
+.mface.tri small { font-size: 11px; color: #8a7563; }
+.speed-ask { display: inline-block; margin-top: 6px; padding: 3px 12px; border-radius: 99px; font-weight: 700; font-size: 15px; color: #fff; background: #8f7ad6; }
+.speed-ask.ko { background: #e3849a; }
+.speed-said small { display: inline-block; margin-top: 4px; color: #6b5444; font-size: 15px; }
 .mface small { color: #8a7563; font-weight: 700; font-size: 12px; }
 .match-end { margin-top: 18px; }
 @media (max-width: 520px) { .match-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

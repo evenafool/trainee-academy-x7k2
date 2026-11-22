@@ -19,16 +19,18 @@ const learned = (n) => (s) => Object.keys(s.course?.learned || {}).length >= n;
 export const DOLL_W = 386;
 export const DOLL_H = 1000;
 // 部位：疊的順序（z）、衣帽間縮圖要看的範圍（box）、配飾小圖的位置（x, y 中心點與寬 w，單位＝底圖像素）
+// 新素體（GPT 畫的，手自然垂下）：頭在 y 40–200、肩膀 y 210、腳底 y 990、右手（畫面右邊）在 (326, 545)
 export const SLOTS = {
   shoes: { name: '鞋子', z: 1, box: [0, 800, 386, 1000] },
-  bottom: { name: '下身', z: 2, box: [0, 400, 386, 700] },
-  top: { name: '上衣', z: 3, box: [20, 140, 366, 540] },
-  neck: { name: '項鍊', z: 4, box: [110, 120, 280, 290], x: 193, y: 196, w: 46 },
-  ear: { name: '耳環', z: 5, box: [170, 80, 290, 200], x: 232, y: 146, w: 18 },
-  face: { name: '臉頰', z: 5, box: [110, 60, 280, 200], x: 152, y: 150, w: 22 },
-  hair: { name: '髮飾', z: 6, box: [50, 0, 250, 160], x: 116, y: 66, w: 46 },
-  head: { name: '頭飾', z: 7, box: [50, -40, 320, 190], x: 190, y: 26, w: 140 },
-  hand: { name: '手上', z: 8, box: [236, 380, 396, 580], x: 350, y: 455, w: 80 },
+  bottom: { name: '下身', z: 2, box: [0, 420, 386, 780] },
+  top: { name: '上衣', z: 3, box: [6, 170, 380, 580] },
+  hairdo: { name: '髮型', z: 3.5, box: [20, 20, 366, 640] },
+  neck: { name: '項鍊', z: 4, box: [110, 150, 280, 300], x: 171, y: 225, w: 42 },
+  ear: { name: '耳環', z: 5, box: [170, 110, 290, 220], x: 221, y: 155, w: 16 },
+  face: { name: '臉頰', z: 5, box: [110, 90, 280, 230], x: 155, y: 181, w: 20 },
+  hair: { name: '髮飾', z: 6, box: [50, 30, 260, 190], x: 122, y: 99, w: 42 },
+  head: { name: '頭飾', z: 7, box: [50, 0, 320, 210], x: 188, y: 63, w: 128 },
+  hand: { name: '手上', z: 8, box: [236, 440, 386, 640], x: 330, y: 550, w: 70 },
 };
 
 export const OUTFITS = [
@@ -49,12 +51,12 @@ export const PIECES = [
   { id: 'skirt-plaid', slot: 'bottom', stage: '粉絲時期', name: '紅格子百褶裙', how: '上完第 2 課', unlock: cleared('d2') },
   { id: 'shoes-loafer', slot: 'shoes', stage: '粉絲時期', name: '黑色樂福鞋', how: '上完第 3 課', unlock: cleared('d3') },
   { id: 'top-fantee', slot: 'top', stage: '粉絲時期', name: '應援愛心T恤', how: '上完第 4 課', unlock: cleared('d4') },
-  { id: 'skirt-denim', slot: 'bottom', stage: '粉絲時期', name: '牛仔短裙', how: '上完第 5 課', unlock: cleared('d5') },
+  { id: 'skirt-denim', slot: 'bottom', stage: '粉絲時期', name: '蕾絲邊短裙', how: '上完第 5 課', unlock: cleared('d5') },
   { id: 'shoes-canvas', slot: 'shoes', stage: '粉絲時期', name: '粉紅鞋帶帆布鞋', how: '上完第 6 課', unlock: cleared('d6') },
   { id: 'top-cardigan', slot: 'top', stage: '粉絲時期', name: '薄荷開襟衫', how: '上完第 7 課', unlock: cleared('d7') },
   { id: 'skirt-flower', slot: 'bottom', stage: '粉絲時期', name: '碎花裙', how: '上完第 8 課', unlock: cleared('d8') },
   { id: 'shoes-mary', slot: 'shoes', stage: '粉絲時期', name: '瑪莉珍鞋', how: '上完第 9 課', unlock: cleared('d9') },
-  { id: 'top-stripe', slot: 'top', stage: '粉絲時期', name: '條紋長袖T恤', how: '上完第 10 課', unlock: cleared('d10') },
+  { id: 'top-stripe', slot: 'top', stage: '粉絲時期', name: '粉紅條紋襯衫', how: '上完第 10 課', unlock: cleared('d10') },
   { id: 'pants-jeans', slot: 'bottom', stage: '粉絲時期', name: '牛仔褲', how: '上完第 11 課', unlock: cleared('d11') },
   { id: 'shoes-rain', slot: 'shoes', stage: '粉絲時期', name: '黃色雨鞋', how: '上完第 12 課', unlock: cleared('d12') },
   { id: 'top-practice', slot: 'top', stage: '練習生時期', name: '練習用大T恤', how: '上完第 13 課', unlock: cleared('d13') },
@@ -64,21 +66,21 @@ export const PIECES = [
   { id: 'pants-black', slot: 'bottom', stage: '練習生時期', name: '黑色練習長褲', how: '上完第 17 課', unlock: cleared('d17') },
   { id: 'shoes-high', slot: 'shoes', stage: '練習生時期', name: '高筒球鞋', how: '上完第 18 課', unlock: cleared('d18') },
   { id: 'top-bear', slot: 'top', stage: '練習生時期', name: '小熊連帽衫', how: '上完第 19 課', unlock: cleared('d19') },
-  { id: 'pants-overall', slot: 'bottom', stage: '練習生時期', name: '水洗工作褲', how: '上完第 20 課', unlock: cleared('d20') },
+  { id: 'pants-overall', slot: 'bottom', stage: '練習生時期', name: '灰色工裝褲', how: '上完第 20 課', unlock: cleared('d20') },
   { id: 'shoes-slipper', slot: 'shoes', stage: '練習生時期', name: '兔兔室內鞋', how: '上完第 21 課', unlock: cleared('d21') },
   { id: 'top-blazer', slot: 'top', stage: '練習生時期', name: '月末評價外套', how: '上完第 22 課', unlock: cleared('d22') },
   { id: 'skirt-navy', slot: 'bottom', stage: '練習生時期', name: '海軍藍百褶裙', how: '上完第 23 課', unlock: cleared('d23') },
   { id: 'shoes-ballet', slot: 'shoes', stage: '練習生時期', name: '芭蕾平底鞋', how: '上完第 24 課', unlock: cleared('d24') },
   { id: 'top-sweater', slot: 'top', stage: '練習生時期', name: '薰衣草毛衣', how: '上完第 25 課', unlock: cleared('d25') },
   { id: 'pants-wide', slot: 'bottom', stage: '練習生時期', name: '卡其寬褲', how: '上完第 26 課', unlock: cleared('d26') },
-  { id: 'shoes-boots', slot: 'shoes', stage: '練習生時期', name: '咖啡短靴', how: '上完第 27 課', unlock: cleared('d27') },
-  { id: 'top-denimjk', slot: 'top', stage: '練習生時期', name: '牛仔外套', how: '上完第 28 課', unlock: cleared('d28') },
-  { id: 'pants-check', slot: 'bottom', stage: '練習生時期', name: '格紋長褲', how: '上完第 29 課', unlock: cleared('d29') },
-  { id: 'shoes-blue', slot: 'shoes', stage: '練習生時期', name: '水藍球鞋', how: '上完第 30 課', unlock: cleared('d30') },
+  { id: 'shoes-boots', slot: 'shoes', stage: '練習生時期', name: '咖啡長靴', how: '上完第 27 課', unlock: cleared('d27') },
+  { id: 'top-denimjk', slot: 'top', stage: '練習生時期', name: '短版牛仔外套', how: '上完第 28 課', unlock: cleared('d28') },
+  { id: 'pants-check', slot: 'bottom', stage: '練習生時期', name: '灰色細條紋寬褲', how: '上完第 29 課', unlock: cleared('d29') },
+  { id: 'shoes-blue', slot: 'shoes', stage: '練習生時期', name: '水藍復古球鞋', how: '上完第 30 課', unlock: cleared('d30') },
   { id: 'top-sequin', slot: 'top', stage: '新人偶像時期', name: '打歌亮片外套', how: '上完第 31 課', unlock: cleared('d31') },
   { id: 'skirt-silver', slot: 'bottom', stage: '新人偶像時期', name: '打歌亮片裙', how: '上完第 32 課', unlock: cleared('d32') },
   { id: 'shoes-glitter', slot: 'shoes', stage: '新人偶像時期', name: '亮片舞台鞋', how: '上完第 33 課', unlock: cleared('d33') },
-  { id: 'top-dotblouse', slot: 'top', stage: '新人偶像時期', name: '電台點點襯衫', how: '上完第 34 課', unlock: cleared('d34') },
+  { id: 'top-dotblouse', slot: 'top', stage: '新人偶像時期', name: '海軍藍蕾絲開襟衫', how: '上完第 34 課', unlock: cleared('d34') },
   { id: 'skirt-tulle', slot: 'bottom', stage: '新人偶像時期', name: '粉紅紗裙', how: '上完第 35 課', unlock: cleared('d35') },
   { id: 'shoes-lace', slot: 'shoes', stage: '新人偶像時期', name: '蕾絲白鞋', how: '上完第 36 課', unlock: cleared('d36') },
   { id: 'top-varsity', slot: 'top', stage: '新人偶像時期', name: '簽名會棒球外套', how: '上完第 37 課', unlock: cleared('d37') },
@@ -88,11 +90,66 @@ export const PIECES = [
   { id: 'skirt-hanbok', slot: 'bottom', stage: '新人偶像時期', name: '韓服長裙', how: '上完第 41 課', unlock: cleared('d41') },
   { id: 'shoes-flower', slot: 'shoes', stage: '新人偶像時期', name: '韓服繡花鞋', how: '上完第 42 課', unlock: cleared('d42') },
   { id: 'top-puffer', slot: 'top', stage: '新人偶像時期', name: '初雪羽絨外套', how: '上完第 43 課', unlock: cleared('d43') },
-  { id: 'pants-white', slot: 'bottom', stage: '新人偶像時期', name: '薄荷長褲', how: '上完第 44 課', unlock: cleared('d44') },
+  { id: 'pants-white', slot: 'bottom', stage: '新人偶像時期', name: '奶油白寬褲', how: '上完第 44 課', unlock: cleared('d44') },
   { id: 'shoes-snow', slot: 'shoes', stage: '新人偶像時期', name: '毛毛雪靴', how: '上完第 45 課', unlock: cleared('d45') },
   { id: 'top-gown', slot: 'top', stage: '新人偶像時期', name: '頒獎典禮上衣', how: '上完第 46 課', unlock: cleared('d46') },
   { id: 'skirt-lavender', slot: 'bottom', stage: '新人偶像時期', name: '薰衣草長裙', how: '上完第 47 課', unlock: cleared('d47') },
   { id: 'shoes-gold', slot: 'shoes', stage: '新人偶像時期', name: '金色禮服鞋', how: '上完第 48 課', unlock: cleared('d48') },
+  // 白色・米色系：學會越多單字拿越多
+  { id: 'top-whiteblouse', slot: 'top', stage: '白色系', name: '白色泡泡袖蕾絲領上衣', how: '學會 20 個單字', unlock: learned(20) },
+  { id: 'shoes-whitemary', slot: 'shoes', stage: '白色系', name: '白色瑪莉珍鞋', how: '學會 40 個單字', unlock: learned(40) },
+  { id: 'skirt-tennis', slot: 'bottom', stage: '白色系', name: '白色百褶網球裙', how: '學會 60 個單字', unlock: learned(60) },
+  { id: 'top-whitecable', slot: 'top', stage: '白色系', name: '白色麻花針織外套', how: '學會 80 個單字', unlock: learned(80) },
+  { id: 'shoes-whiteloafer', slot: 'shoes', stage: '白色系', name: '白色厚底樂福鞋', how: '學會 100 個單字', unlock: learned(100) },
+  { id: 'pants-whitejeans', slot: 'bottom', stage: '白色系', name: '白色直筒牛仔褲', how: '學會 120 個單字', unlock: learned(120) },
+  { id: 'top-boa', slot: 'top', stage: '白色系', name: '白色刷毛外套', how: '學會 160 個單字', unlock: learned(160) },
+  { id: 'shoes-whiteboots', slot: 'shoes', stage: '白色系', name: '白色短靴', how: '學會 200 個單字', unlock: learned(200) },
+  { id: 'skirt-eyelet', slot: 'bottom', stage: '白色系', name: '白色洞洞蕾絲長裙', how: '學會 250 個單字', unlock: learned(250) },
+  { id: 'top-whitestage', slot: 'top', stage: '白色系', name: '全白舞台外套', how: '學會 300 個單字', unlock: learned(300) },
+  { id: 'shoes-pearl', slot: 'shoes', stage: '白色系', name: '珍珠帶鞋', how: '學會 350 個單字', unlock: learned(350) },
+  { id: 'top-trench', slot: 'top', stage: '白色系', name: '米色短版風衣', how: '學會 400 個單字', unlock: learned(400) },
+  { id: 'shoes-beigeflat', slot: 'shoes', stage: '白色系', name: '米色麂皮平底鞋', how: '學會 450 個單字', unlock: learned(450) },
+  { id: 'skirt-cord', slot: 'bottom', stage: '白色系', name: '米色燈芯絨短裙', how: '學會 500 個單字', unlock: learned(500) },
+  // 街舞系：領任務獎勵、開寶箱、連續打卡
+  { id: 'top-hiphoodie', slot: 'top', stage: '街舞系', name: '街舞大帽T', how: '領 3 次任務獎勵', unlock: tally('claim', 3) },
+  { id: 'shoes-court', slot: 'shoes', stage: '街舞系', name: '街舞厚底高筒鞋', how: '領 5 次任務獎勵', unlock: tally('claim', 5) },
+  { id: 'pants-barrel', slot: 'bottom', stage: '街舞系', name: '彎刀褲', how: '領 8 次任務獎勵', unlock: tally('claim', 8) },
+  { id: 'top-graphic', slot: 'top', stage: '街舞系', name: '街舞大T', how: '領 12 次任務獎勵', unlock: tally('claim', 12) },
+  { id: 'shoes-silver', slot: 'shoes', stage: '街舞系', name: '銀色老爹鞋', how: '領 16 次任務獎勵', unlock: tally('claim', 16) },
+  { id: 'pants-baggy', slot: 'bottom', stage: '街舞系', name: '街舞降落傘褲', how: '領 20 次任務獎勵', unlock: tally('claim', 20) },
+  { id: 'top-vest', slot: 'top', stage: '街舞系', name: '工裝背心疊穿', how: '領 25 次任務獎勵', unlock: tally('claim', 25) },
+  { id: 'shoes-blackhigh', slot: 'shoes', stage: '街舞系', name: '黑色厚底高筒鞋', how: '領 30 次任務獎勵', unlock: tally('claim', 30) },
+  { id: 'top-offshoulder', slot: 'top', stage: '街舞系', name: '露肩大學T', how: '連續打卡 5 天', unlock: streak(5) },
+  { id: 'pants-widejeans', slot: 'bottom', stage: '街舞系', name: '寬版牛仔褲', how: '開 5 次每日寶箱', unlock: tally('chest', 5) },
+  { id: 'top-crop', slot: 'top', stage: '街舞系', name: '短版街舞T', how: '開 7 次每日寶箱', unlock: tally('chest', 7) },
+  { id: 'shoes-pinkchunky', slot: 'shoes', stage: '街舞系', name: '粉紅老爹鞋', how: '連續打卡 10 天', unlock: streak(10) },
+  { id: 'shoes-platform', slot: 'shoes', stage: '街舞系', name: '白色厚底鞋', how: '開 12 次每日寶箱', unlock: tally('chest', 12) },
+  { id: 'top-cropzip', slot: 'top', stage: '街舞系', name: '短版拉鍊帽T', how: '連續打卡 14 天', unlock: streak(14) },
+  { id: 'pants-camo', slot: 'bottom', stage: '街舞系', name: '迷彩工裝寬褲', how: '開 15 次每日寶箱', unlock: tally('chest', 15) },
+  { id: 'shoes-checker', slot: 'shoes', stage: '街舞系', name: '棋盤格懶人鞋', how: '開 20 次每日寶箱', unlock: tally('chest', 20) },
+  // 白色街舞：再厲害一點才拿得到
+  { id: 'top-whitecrop', slot: 'top', stage: '白色街舞', name: '白色短版T', how: '領 40 次任務獎勵', unlock: tally('claim', 40) },
+  { id: 'pants-whitepara', slot: 'bottom', stage: '白色街舞', name: '白色降落傘褲', how: '連續打卡 21 天', unlock: streak(21) },
+  { id: 'shoes-silverchunky', slot: 'shoes', stage: '白色街舞', name: '白銀厚底鞋', how: '領 50 次任務獎勵', unlock: tally('claim', 50) },
+  { id: 'top-whitehood', slot: 'top', stage: '白色街舞', name: '白色寬版帽T', how: '開 25 次每日寶箱', unlock: tally('chest', 25) },
+  { id: 'pants-whitecargo', slot: 'bottom', stage: '白色街舞', name: '米白工裝寬褲', how: '連續打卡 30 天', unlock: streak(30) },
+  { id: 'shoes-whitehigh', slot: 'shoes', stage: '白色街舞', name: '白色高筒鞋', how: '領 60 次任務獎勵', unlock: tally('claim', 60) },
+];
+
+// 髮型庫：預設長直髮；玩家自己在衣帽間「髮型」挑，App 不會自動幫她換
+// 每款兩層：hair-x.webp（蓋在肩膀、胸前，畫在衣服上面）＋ hair-x-back.webp（身體外面、背後，畫在身體下面）
+export const DEFAULT_HAIR = 'hair-long';
+export const HAIRS = [
+  { id: 'hair-long', slot: 'hairdo', name: '長直髮', how: '一開始就有', unlock: () => true },
+  { id: 'hair-layer', slot: 'hairdo', name: '修臉層次長髮', how: '一開始就有', unlock: () => true },
+  { id: 'hair-pony', slot: 'hairdo', name: '高馬尾', how: '一開始就有', unlock: () => true },
+  { id: 'hair-twin', slot: 'hairdo', name: '雙馬尾', how: '一開始就有', unlock: () => true },
+  { id: 'hair-braid', slot: 'hairdo', name: '麻花辮', how: '連續打卡 3 天', unlock: streak(3) },
+  { id: 'hair-buns', slot: 'hairdo', name: '丸子頭', how: '開 3 次每日寶箱', unlock: tally('chest', 3) },
+  { id: 'hair-halfup', slot: 'hairdo', name: '公主頭', how: '上完第 10 課', unlock: cleared('d10') },
+  { id: 'hair-ccurl', slot: 'hairdo', name: 'C字內彎鮑伯', how: '學會 30 個單字', unlock: learned(30) },
+  { id: 'hair-wave', slot: 'hairdo', name: '慵懶水波紋', how: '學會 100 個單字', unlock: learned(100) },
+  { id: 'hair-hush', slot: 'hairdo', name: 'Hush 層次中長髮', how: '連續打卡 7 天', unlock: streak(7) },
 ];
 
 // 配飾：小任務的獎勵（領任務獎勵、開寶箱、唱 40 音、連續打卡…），和劇情裡的紀念配件
@@ -132,8 +189,8 @@ export const MASCOT_POSES = [
   { id: 'party', name: '撒彩帶慶祝', how: '看完第 30 天「出道舞台」', unlock: cleared('d30') },
 ];
 
-const ALL = () => [...OUTFITS, ...PIECES.filter(hasArt), ...ITEMS.filter(hasArt), ...MASCOT_POSES.map((m) => ({ ...m, id: `m-${m.id}` }))];
-const byId = (id) => PIECES.find((x) => x.id === id) || ITEMS.find((x) => x.id === id);
+const ALL = () => [...OUTFITS, ...PIECES.filter(hasArt), ...ITEMS.filter(hasArt), ...HAIRS.filter(hasArt), ...MASCOT_POSES.map((m) => ({ ...m, id: `m-${m.id}` }))];
+const byId = (id) => PIECES.find((x) => x.id === id) || ITEMS.find((x) => x.id === id) || HAIRS.find((x) => x.id === id);
 
 export function avatarState() {
   const s = store.get();
@@ -152,6 +209,11 @@ export function avatarState() {
     a.seen.push(...Object.values(STARTER));
     a.autoWorn = [...(a.autoWorn || []), ...Object.values(STARTER)];
     a.starter = 1;
+  }
+  // 換成新素體（白背心＋白短褲）那一版：舊素體會自動穿粉紅連帽衣、白裙，新的沒有 → 空著的部位一次補上入學禮物那套
+  if (!a.dollV2) {
+    for (const [slot, id] of Object.entries(STARTER)) a.wear[slot] ??= id;
+    a.dollV2 = 1;
   }
   return a;
 }
@@ -173,7 +235,7 @@ export function newUnlocks() {
   // 劇情解鎖新的整套造型（還沒看過）時，自動換上，讓首頁的角色跟著劇情變身
   const freshOutfit = [...OUTFITS].reverse().find((o) => o.id !== 'fan' && isUnlocked(o) && !a.seen.includes(o.id));
   if (freshOutfit && a.autoDressed !== freshOutfit.id) { a.outfit = freshOutfit.id; a.autoDressed = freshOutfit.id; store.save(); }
-  // 新拿到的衣服、配飾：自動穿上（換回紙娃娃），一回首頁就看得到獎勵穿在身上
+  // 新拿到的衣服、配飾：自動穿上（換回紙娃娃），一回首頁就看得到獎勵穿在身上（髮型不會自動換，只在「髮型」分類亮 NEW）
   const freshPiece = [...PIECES, ...ITEMS].find((x) => hasArt(x) && isUnlocked(x) && !a.seen.includes(x.id) && !(a.autoWorn || []).includes(x.id));
   if (freshPiece) {
     a.autoWorn = [...(a.autoWorn || []), freshPiece.id];
@@ -198,22 +260,65 @@ const LAYERS = new Set(DOLL_LAYERS);
 // 一件東西在紙娃娃上的樣子（SVG 座標＝底圖像素）
 function layerSVG(it) {
   const sl = SLOTS[it.slot];
-  if (LAYERS.has(it.id) || it.base) return `<image href="assets/art/doll/${it.id}.webp" x="0" y="0" width="${DOLL_W}" height="${DOLL_H}"/>`;
+  if (LAYERS.has(it.id)) return `<image href="assets/art/doll/${it.id}.webp" x="0" y="0" width="${DOLL_W}" height="${DOLL_H}"/>`;
   if (ACCS.has(it.id)) return accSVG(it.id);
   if (sl.x == null) return '';
   const w = sl.w;
   return `<image href="assets/art/icons/item-${it.id}.webp" x="${sl.x - w / 2}" y="${sl.y - w / 2}" width="${w}" height="${w}" class="doll-ic"/>`;
 }
 // 紙娃娃 SVG：box＝只看某一塊（衣帽間縮圖用）；wear＝要穿的東西（預設＝目前穿的）
-export function dollSVG({ wear = avatarState().wear, box = null, cls = 'me-outfit me-doll', alt = '我的角色' } = {}) {
+// trust＝別人的造型（好友）：不用看「我」有沒有解鎖
+export function dollSVG({ wear = avatarState().wear, box = null, cls = 'me-outfit me-doll', alt = '我的角色', trust = false } = {}) {
   const vb = box ? `${box[0]} ${box[1]} ${box[2] - box[0]} ${box[3] - box[1]}` : `0 0 ${DOLL_W} ${DOLL_H}`;
-  const items = Object.values(wear || {}).map(byId).filter((x) => x && hasArt(x) && isUnlocked(x));
-  // 素體（上衣／下身／鞋子挖空）＋每個部位一定穿一件：沒換的部位就穿原本那套（粉紅連帽衣、白裙、白球鞋）
-  for (const slot of ['shoes', 'bottom', 'top']) if (!items.some((x) => x.slot === slot && LAYERS.has(x.id))) items.push({ id: `base-${slot}`, slot, base: true });
+  const items = Object.values(wear || {}).map(byId).filter((x) => x && hasArt(x) && (trust || isUnlocked(x)));
+  // 素體＝白背心、白短褲、白襪子：沒穿的部位就是這樣。頭髮一定有：沒選就是長直髮
+  if (!items.some((x) => x.slot === 'hairdo')) items.push(HAIRS[0]);
   items.sort((p, q) => SLOTS[p.slot].z - SLOTS[q.slot].z);
+  const hair = items.find((x) => x.slot === 'hairdo');
+  const full = (src) => `<image href="assets/art/doll/${src}.webp" x="0" y="0" width="${DOLL_W}" height="${DOLL_H}"/>`;
   return `<svg class="${cls}" viewBox="${vb}" preserveAspectRatio="xMidYMax meet" role="img" aria-label="${esc(alt)}">
-    <image href="assets/art/doll/body.webp" x="0" y="0" width="${DOLL_W}" height="${DOLL_H}"/>${items.map(layerSVG).join('')}</svg>`;
+    ${full(`${hair.id}-back`)}${full('body')}${items.map(layerSVG).join('')}</svg>`;
 }
+
+// ───────── 造型代碼：頭像、好友卡、聊天室都用「現在穿的樣子」 ─────────
+// 代碼＝整套造型 id（trainee…），或 'fan:' ＋ 紙娃娃身上每一件的 id（逗號隔開）
+// 好友卡、雲端好友卡都放在原本的 o 欄位（舊版 App 讀到看不懂的代碼就當「自己搭配」，不會壞）
+export const HEAD_BOX = [80, 28, 266, 214]; // 頭像（圓形大頭）
+export const BUST_BOX = [64, 22, 278, 282]; // 半身（聊天室、加好友）
+export const CARD_BOX = [26, 14, 346, 404]; // 練習生證照片
+const SET_W = { fan: 386, trainee: 310, debut: 384, award: 470 }; // 整套造型圖的寬（高都是 1000）
+export function lookCode() {
+  const a = avatarState();
+  const o = OUTFITS.find((x) => x.id === a.outfit && isUnlocked(x)) ? a.outfit : autoOutfit();
+  const pet = MASCOT_POSES.find((m) => m.id === a.mascot && isUnlocked(m)) ? a.mascot : 'happy';
+  const ids = o === 'fan' ? Object.values(a.wear || {}).filter((id) => { const x = byId(id); return x && hasArt(x) && isUnlocked(x); }) : [];
+  return `${o !== 'fan' ? o : ids.length ? `fan:${ids.join(',')}` : 'fan'}|m:${pet}`;
+}
+// 代碼 → { o: 整套 id 或 fan, wear: 身上的東西, mascot: 寵物姿勢 }
+export function parseLook(code) {
+  const [main, ...rest] = String(code || '').slice(0, 400).split('|');
+  const pet = rest.find((r) => r.startsWith('m:'))?.slice(2);
+  const mascot = MASCOT_POSES.some((m) => m.id === pet) ? pet : 'happy';
+  if (OUTFITS.some((o) => o.id === main)) return { o: main, wear: {}, mascot };
+  const wear = {};
+  if (main.startsWith('fan:')) for (const id of main.slice(4).split(',').slice(0, 12)) { const x = byId(id); if (x) wear[x.slot] = x.id; }
+  return { o: 'fan', wear, mascot };
+}
+// 外面來的代碼整理過再存（只留認得的 id）
+export const normLook = (code) => {
+  const { o, wear, mascot } = parseLook(code);
+  const ids = Object.values(wear);
+  return `${o !== 'fan' ? o : ids.length ? `fan:${ids.join(',')}` : 'fan'}|m:${mascot}`;
+};
+// 照造型代碼畫出角色（box＝只看某一塊：頭像、半身）
+export function lookSVG(code, { box = null, cls = 'look-svg', alt = '' } = {}) {
+  const { o, wear } = parseLook(code);
+  if (o === 'fan') return dollSVG({ wear, box, cls, alt, trust: true });
+  const vb = box ? `${box[0]} ${box[1]} ${box[2] - box[0]} ${box[3] - box[1]}` : `0 0 ${DOLL_W} ${DOLL_H}`;
+  const w = SET_W[o] || DOLL_W;
+  return `<svg class="${cls}" viewBox="${vb}" preserveAspectRatio="xMidYMin slice" role="img" aria-label="${esc(alt)}"><image href="assets/art/me-${o}.webp" x="${(DOLL_W - w) / 2}" y="0" width="${w}" height="${DOLL_H}"/></svg>`;
+}
+export const myLookSVG = (opt) => lookSVG(lookCode(), opt);
 
 // 主角立繪（含紙娃娃圖層、寵物）；首頁和衣帽間共用
 export function avatarHTML() {
@@ -230,6 +335,7 @@ const CATS = [
   { id: 'top', name: '上衣', slots: ['top'] },
   { id: 'bottom', name: '下著', slots: ['bottom'] },
   { id: 'shoes', name: '鞋子', slots: ['shoes'] },
+  { id: 'hairdo', name: '髮型', slots: ['hairdo'] },
   { id: 'hair', name: '髮飾', slots: ['hair', 'head'] },
   { id: 'jewel', name: '飾品', slots: ['ear', 'neck', 'face'] },
   { id: 'hand', name: '手持', slots: ['hand'] },
@@ -240,7 +346,7 @@ const CATS = [
 const ICONED = new Set(['starclip', 'ribbon', 'headset', 'crown', 'moon', 'lightstick', 'photocard', 'trophy']);
 const ACCS = new Set(ACC_IDS);
 const hasArt = (x) => LAYERS.has(x.id) || ACCS.has(x.id) || ICONED.has(x.id);
-const itemsOf = (cat) => [...PIECES, ...ITEMS].filter((x) => cat.slots.includes(x.slot) && hasArt(x));
+const itemsOf = (cat) => [...PIECES, ...ITEMS, ...HAIRS].filter((x) => cat.slots.includes(x.slot) && hasArt(x));
 let cat = 'top';
 let drawer = true;
 export function renderCloset($app, backBar) {
@@ -254,7 +360,7 @@ export function renderCloset($app, backBar) {
   const C = CATS.find((c) => c.id === cat) || CATS[0];
   const tile = (x, kind) => {
     const on = isUnlocked(x);
-    const eq = kind === 'set' ? a.outfit === x.id : kind === 'pet' ? a.mascot === x.id : a.outfit === 'fan' && a.wear[x.slot] === x.id;
+    const eq = kind === 'set' ? a.outfit === x.id : kind === 'pet' ? a.mascot === x.id : a.outfit === 'fan' && (a.wear[x.slot] || (x.slot === 'hairdo' ? DEFAULT_HAIR : '')) === x.id;
     const pic = kind === 'set'
       ? (x.id === 'fan' ? dollSVG({ cls: 'cl-outfit' }) : `<img class="cl-outfit" src="assets/art/me-${x.id}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/sprite-me.webp'">`)
       : kind === 'pet' ? mascotImg(x.id, 'big')
@@ -301,7 +407,7 @@ export function renderCloset($app, backBar) {
   const again = () => renderCloset($app, backBar);
   $app.querySelectorAll('.dr-cat').forEach((b) => b.onclick = () => { drawer = !(b.dataset.cat === cat && drawer); cat = b.dataset.cat; again(); });
   $app.querySelector('#drClose').onclick = () => { drawer = false; again(); };
-  $app.querySelector('#clReset')?.addEventListener('click', () => { a.wear = {}; store.save(); again(); });
+  $app.querySelector('#clReset')?.addEventListener('click', () => { a.wear = a.wear.hairdo ? { hairdo: a.wear.hairdo } : {}; store.save(); again(); }); // 頭髮不算衣服：脫衣服不會換髮型
   // 我的搭配：保存目前的穿搭到空格（三格都滿就蓋掉第一格），點一下就換上
   $app.querySelector('#lookSave')?.addEventListener('click', () => {
     let k = a.looks.findIndex((x) => !x); if (k < 0) k = a.looks.length < 3 ? a.looks.length : 0;

@@ -337,6 +337,15 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
 
   // 新單字出現：台詞裡的字發光＋旁邊跳出大大的「點我收集」
   let pendingSay = null; // 點到的字：等這句台詞念完再念一次發音
+  let wordSay = null; // 正在念收集到的字（韓文＋英文）：念完才換下一句，不要念到一半被切掉
+  function sayCaught(w) {
+    wordSay = (async () => {
+      await speakAsync(w.ko, 'ko-KR', rate('ko-KR'));
+      // 念完韓文時短劇如果已經關了，就不要再念英文
+      if (mine === token) await speakAsync(w.en, 'en-US', rate('en-US'));
+    })().finally(() => { wordSay = null; });
+    return wordSay;
+  }
   function offerCatch(id) {
     const w = WORDS[id];
     if (!w || caught.has(id)) return;
@@ -396,12 +405,8 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
     if (slot) await flyTo(src, slot, wic(w));
     collect(id, true);
     if (ttsOK) {
-      if (speechSynthesis.speaking) pendingSay = w;
-      else {
-        await speakAsync(w.ko, 'ko-KR', rate('ko-KR'));
-        // 念完韓文時短劇如果已經關了，就不要再念英文
-        if (mine === token) await speakAsync(w.en, 'en-US', rate('en-US'));
-      }
+      if (speechSynthesis.speaking && !wordSay) pendingSay = w;
+      else { if (wordSay) await wordSay; if (mine === token) await sayCaught(w); }
     }
   }
   function collect(id, tapped) {
@@ -431,6 +436,10 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
   }
 
   async function play(k) {
+    // 收集到的字還在念：等它念完再換句（自動、按下一句、上一句都一樣）
+    while (wordSay) { await wordSay; if (mine !== token) return; }
+    // 台詞還沒念完就按下一句：剛點到、排隊等念的字先念完
+    if (pendingSay) { const pw = pendingSay; pendingSay = null; stopSpeaking(); await sayCaught(pw); if (mine !== token) return; }
     const r = ++run;
     stopSpeaking();
     cur = k;
@@ -454,7 +463,7 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
         if (r !== run || mine !== token) return;
         if (lang !== 'zh-TW' && s.sub) { await sleep(300); await speakAsync(s.sub, 'zh-TW'); }
       } else await sleep(2000);
-      if (pendingSay && r === run) { const pw = pendingSay; pendingSay = null; await sleep(200); await speakAsync(pw.ko, 'ko-KR', rate('ko-KR')); await speakAsync(pw.en, 'en-US', rate('en-US')); }
+      if (pendingSay && r === run) { const pw = pendingSay; pendingSay = null; await sleep(200); await sayCaught(pw); }
       if (s.w && !caught.has(s.w)) await sleep(2200); // 還沒點到：多等一下，給孩子時間點單字
     }
     duck(false);
@@ -468,6 +477,7 @@ export function openDrama(lv, n, { endLabel = '開始上課' } = {}) {
     else finish();
   }
   async function finish() {
+    while (wordSay) { await wordSay; if (mine !== token) return; }
     run++;
     stopSpeaking();
     for (const w of words) collect(w.id, false);

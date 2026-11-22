@@ -245,4 +245,35 @@ export const EXTRAS = {
     X('future', '🔮', '未來', 'future', '미래', 'mirae', '「미래」＝未來，發音很像', { s: C('nova', 'Your future is bright!', '미래가 밝아요!', 'Miraega balgayo!', '你的未來很光明！'), en: 'future', ko: '미래' }),
     X('life', '🌱', '人生、生活', 'life', '인생', 'insaeng', '「인생 최고의 날」＝人生最棒的一天', { s: C('me', 'This is the best day of my life!', '인생 최고의 날이에요!', 'Insaeng choegoui narieyo!', '這是我人生最棒的一天！'), en: 'life', ko: '인생' }),
   ],
+  // ── 旅遊篇 ──
+  d49: [
+    X('angel', '😇', '天使', 'angel', '천사', 'cheonsa', '1004 念「천사」，跟「天使」同音！', { d: 3, en: 'angel', ko: '천사' }),
+    X('number', '🔢', '號碼', 'number', '번호', 'beonho', '漢字詞「番號」；房號＝방 번호、電話號碼＝전화번호', { s: C('mina', 'What is your room number?', '방 번호가 뭐예요?', 'Bang beonhoga mwoyeyo?', '你的房號是幾號？'), en: 'number', ko: '번호' }),
+    X('lobby', '🛋️', '大廳', 'lobby', '로비', 'robi', '外來語 lobby；飯店一進門的大廳', { s: C('mina', 'Wait for me in the lobby.', '로비에서 기다려요.', 'Robieseo gidaryeoyo.', '在大廳等我。'), en: 'lobby', ko: '로비' }),
+  ],
+  d50: [
+    X('excuse', '🙋', '不好意思（叫人）', 'excuse me', '저기요', 'jeogiyo', '在餐廳叫店員就說「저기요！」', { d: 2, en: 'Excuse me', ko: '저기요' }),
+    X('sidedish', '🥬', '小菜', 'side dish', '반찬', 'banchan', '韓國餐廳的小菜通常免費，還可以再加', { d: 3, en: 'side dishes', ko: '반찬' }),
+    X('counter', '🛎️', '櫃檯', 'counter', '카운터', 'kaunteo', '外來語 counter；吃完到櫃檯結帳', { s: C('leo', 'Pay at the counter.', '카운터에서 계산해요.', 'Kaunteoeseo gyesanhaeyo.', '在櫃檯結帳。'), en: 'counter', ko: '카운터' }),
+  ],
+  d51: [
+    X('lost', '😵‍💫', '迷路、弄丟', 'lost', '잃었어요', 'ireosseoyo', '迷路＝길을 잃었어요；lose 的過去式是 lost', { d: 2, en: 'lost', ko: '잃었어요' }),
+    X('palace', '🏯', '宮殿', 'palace', '궁', 'gung', '漢字「宮」；景福宮＝경복궁', { s: C('mina', 'This palace is so big!', '이 궁은 정말 커요!', 'I gungeun jeongmal keoyo!', '這座宮殿好大！'), en: 'palace', ko: '궁' }),
+    X('turn', '↪️', '轉彎', 'turn', '돌아요', 'dorayo', '左轉＝왼쪽으로 돌아요', { s: C('mina', 'Turn left at the gate.', '문에서 왼쪽으로 돌아요.', 'Muneseo oenjjogeuro dorayo.', '在門口左轉。'), en: 'Turn', ko: '돌아요' }),
+  ],
+  d52: [
+    X('tap', '📲', '刷（卡）', 'tap', '찍어요', 'jjigeoyo', '刷卡也說「찍어요」，跟拍照的「찍어요」是同一個字！', { d: 4, en: 'Tap', ko: '찍어요' }),
+    X('tower', '🗼', '塔', 'tower', '타워', 'tawo', '外來語 tower；南山塔＝남산타워', { s: C('leo', 'Namsan Tower is up there!', '남산타워가 저기 있어요!', 'Namsantawoga jeogi isseoyo!', '南山塔在那上面！'), en: 'Tower', ko: '타워' }),
+    X('view', '🏙️', '風景', 'view', '경치', 'gyeongchi', '站在塔上往下看，整個首爾的경치都好美', { s: C('me', 'The view is so beautiful!', '경치가 정말 아름다워요!', 'Gyeongchiga jeongmal areumdawoyo!', '風景好美！'), en: 'view', ko: '경치' }),
+  ],
+  d53: [
+    X('only', '☝️', '只', 'only', '만', 'man', '「하나만」＝只要一個；「조금만」＝只要一點點', { d: 1, en: 'only', ko: '조금만' }),
+    X('perfect', '👌', '剛剛好、完美', 'perfect', '딱 맞아요', 'ttak majayo', '衣服大小剛剛好就說「딱 맞아요」', { d: 4, en: 'perfect', ko: '딱 맞아요' }),
+    X('pay', '💰', '付錢', 'pay', '내요', 'naeyo', '付錢＝돈을 내요；用自己存的錢付最帥', { s: C('me', 'I will pay with my own money.', '제 용돈으로 낼게요.', 'Je yongdoneuro naelgeyo.', '我用自己的零用錢付。'), en: 'pay', ko: '낼게요' }),
+  ],
+  d54: [
+    X('pack', '🎒', '收拾、打包', 'pack', '챙겨요', 'chaenggyeoyo', '出門前把東西收好＝챙겨요', { s: C('leo', 'Did you pack everything?', '다 챙겼어요?', 'Da chaenggyeosseoyo?', '東西都收好了嗎？'), en: 'pack', ko: '챙겼어요' }),
+    X('keychain', '🗝️', '鑰匙圈', 'keychain', '열쇠고리', 'yeolsoegori', '열쇠（鑰匙）＋고리（圈）', { s: C('leo', 'This keychain is a gift for you.', '이 열쇠고리는 선물이에요.', 'I yeolsoegorineun seonmurieyo.', '這個鑰匙圈送你。'), en: 'keychain', ko: '열쇠고리' }),
+    X('newyear', '🧧', '新年', 'New Year', '새해', 'saehae', '新年快樂＝새해 복 많이 받으세요（新年多福）', { d: 3, en: 'New Year', ko: '새해' }),
+  ],
 };

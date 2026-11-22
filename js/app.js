@@ -10,7 +10,7 @@ import { rewardForDay, rewardHTML, MEMBERS, MERCH } from './rewards.js';
 import { renderExam, examNext, examStats } from './exam.js';
 import { mountHost } from './npc.js';
 import { renderHangul, hangulProgress, TOTAL as HANGUL_TOTAL } from './hangul.js';
-import { avatarHTML, avatarState, autoOutfit, OUTFITS, newUnlocks, renderCloset } from './avatar.js';
+import { avatarHTML, avatarState, newUnlocks, renderCloset, myLookSVG, HEAD_BOX, CARD_BOX } from './avatar.js';
 import { renderFriends, friendCount } from './friends.js';
 import { initCloud, accountHTML, bindAccount, currentUser, onChats } from './cloud.js';
 import { renderChat, stopChat } from './chat.js';
@@ -166,7 +166,7 @@ let flash = null;
 views.talk = (arg) => renderTalk($app, arg);
 views.exam = (arg) => renderExam($app, arg);
 views.hangul = (arg) => renderHangul($app, arg);
-views.game = (arg = 'match-ko') => (arg.startsWith('speed') ? renderSpeed : renderMatch)($app, arg.endsWith('en') ? 'en' : 'ko');
+views.game = (arg = 'match') => (arg.startsWith('speed') ? renderSpeed : renderMatch)($app, arg.endsWith('-en') ? 'en' : arg.endsWith('-ko') ? 'ko' : 'all');
 
 // 版權標示（我的、歡迎頁、首頁底部）
 const COPYRIGHT = `<p class="copyright">© ${new Date().getFullYear()} 蟻葷腹人<br>IG：<a href="https://www.instagram.com/even.a.fool/" target="_blank" rel="noopener">@even.a.fool</a>・Threads：<a href="https://www.threads.net/@even.a.fool" target="_blank" rel="noopener">@even.a.fool</a><br>Email：<a href="mailto:evenafool@gmail.com">evenafool@gmail.com</a><br>Powered by Generative AI</p>`;
@@ -252,8 +252,6 @@ views.home = () => {
   const doneToday = store.daily().stamps.includes('lesson') || !!lesson.doneToday;
   const ex = examStats();
   const nx = examNext();
-  // 練習區依語言分組：同一個語言的東西放在一起
-  const groups = langGroups(ex, lesson.n);
   // 今日學習路線：一步一步、每步可以領小獎勵（收在「任務」面板裡）
   const dd = store.daily();
   const hp = hangulProgress();
@@ -261,7 +259,7 @@ views.home = () => {
   const mark = (r) => ({ ...r, done: (dd.tasks || []).includes(r.id), claimed: (dd.claimed || []).includes(r.id) });
   const route = [
     { id: 'lesson', icon: 'mic', name: '看短劇・上今天的課', sub: `第 ${lesson.n} 集・學新字`, href: '#/talk', main: true },
-    { id: 'bank', icon: 'book', name: '單字庫', sub: '再學 8 個新字', href: '#/exam/bank' },
+    { id: 'bank', icon: 'book', name: '單字庫', sub: '再學 6 個新字', href: '#/exam/bank' },
     { id: 'play', icon: 'cards', name: '玩一個練習', sub: '練習區挑一個', href: '#/practice' },
   ].map(mark);
   const extra = hp.done ? [] : [mark({ id: 'hangul', icon: 'ko', name: '加分：韓文 40 音', sub: `基礎練習・已過 ${hp.passed}／${hp.stages} 關`, href: '#/hangul', extra: true })];
@@ -275,14 +273,13 @@ views.home = () => {
   // 下面那顆大按鈕：永遠是「現在最該做的那一件事」
   const BIG = {
     lesson: { t: '開始今天的課', s: `第 ${lesson.n} 天・${st.title}`, href: '#/talk', icon: 'mic' },
-    bank: { t: '去單字庫', s: '再學 8 個新字', href: '#/exam/bank', icon: 'book' },
+    bank: { t: '去單字庫', s: '再學 6 個新字', href: '#/exam/bank', icon: 'book' },
     play: { t: '玩一個練習', s: '挑一個你喜歡的', href: '#/practice', icon: 'cards' },
   };
   const big = pending ? { t: `領 ${pending} 個獎勵`, s: chestReady ? '今日寶箱也可以開了！' : '完成的任務還沒領', sheet: true, icon: 'gift' }
     : nextStep ? BIG[nextStep.id]
     : { t: '再上一次今天的課', s: '今天全部完成了！', href: '#/talk', icon: 'trophy' };
 
-  const outfitId = avatarState().outfit || autoOutfit();
   const fresh = newUnlocks().length;
   const xpNum = new Intl.NumberFormat('zh-TW').format(s.xp || 0);
   // 每日紅點：今天該點的入口掛一顆紅點，點過就消掉（隔天重來）
@@ -331,7 +328,7 @@ views.home = () => {
       <div class="gl-bg" aria-hidden="true" style="background-image:url('assets/art/bg-${lesson.lv.bg || 'practice'}.webp')"><i></i><i></i><i></i><i></i><i></i><i></i></div>
       <header class="gl-top">
         <a class="gl-prof" href="#/me" aria-label="我的">
-          <span class="gl-face" style="background-image:url('assets/art/me-${outfitId}.webp')"></span>
+          <span class="gl-face">${myLookSVG({ box: HEAD_BOX, cls: 'face-svg' })}</span>
           <span class="gl-prof-t"><b>${esc(s.profile.name)}</b><small>${esc(r.name)}</small><span class="gl-xp"><i style="width:${pct}%"></i></span></span>
         </a>
         <span class="gl-res" title="連續打卡天數">${ic('fire')}<b>${currentStreak()}</b></span>
@@ -461,29 +458,28 @@ views.chat = (arg) => renderChat($app, arg, toast);
 function langGroups(ex, dayN) {
   const sub = (id) => `#/subject/${id}`;
   return [
-    { id: 'ko', name: '韓文', cls: 'pink', tiles: [
-      { href: '#/hangul', icon: 'ko', name: '40 音', sub: `${hangulProgress().passed}／4 關`, badge: '' },
-      { href: '#/game/match-ko', icon: 'cards', name: '翻牌配對', sub: '圖＋韓文' },
-      { href: '#/game/speed-ko', icon: 'fire', name: '快問快答', sub: '60 秒用說的' },
-      { href: sub('ko'), icon: 'book', name: '韓文題庫', sub: '追星韓語・TOPIK' },
-    ] },
-    { id: 'en', name: '英文', cls: 'sky', tiles: [
-      { href: '#/exam/bank', icon: 'book', name: '單字庫', sub: '國中 1,200 字' },
-      { href: '#/exam/quiz', icon: 'star', name: '模擬小考', sub: '聽力・拼字' },
-      { href: '#/game/match-en', icon: 'cards', name: '翻牌配對', sub: '圖＋英文' },
-      { href: sub('en'), icon: 'book', name: '英文題庫', sub: '會考字彙・文法' },
-    ] },
-    { id: 'mix', name: '國文・綜合', cls: 'peach', tiles: [
-      { href: sub('zh'), icon: 'zh', name: '國文題庫', sub: '成語・錯字・文言' },
-      { href: sub('meme'), icon: 'meme', name: '梗翻譯所', sub: '梗用英韓怎麼說' },
-      { href: '#/talk/drill', icon: 'mic', name: '語音特訓', sub: '英韓用說的' },
+    // 三語一起練：同一個字／句子，中文、英文、韓文一次看到、一起學
+    { id: 'tri', name: '三語一起練', cls: 'pink', tiles: [
+      { href: '#/game/match', icon: 'cards', name: '翻牌配對', sub: '圖＋中英韓' },
+      { href: '#/exam/bank', icon: 'book', name: '三語單字庫', sub: '國中 1,200 字・中英韓' },
+      { href: '#/game/speed', icon: 'fire', name: '快問快答', sub: '英韓輪流說' },
+      { href: '#/talk/drill', icon: 'mic', name: '語音特訓', sub: '英韓句子用說的' },
+      { href: sub('meme'), icon: 'meme', name: '梗翻譯所', sub: '中文梗→英韓' },
       { href: `${AI_TEACHER_URL}#day-${dayN}`, icon: 'chat', name: '打字聊天', sub: 'AI 老師', ext: true },
+    ] },
+    // 沒辦法三語一起練的（只屬於一種語言的內容）才分開
+    { id: 'solo', name: '單一語言專區', cls: 'sky', tiles: [
+      { href: '#/hangul', icon: 'ko', name: '韓文 40 音', sub: `字母・${hangulProgress().passed}／4 關` },
+      { href: sub('ko'), icon: 'ko', name: '韓文題庫', sub: '追星韓語・TOPIK' },
+      { href: '#/exam/quiz', icon: 'star', name: '英文模擬小考', sub: '聽力・拼字' },
+      { href: sub('en'), icon: 'en', name: '英文題庫', sub: '會考字彙・文法' },
+      { href: sub('zh'), icon: 'zh', name: '國文題庫', sub: '成語・錯字・文言' },
     ] },
   ];
 }
 function langRowHTML(g, tapHref = '', big = false) {
   return `<div class="lang-row lang-${g.id}">
-    <span class="lang-tag ${g.cls}">${ic(g.id === 'mix' ? 'zh' : g.id)}<b>${g.name}</b></span>
+    <span class="lang-tag ${g.cls}">${ic(g.id === 'tri' ? 'star' : 'book')}<b>${g.name}</b></span>
     <div class="lang-tiles ${big ? 'big' : ''}">${g.tiles.map((t) => `<a class="pz-tile ${g.cls}${t.href === tapHref ? ' tap-hint' : ''}" href="${t.href}"${t.ext ? ' target="_blank" rel="noopener"' : ''}>
       ${t.badge ? `<span class="pz-new must">${t.badge}</span>` : ''}<span class="pz-ic">${ic(t.icon)}</span><b>${t.name}</b><small>${esc(t.sub)}</small>
       ${t.href === tapHref ? '<span class="pz-tap"><img src="assets/art/icons/w-this.webp" alt="" onerror="this.remove()"><b>點我！</b></span>' : ''}</a>`).join('')}</div>
@@ -497,7 +493,7 @@ views.practice = () => {
   const ex = examStats();
   $app.innerHTML = `
     ${backBar('#/home', '練習區')}
-    <p class="pz-lead">依語言分好了，點一個你想玩的！每完成一種都能蓋一個章 ${ic('star')}</p>
+    <p class="pz-lead">同一個字，中文、英文、韓文一起學！每完成一種都能蓋一個章 ${ic('star')}</p>
     ${langGroups(ex, store.get().course?.day || 1).map((g) => langRowHTML(g, '', true)).join('')}
     <h2 class="sec">${ic('map')} 複習</h2>
     <a class="deck" href="#/map"><div class="emoji">${ic('map')}</div><div class="grow"><b>章節地圖・回放</b><small>重看以前的短劇、重演對話（集章）</small></div><div class="chev">›</div></a>
@@ -810,7 +806,6 @@ views.me = () => {
   const acc = s.stats.answered ? Math.round((s.stats.correct / s.stats.answered) * 100) : 0;
   // 練習生證上的資料
   s.profile.joined ??= (s.history?.[0]?.day || store.today());
-  const outfit = OUTFITS.find((o) => o.id === avatarState().outfit) ? avatarState().outfit : autoOutfit();
   const days = LEVELS.filter((l) => !l.boss && s.course?.cleared?.[l.id] != null).length;
   s.uid ??= Math.random().toString(36).slice(2, 12);
   const no = (s.uid || '').replace(/[^a-z0-9]/gi, '').slice(0, 6).toUpperCase().padEnd(6, '0');
@@ -851,7 +846,7 @@ views.me = () => {
           <span class="idc-face front">
             <span class="idc-head"><span class="idc-logo">${ic('star')}</span><span class="idc-org"><b>${esc(agency)}</b><small>TRAINEE ID・練習生證</small></span><span class="idc-hole"></span></span>
             <span class="idc-body">
-              <span class="idc-photo"><img src="assets/art/me-${outfit}.webp" alt="" onerror="this.onerror=null;this.src='assets/art/sprite-me.webp'"><i class="idc-tape"></i></span>
+              <span class="idc-photo">${myLookSVG({ box: CARD_BOX, cls: 'face-svg' })}<i class="idc-tape"></i></span>
               <span class="idc-info">
                 <span class="idc-name"><small>藝名 NAME</small><b>${esc(s.profile.name)}</b></span>
                 <span class="idc-row"><small>等級</small><em class="idc-rank">${esc(r.name)}</em><i lang="ko">${esc(r.ko)}</i></span>

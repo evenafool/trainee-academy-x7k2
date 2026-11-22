@@ -5,12 +5,11 @@ import * as store from './store.js';
 import { LEVELS, CHAPTERS } from './course.js';
 import { RANKS } from './data.js';
 import { esc, ic, confetti, dayStr } from './util.js';
-import { avatarState, autoOutfit } from './avatar.js';
+import { lookCode, normLook, lookSVG, parseLook, mascotImg, HEAD_BOX, BUST_BOX } from './avatar.js';
 import { currentUser, fetchFriendCards, accountHTML, bindAccount, shortCode, normShort, lookupShortCode, onChats, publicCard } from './cloud.js';
 
 const PREFIX = 'TA1';
 const DAYS = () => LEVELS.filter((l) => !l.boss);
-const OUTFIT_OK = ['fan', 'trainee', 'debut', 'award'];
 
 // UTF-8 安全的 base64url（中文暱稱也可以）
 const toB64 = (str) => {
@@ -58,7 +57,6 @@ export function myCard() {
   const days = DAYS();
   const done = days.filter((l) => cleared[l.id] != null);
   const last = days.filter((l) => cleared[l.id] != null).pop();
-  const a = avatarState();
   return {
     v: 1,
     id: myId(),
@@ -69,7 +67,7 @@ export function myCard() {
     s: Object.values(cleared).reduce((x, y) => x + (+y || 0), 0),
     x: s.xp || 0,
     k: streakNow(s),
-    o: OUTFIT_OK.includes(a.outfit) ? a.outfit : autoOutfit(),
+    o: lookCode(), // 造型代碼（整套 id，或 fan:身上每件衣服的 id）
     at: store.today(),
     ...(currentUser() ? { u: currentUser().uid } : {}), // 登入的話，好友可以直接讀到最新進度
   };
@@ -91,7 +89,7 @@ function clean(c) {
     s: Math.max(0, +c.s || 0),
     x: Math.max(0, +c.x || 0),
     k: Math.max(0, +c.k || 0),
-    o: OUTFIT_OK.includes(c.o) ? c.o : 'fan',
+    o: normLook(c.o),
     at: /^\d{4}-\d{2}-\d{2}$/.test(c.at) ? c.at : store.today(),
     ...(/^[A-Za-z0-9]{10,40}$/.test(c.u || '') ? { u: c.u } : {}),
   };
@@ -161,13 +159,13 @@ const ago = (at) => {
 };
 const chapterName = (c) => CHAPTERS.find((x) => x.id === c)?.title || '';
 
-const faceOf = (o) => `background-image:url('assets/art/me-${esc(OUTFIT_OK.includes(o) ? o : 'fan')}.webp')`;
+const faceOf = (o) => lookSVG(o, { box: HEAD_BOX, cls: 'face-svg' });
 function cardHTML(c) {
   const total = DAYS().length;
   const pct = Math.round((c.d / total) * 100);
   const name = esc(c.nick || c.n);
   return `<div class="fr-card" data-id="${esc(c.id)}">
-    <span class="fr-face" style="${faceOf(c.o)}"><i class="fr-rk">${esc(rankName(c.x))}</i></span>
+    <a class="fr-face" href="#/friends/show/${encodeURIComponent(c.id)}" aria-label="看 ${name} 的小屋">${faceOf(c.o)}<i class="fr-rk">${esc(rankName(c.x))}</i></a>
     <div class="fr-info">
       <div class="fr-top"><b>${name}</b><small>${ago(c.at)}</small></div>
       <div class="fr-bub">${c.d ? `看到第 ${c.d} 集・${esc(c.t)}` : '還沒開始上課'}</div>
@@ -245,23 +243,52 @@ async function scanQR(toast) {
   });
 }
 
+
+// ───────── 好友小屋（展示頁）#/friends/show/<id>：朋友的全身造型＋寵物＋成績牌（me＝看看朋友眼中的自己） ─────────
+function showcaseHTML(c, isMe) {
+  const name = esc(c.nick || c.n);
+  const { mascot } = parseLook(c.o);
+  return `<div class="dress fr-show">
+    <div class="dress-bg"></div>
+    <div class="dress-top"><a class="dress-back" href="#/friends" aria-label="回好友">‹</a><span class="dress-title">${ic('heart')}<b>${name} 的小屋</b></span></div>
+    <div class="fs-stage"><span class="fs-spot" aria-hidden="true"></span>${lookSVG(c.o, { cls: 'fs-doll', alt: `${name} 的造型` })}<span class="fs-pet">${mascotImg(mascot)}</span></div>
+    <div class="fs-card">
+      <div class="fs-name"><b>${name}</b><small>${esc(rankName(c.x))}</small></div>
+      <div class="fs-plaques">
+        <span>${ic('book')}<b>${c.d}</b><small>集</small></span>
+        <span>${ic('star')}<b>${c.s}</b><small>星星</small></span>
+        <span>${ic('heart')}<b>${c.x}</b><small>應援值</small></span>
+        <span>${ic('fire')}<b>${c.k}</b><small>連續天</small></span>
+      </div>
+      <div class="fs-acts">${isMe
+        ? `<p class="fs-tip">朋友點你的頭像，就會看到這一頁</p><a class="btn primary" href="#/closet">去換造型</a>`
+        : `${c.u ? `<a class="btn primary" href="#/chat/${encodeURIComponent(c.u)}">${ic('chat')} 聊天・按讚</a>` : '<p class="fs-tip">朋友登入 Google、再加一次好友碼，就能聊天</p>'}<small class="fs-at">${ago(c.at)}</small>`}</div>
+    </div>
+  </div>`;
+}
+
 // 好友頁 #/friends
 export function renderFriends($app, backBar, toast, live = true, arg = '') {
   const mine = myCard();
+  if (arg.startsWith('show/')) {
+    const id = decodeURIComponent(arg.slice(5));
+    const c = id === 'me' ? mine : friends()[id];
+    if (c) { $app.innerHTML = showcaseHTML(c, id === 'me'); return; }
+  }
   const code = encodeCard(mine);
   const sc = shortCode();
   const list = Object.values(friends()).sort((a, b) => b.d - a.d || b.x - a.x);
-  const face = (o) => `background-image:url('assets/art/me-${esc(OUTFIT_OK.includes(o) ? o : 'fan')}.webp')`;
+  const face = faceOf;
   $app.innerHTML = `
     <div class="fr-hero">
       <div class="fr-hero-top"><a href="#/home" class="fr-back" aria-label="回首頁">‹</a><b>好友・聊天</b></div>
       <div class="fr-me">
-        <span class="fr-face big" style="${face(mine.o)}"></span>
+        <a class="fr-face big" href="#/friends/show/me" aria-label="看看朋友眼中的我">${face(mine.o)}</a>
         <span class="fr-me-txt"><b>${esc(mine.n)}</b><small class="fr-rank">${esc(rankName(mine.x))}</small><span class="fr-bub">${mine.d ? `正在看第 ${mine.d} 集` : '準備開始上課！'}</span></span>
       </div>
       <img class="fr-hero-cat" src="assets/art/icons/mascot-love.webp" alt="" onerror="this.remove()">
     </div>
-    ${list.length ? `<div class="fr-stories" aria-label="好友">${list.map((c) => `${c.u ? `<a class="fr-st" href="#/chat/${encodeURIComponent(c.u)}">` : `<button type="button" class="fr-st" data-goto="${esc(c.id)}">`}<span class="fr-face" style="${face(c.o)}"><i class="fr-st-dot" data-unread="${esc(c.u || '')}" hidden></i></span><b>${esc(c.nick || c.n)}</b>${c.u ? '</a>' : '</button>'}`).join('')}</div>` : ''}
+    ${list.length ? `<div class="fr-stories" aria-label="好友">${list.map((c) => `<a class="fr-st" href="#/friends/show/${encodeURIComponent(c.id)}"><span class="fr-face">${face(c.o)}<i class="fr-st-dot" data-unread="${esc(c.u || '')}" hidden></i></span><b>${esc(c.nick || c.n)}</b></a>`).join('')}</div>` : ''}
     <div class="fr-actions">
       <button type="button" class="fr-act add" data-jump="frAdd"><span class="fr-act-ic">${ic('heart')}</span><b>加好友</b><small>輸入或掃好友碼</small></button>
       <button type="button" class="fr-act code" data-jump="frMine"><span class="fr-act-ic">${ic('cards')}</span><b>我的好友碼</b><small>${sc ? `<em>${esc(sc)}</em>` : '傳給朋友加我'}</small></button>
@@ -322,11 +349,7 @@ export function renderFriends($app, backBar, toast, live = true, arg = '') {
   if (cl) cl.onclick = () => copyText(shareText(code), '#frCode');
   bindAccount($app, toast, () => renderFriends($app, backBar, toast));
   // 上面兩顆大按鈕：跳到「加好友」或「我的好友碼」
-  $app.querySelectorAll('[data-goto]').forEach((b) => b.onclick = () => {
-    const el = $app.querySelector(`.fr-card[data-id="${CSS.escape(b.dataset.goto)}"]`);
-    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    el?.classList.remove('fr-new'); void el?.offsetWidth; el?.classList.add('fr-new');
-  });
+
   $app.querySelectorAll('[data-jump]').forEach((b) => b.onclick = () => {
     const add = b.dataset.jump === 'frAdd';
     $app.querySelector(add ? '#frAddH' : '#frMine')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -346,7 +369,7 @@ export function renderFriends($app, backBar, toast, live = true, arg = '') {
     if (!strangers.length) { box.innerHTML = ''; return; }
     const cards = (await Promise.all(strangers.slice(0, 5).map((c) => publicCard(c.other)))).filter(Boolean);
     if (!box.isConnected) return;
-    box.innerHTML = cards.length ? `<h2 class="sec">有人想跟你當好友！</h2>${cards.map((c) => `<div class="fr-in"><img class="fr-in-av" src="assets/art/me-${esc(OUTFIT_OK.includes(c.o) ? c.o : 'fan')}.webp" alt=""><div class="grow"><b>${esc(String(c.n || '').slice(0, 12))}</b><small>第 ${+c.d || 0} 集・傳了訊息給你</small></div><a class="btn small" href="#/chat/${encodeURIComponent(c.u)}">看看</a><button class="btn small primary" data-addback="${esc(c.u)}">加好友</button></div>`).join('')}` : '';
+    box.innerHTML = cards.length ? `<h2 class="sec">有人想跟你當好友！</h2>${cards.map((c) => `<div class="fr-in"><span class="fr-in-av">${lookSVG(c.o, { box: BUST_BOX, cls: 'face-svg' })}</span><div class="grow"><b>${esc(String(c.n || '').slice(0, 12))}</b><small>第 ${+c.d || 0} 集・傳了訊息給你</small></div><a class="btn small" href="#/chat/${encodeURIComponent(c.u)}">看看</a><button class="btn small primary" data-addback="${esc(c.u)}">加好友</button></div>`).join('')}` : '';
     box.querySelectorAll('[data-addback]').forEach((btn) => {
       btn.onclick = () => {
         const c = cards.find((x) => x.u === btn.dataset.addback);
@@ -367,10 +390,10 @@ export function renderFriends($app, backBar, toast, live = true, arg = '') {
       for (const c of Object.values(f)) {
         const n = c.u && got[c.u];
         if (!n || n.id !== c.id) continue;
-        const next = { ...c, n: String(n.n || c.n).slice(0, 12), d: +n.d || 0, t: String(n.t || ''), c: +n.c || 0, s: +n.s || 0, x: +n.x || 0, k: +n.k || 0, o: OUTFIT_OK.includes(n.o) ? n.o : c.o, at: n.at || c.at, live: true };
+        const next = { ...c, n: String(n.n || c.n).slice(0, 12), d: +n.d || 0, t: String(n.t || ''), c: +n.c || 0, s: +n.s || 0, x: +n.x || 0, k: +n.k || 0, o: n.o ? normLook(n.o) : c.o, at: n.at || c.at, live: true };
         if (JSON.stringify(next) !== JSON.stringify(c)) { f[c.id] = next; changed = true; }
       }
-      if (changed) { store.save(); if (location.hash.startsWith('#/friends')) renderFriends($app, backBar, toast, false); }
+      if (changed) { store.save(); if (location.hash === '#/friends') renderFriends($app, backBar, toast, false); }
     }).catch(() => {});
   }
   const qrHost = $app.querySelector('#frQR');

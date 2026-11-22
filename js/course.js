@@ -386,6 +386,7 @@ BADGES.push(
   { id: 'ch11', emoji: '🎬', name: '打歌新人', desc: '通過第十一章 BOSS', color: '#e8590c', check: (s) => !!s.course.cleared.b11 },
   { id: 'ch16', emoji: '🏅', name: '年度新人', desc: '通過第三季最終 BOSS', color: '#d4a017', check: (s) => !!s.course.cleared.b16 },
   { id: 'words144', emoji: '📙', name: '144 字新人王', desc: '學會 144 個單字', color: '#8b5cf6', check: (s) => Object.keys(s.course.learned).length >= 144 },
+  { id: 'ch18', emoji: '🧳', name: '首爾小導遊', desc: '通過旅遊篇最終 BOSS', color: '#0ea5e9', check: (s) => !!s.course.cleared.b18 },
 );
 for (const [id, w] of Object.entries(WORDS)) w.id = id;
 
